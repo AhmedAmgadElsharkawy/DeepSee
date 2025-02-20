@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QComboBox, QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout
 
 from view.interactive_image_viewer import InteractiveImageViewer
 from view.image_viewer import ImageViewer
@@ -36,20 +36,62 @@ class NoiseWindow(QWidget):
         self.controls_container_layout.setContentsMargins(0,0,0,0)
         self.main_widget_layout.addWidget(self.controls_container)
 
-        self.noise_type_custom_commbo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["option1","option2"])
+        self.noise_type_custom_commbo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["Uniform Noise","Gaussian Noise","Salt & Pepper Noise"])
+        self.noise_type_custom_commbo_box.currentIndexChanged.connect(self.on_noise_type_change)
         self.controls_container_layout.addWidget(self.noise_type_custom_commbo_box)
 
+
+        self.uniform_nosie_inputs_container = QWidget()
+        self.uniform_nosie_inputs_container_layout = QHBoxLayout(self.uniform_nosie_inputs_container)
+        self.uniform_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
+        self.controls_container_layout.addWidget(self.uniform_nosie_inputs_container)
         self.noise_value_spin_box = CustomSpinBox(label="Noise Value",range_start=0,range_end=1000,initial_value=0,step_value=1)
-        self.controls_container_layout.addWidget(self.noise_value_spin_box)
+        self.uniform_nosie_inputs_container_layout.addWidget(self.noise_value_spin_box)
 
 
+        self.gaussian_nosie_inputs_container = QWidget()
+        self.gaussian_nosie_inputs_container_layout = QHBoxLayout(self.gaussian_nosie_inputs_container)
+        self.gaussian_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
+        self.controls_container_layout.addWidget(self.gaussian_nosie_inputs_container)
+        self.gaussian_nosie_inputs_container.setVisible(False)
+        self.guassian_noise_mean_spin_box = CustomSpinBox(label="Mean")
+        self.guassian_noise_variance_spin_box  = CustomSpinBox(label="Variance")
+        self.gaussian_nosie_inputs_container_layout.addWidget(self.guassian_noise_mean_spin_box)
+        self.gaussian_nosie_inputs_container_layout.addWidget(self.guassian_noise_variance_spin_box)
+        
+
+
+        self.salt_and_pepper_nosie_inputs_container = QWidget()
+        self.salt_and_pepper_nosie_inputs_container_layout = QHBoxLayout(self.salt_and_pepper_nosie_inputs_container)
+        self.salt_and_pepper_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
+        self.controls_container_layout.addWidget(self.salt_and_pepper_nosie_inputs_container)
+        self.salt_and_pepper_nosie_inputs_container.setVisible(False)
+        self.salt_probability_spin_box = CustomSpinBox(label="Salt Probability")
+        self.pepper_probability_spin_box  = CustomSpinBox(label="Pepper Probability")
+        self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.salt_probability_spin_box)
+        self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.pepper_probability_spin_box)
 
         self.controls_container_layout.addStretch()
         
         self.apply_noise_button = QPushButton("Apply")
         self.controls_container_layout.addWidget(self.apply_noise_button)
         
-        
+    def on_noise_type_change(self):
+        if self.noise_type_custom_commbo_box.current_text() == "Uniform Noise":
+            self.uniform_nosie_inputs_container.setVisible(True)
+            self.salt_and_pepper_nosie_inputs_container.setVisible(False)
+            self.gaussian_nosie_inputs_container.setVisible(False)
+
+        elif self.noise_type_custom_commbo_box.current_text() == "Gaussian Noise":
+            self.gaussian_nosie_inputs_container.setVisible(True)
+            self.salt_and_pepper_nosie_inputs_container.setVisible(False)
+            self.uniform_nosie_inputs_container.setVisible(False)
+
+        else:
+            self.salt_and_pepper_nosie_inputs_container.setVisible(True)
+            self.gaussian_nosie_inputs_container.setVisible(False)
+            self.uniform_nosie_inputs_container.setVisible(False)
+
 
         
 
