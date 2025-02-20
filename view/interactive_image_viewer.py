@@ -1,6 +1,4 @@
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
 
 from view.image_viewer import ImageViewer
 
@@ -24,5 +22,5 @@ class InteractiveImageViewer(ImageViewer):
         if file_path:
             self.load_image(file_path)
 
-    def load_image(self, file_path):
-        print("loaded")
+    # def load_image(self, file_path):
+    #     print("loaded")
