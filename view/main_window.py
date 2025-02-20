@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QListWidget, QStackedWidget, QVBoxLayout, QLabel, QHBoxLayout, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QVBoxLayout, QLabel, QHBoxLayout, QListWidgetItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 
