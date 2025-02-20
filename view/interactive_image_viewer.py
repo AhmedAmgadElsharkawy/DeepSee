@@ -6,7 +6,7 @@ from view.image_viewer import ImageViewer
 
 class InteractiveImageViewer(ImageViewer):
     def __init__(self):
-        super().__init__()
+        super().__init__(type = "input")
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event):
@@ -25,4 +25,4 @@ class InteractiveImageViewer(ImageViewer):
             self.load_image(file_path)
 
     def load_image(self, file_path):
-        pass
+        print("loaded")

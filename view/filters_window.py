@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 
 
-class MainWindow(QWidget):
+class FiltersWindow(QWidget):
     def __init__(self):
         super().__init__()
 

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, Q
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 
-from view.interactive_image_viewer import InteractiveImageViewer
+from view.noise_window import NoiseWindow
 
 
 class MainWindow(QMainWindow):
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
             self.listWidget.addItem(item)
 
         self.stackedWidget = QStackedWidget()
-        self.stackedWidget.addWidget(InteractiveImageViewer())
+        self.stackedWidget.addWidget(NoiseWindow())
         self.stackedWidget.addWidget(self.create_page("Filter Settings"))
         self.stackedWidget.addWidget(self.create_page("Edge Detection Tools"))
         self.stackedWidget.addWidget(self.create_page("Hybrid Image Processor"))
