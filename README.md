@@ -25,7 +25,7 @@
     python main.py
 ```
 
-Freeze the requirements after installing new package 
+Freeze the requirements after installing a new package 
 
 ```
     pip freeze > requirements.txt
