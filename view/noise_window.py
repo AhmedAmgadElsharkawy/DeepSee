@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QPushButton, QComboBox, QWidget, QVBoxLayout, QLabel
 from view.interactive_image_viewer import InteractiveImageViewer
 from view.image_viewer import ImageViewer
 from view.custom_combo_box import CustomComboBox
+from view.custom_spin_box import CustomSpinBox
 
 class NoiseWindow(QWidget):
     def __init__(self):
@@ -38,7 +39,10 @@ class NoiseWindow(QWidget):
         self.noise_type_custom_commbo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["option1","option2"])
         self.controls_container_layout.addWidget(self.noise_type_custom_commbo_box)
 
-        
+        self.noise_value_spin_box = CustomSpinBox(label="Noise Value",range_start=0,range_end=1000,initial_value=0,step_value=1)
+        self.controls_container_layout.addWidget(self.noise_value_spin_box)
+
+
 
         self.controls_container_layout.addStretch()
         

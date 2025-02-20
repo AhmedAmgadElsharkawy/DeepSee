@@ -22,5 +22,5 @@ class InteractiveImageViewer(ImageViewer):
         if file_path:
             self.load_image(file_path)
 
-    # def load_image(self, file_path):
-    #     print("loaded")
+    def load_image(self, file_path):
+        print("loaded")
