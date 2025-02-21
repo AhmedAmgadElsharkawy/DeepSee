@@ -9,7 +9,6 @@ class TransformationsWindow(BasicStackedWindow):
         super().__init__()
 
         self.transformation_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
-        self.transformation_type_custom_combo_box.currentIndexChanged.connect(self.on_noise_type_change)
         self.controls_container_layout.addWidget(self.transformation_type_custom_combo_box)
 
         self.graphs_widget_container = QWidget()
@@ -40,27 +39,6 @@ class TransformationsWindow(BasicStackedWindow):
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_histogram_graph)
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_pdf_graph)
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_cdf_graph)
-
-
-
-
-    def on_noise_type_change(self):
-        self.hide_all_inputs()
-
-        selected_noise = self.transformation_type_custom_combo_box.current_text()
-
-        match selected_noise:
-            case "Uniform Noise":
-                self.uniform_nosie_inputs_container.setVisible(True)
-            case "Gaussian Noise":
-                self.gaussian_nosie_inputs_container.setVisible(True)
-            case "Salt & Pepper Noise":
-                self.salt_and_pepper_nosie_inputs_container.setVisible(True)
-
-    def hide_all_inputs(self):
-        self.uniform_nosie_inputs_container.setVisible(False)
-        self.gaussian_nosie_inputs_container.setVisible(False)
-        self.salt_and_pepper_nosie_inputs_container.setVisible(False)
 
 
 
