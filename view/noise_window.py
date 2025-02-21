@@ -43,11 +43,7 @@ class NoiseWindow(BasicStackedWindow):
         self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.salt_probability_spin_box)
         self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.pepper_probability_spin_box)
 
-        self.controls_container_layout.addStretch()
-        
-        self.apply_noise_button = QPushButton("Apply")
-        self.controls_container_layout.addWidget(self.apply_noise_button)
-        
+
     def on_noise_type_change(self):
         self.hide_all_inputs()
 

@@ -57,11 +57,6 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_upper_threshold_spin_box)
 
 
-        self.controls_container_layout.addStretch()
-        
-        self.apply_edge_Detector_button = QPushButton("Apply")
-        self.controls_container_layout.addWidget(self.apply_edge_Detector_button)
-
         
     def on_edge_detector_type_change(self):
         self.hide_all_inputs()

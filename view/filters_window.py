@@ -58,11 +58,6 @@ class FiltersWindow(BasicStackedWindow):
         self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=3,range_end=9,initial_value=3,step_value=1)
         self.high_pass_filter_inputs_container_layout.addWidget(self.high_pass_filter_radius_spin_box)
 
-
-        self.controls_container_layout.addStretch()
-        
-        self.apply_filter_button = QPushButton("Apply")
-        self.controls_container_layout.addWidget(self.apply_filter_button)
         
     def on_filter_type_change(self):
         self.hide_all_inputs()

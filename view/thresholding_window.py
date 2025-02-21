@@ -25,10 +25,6 @@ class ThresholdingWindow(BasicStackedWindow):
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_size_spin_box)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_offset_spin_box)
         
-        self.controls_container_layout.addStretch()
-        
-        self.apply_thresholding_button = QPushButton("Apply")
-        self.controls_container_layout.addWidget(self.apply_thresholding_button)
         
     def on_thresholding_scope_change(self):
         selected_scope = self.thresholding_scope_custom_combo_box.current_text()

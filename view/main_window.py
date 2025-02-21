@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QVBoxLayout, QLabel, QHBoxLayout, QListWidgetItem
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem
+from PyQt5.QtGui import  QIcon
 
 from view.noise_window import NoiseWindow
 from view.filters_window import FiltersWindow
@@ -31,7 +30,7 @@ class MainWindow(QMainWindow):
         ]
 
         for name, icon_path in self.list_widget_items:
-            item = QListWidgetItem(name)  # ✅ Corrected
+            item = QListWidgetItem(name)
             item.setIcon(QIcon(icon_path))
             self.listWidget.addItem(item)
 
@@ -45,14 +44,5 @@ class MainWindow(QMainWindow):
         self.main_widget_layout.addWidget(self.stackedWidget, 3)
 
         self.listWidget.currentRowChanged.connect(self.stackedWidget.setCurrentIndex)
-
-    def create_page(self, text):
-        page = QWidget()
-        layout = QVBoxLayout(page)
-        label = QLabel(text)
-        label.setFont(QFont("Arial", 14))
-        label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(label)
-        return page
 
 
