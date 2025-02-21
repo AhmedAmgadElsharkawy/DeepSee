@@ -38,6 +38,7 @@ class ImageViewer(pg.ImageView):
             self.save_image_button.setGeometry(20,20,30,30)
             self.save_image_button.setCursor(Qt.CursorShape.PointingHandCursor)
             self.save_image_button.clicked.connect(self.on_save_image_click)
+            self.save_image_button.setVisible(False)
             self.save_image_button.setStyleSheet("""
             QPushButton {
                 border: none;
@@ -47,18 +48,21 @@ class ImageViewer(pg.ImageView):
                 background-color: none; /* Optional: hover effect */
             }
         """)
+        
 
         self.temp_label.setText(self.temp_label_placeholder_text)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
-        if self.save_image_button != None:
+        if self.save_image_button != None and self.save_image_button.isVisible():
             self.save_image_button.setGeometry(20,20,30,30)
 
 
     def display_image_matrix(self, image_matrix):
         self.temp_label.hide() 
+        if self.save_image_button != None:
+            self.save_image_button.setVisible(True)
         matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
         matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
         self.setImage(matrix_to_display)
