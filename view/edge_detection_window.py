@@ -4,6 +4,8 @@ from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
 from view.custom_spin_box import CustomSpinBox
 
+from controller.edge_detection_controller import EdgeDetectionController
+
 class EdgeDetectionsWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__(header_text="Edge Detection")
@@ -55,6 +57,8 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_variance_spin_box)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_lower_threshold_spin_box)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_upper_threshold_spin_box)
+
+        self.edge_detection_controller = EdgeDetectionController(self)
 
 
         

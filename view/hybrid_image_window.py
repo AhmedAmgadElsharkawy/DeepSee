@@ -7,6 +7,8 @@ from view.custom_spin_box import CustomSpinBox
 from view.interactive_image_viewer import InteractiveImageViewer
 from view.image_viewer import ImageViewer
 
+from controller.hybrid_image_controller import HybridImageController
+
 class HybridImageWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__(header_text="Hybrid Image")
@@ -53,6 +55,7 @@ class HybridImageWindow(BasicStackedWindow):
         self.hybrid_image_viewer = ImageViewer()
         self.image_viewers_container_layout.addWidget(self.hybrid_image_viewer)
 
+        self.hybrid_image_controller = HybridImageController(self)
 
 
         

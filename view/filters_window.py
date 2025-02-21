@@ -4,6 +4,8 @@ from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
 from view.custom_spin_box import CustomSpinBox
 
+from controller.filters_controller import FiltersController
+
 class FiltersWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__("Filters")
@@ -58,6 +60,7 @@ class FiltersWindow(BasicStackedWindow):
         self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=3,range_end=9,initial_value=3,step_value=1)
         self.high_pass_filter_inputs_container_layout.addWidget(self.high_pass_filter_radius_spin_box)
 
+        self.filters_controller = FiltersController(self)
         
     def on_filter_type_change(self):
         self.hide_all_inputs()

@@ -4,6 +4,8 @@ from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
 from view.custom_spin_box import CustomSpinBox
 
+from controller.thresholding_controller import ThresholdingController
+
 class ThresholdingWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__("Thresholding")
@@ -24,6 +26,8 @@ class ThresholdingWindow(BasicStackedWindow):
         self.local_thresholding_window_offset_spin_box = CustomSpinBox(label="Offset Value",range_start=0,range_end=100,initial_value=0,step_value=1)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_size_spin_box)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_offset_spin_box)
+
+        self.thresholding_controller = ThresholdingController(self)
         
         
     def on_thresholding_scope_change(self):

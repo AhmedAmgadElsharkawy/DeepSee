@@ -1,8 +1,10 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout,QVBoxLayout
+import pyqtgraph as pg
 
 from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
-import pyqtgraph as pg
+
+from controller.transformations_controller import TransformationsController
 
 class TransformationsWindow(BasicStackedWindow):
     def __init__(self):
@@ -39,6 +41,8 @@ class TransformationsWindow(BasicStackedWindow):
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_histogram_graph)
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_pdf_graph)
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_cdf_graph)
+
+        self.transformations_controller = TransformationsController(self)
 
 
 

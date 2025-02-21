@@ -4,6 +4,8 @@ from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
 from view.custom_spin_box import CustomSpinBox
 
+from controller.noise_controller import NoiseController
+
 class NoiseWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__("Noise")
@@ -43,6 +45,7 @@ class NoiseWindow(BasicStackedWindow):
         self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.salt_probability_spin_box)
         self.salt_and_pepper_nosie_inputs_container_layout.addWidget(self.pepper_probability_spin_box)
 
+        self.noise_controller = NoiseController(self)
 
     def on_noise_type_change(self):
         self.hide_all_inputs()
