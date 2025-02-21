@@ -1,15 +1,15 @@
-from PyQt5.QtWidgets import  QWidget, QComboBox,QLabel,QVBoxLayout
-from PyQt5.QtCore import pyqtSignal
-
+from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QVBoxLayout
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSignal, Qt
 
 class CustomComboBox(QWidget):
     currentIndexChanged = pyqtSignal()
 
-    def __init__(self,label = "",combo_box_items_list = []):
+    def __init__(self, label="", combo_box_items_list=[]):
         super().__init__()
 
         self.centeral_layout = QVBoxLayout(self)
-        self.centeral_layout.setContentsMargins(0,0,0,0)
+        self.centeral_layout.setContentsMargins(0, 0, 0, 0)
 
         self.main_widget = QWidget(self)
         self.centeral_layout.addWidget(self.main_widget)
@@ -17,9 +17,24 @@ class CustomComboBox(QWidget):
         self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.main_widget_layout.setSpacing(10)
 
-        self.combo_box_label =  QLabel(label)
+        self.combo_box_label = QLabel(label)
+        self.combo_box_label.setFont(QFont("Arial", 10, QFont.Bold))
+        # self.combo_box_label.setAlignment(Qt.AlignCenter)
+        self.combo_box_label.setStyleSheet("color: #333;")
+
         self.combo_box = QComboBox()
         self.combo_box.addItems(combo_box_items_list)
+        self.combo_box.setStyleSheet(f"""
+            QComboBox {{
+                border: 2px solid gray;
+                border-radius: 5px;
+                padding: 5px;
+                font-size: 14px;
+                background-color: white;
+                selection-background-color: #0078D7;
+            }}
+
+        """)
 
         self.main_widget_layout.addWidget(self.combo_box_label)
         self.main_widget_layout.addWidget(self.combo_box)
@@ -31,10 +46,6 @@ class CustomComboBox(QWidget):
 
     def current_text(self):
         return self.combo_box.currentText()
-    
+
     def current_index(self):
         return self.combo_box.currentIndex()
-
-    
-
-

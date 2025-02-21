@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSpinBox
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
 class CustomSpinBox(QWidget):
     def __init__(self, label="Label", double_value=False, range_start=0, range_end=100, initial_value=0, decimals=5, step_value=1):
@@ -12,6 +14,9 @@ class CustomSpinBox(QWidget):
         self.central_layout.addWidget(self.main_widget)
 
         self.label = QLabel(label)
+        self.label.setFont(QFont("Arial", 10, QFont.Bold))
+        # self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("color: #333;")
         self.main_widget_layout.addWidget(self.label)
 
         if double_value:
@@ -27,10 +32,19 @@ class CustomSpinBox(QWidget):
         self.spin_box.setRange(range_start, range_end)
         self.spin_box.setValue(initial_value)
         self.spin_box.setSingleStep(step_value)
+        self.spin_box.setStyleSheet("""
+            QSpinBox, QDoubleSpinBox {
+                border: 2px solid gray;
+                border-radius: 5px;
+                padding: 5px;
+                font-size: 14px;
+                background-color: white;
+                selection-background-color: #0078D7;
+            }
+        """)
 
         self.main_widget_layout.addWidget(self.spin_box)
-
-        self.spin_box.setButtonSymbols(QDoubleSpinBox.NoButtons)
+        # self.spin_box.setButtonSymbols(QDoubleSpinBox.NoButtons)
 
     def value(self):
         return round(self.spin_box.value(), self.spin_box.decimals()) if isinstance(self.spin_box, QDoubleSpinBox) else self.spin_box.value()
