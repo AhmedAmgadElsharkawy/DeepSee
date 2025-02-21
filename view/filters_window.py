@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QWidget,QHBoxLayout
+from PyQt5.QtWidgets import QWidget,QHBoxLayout
 
 from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
