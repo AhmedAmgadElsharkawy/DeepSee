@@ -6,7 +6,7 @@ from view.custom_spin_box import CustomSpinBox
 
 class EdgeDetectionsWindow(BasicStackedWindow):
     def __init__(self):
-        super().__init__()
+        super().__init__(header_text="Edge Detection")
 
         self.edge_detector_type_custom_combo_box = CustomComboBox(label= "Edge Detector Type",combo_box_items_list=["Sobel Detector","Roberts Detector","Prewitt Detector","Canny Detector"])
         self.edge_detector_type_custom_combo_box.currentIndexChanged.connect(self.on_edge_detector_type_change)

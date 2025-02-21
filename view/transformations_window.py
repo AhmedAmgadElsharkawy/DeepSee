@@ -6,7 +6,7 @@ import pyqtgraph as pg
 
 class TransformationsWindow(BasicStackedWindow):
     def __init__(self):
-        super().__init__()
+        super().__init__("Transformations")
 
         self.transformation_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
         self.inputs_container_layout.addWidget(self.transformation_type_custom_combo_box)

@@ -5,7 +5,7 @@ from view.image_viewer import ImageViewer
 
 
 class BasicStackedWindow(QWidget):
-    def __init__(self):
+    def __init__(self,header_text = ""):
         super().__init__()
 
         self.central_layout = QVBoxLayout(self)
@@ -16,7 +16,7 @@ class BasicStackedWindow(QWidget):
         self.main_widget_layout.setContentsMargins(0,0,0,0)
         self.main_widget_layout.setSpacing(10)
 
-        self.header_widget = QLabel("Noise")
+        self.header_widget = QLabel(header_text)
 
         self.image_viewers_container = QWidget()
         self.image_viewers_container_layout = QHBoxLayout(self.image_viewers_container)

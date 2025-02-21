@@ -15,7 +15,7 @@ class ImageViewer(pg.ImageView):
         self.ui.roiBtn.hide()     
         self.ui.menuBtn.hide()    
 
-        self.getView().setBackgroundColor(QColor(45, 45, 45)) 
+        self.getView().setBackgroundColor(QColor(100, 100, 100)) 
 
         self.save_image_button = None
 

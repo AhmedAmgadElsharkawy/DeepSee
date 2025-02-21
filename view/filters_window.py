@@ -6,7 +6,7 @@ from view.custom_spin_box import CustomSpinBox
 
 class FiltersWindow(BasicStackedWindow):
     def __init__(self):
-        super().__init__()
+        super().__init__("Filters")
 
         self.filter_type_custom_combo_box = CustomComboBox(label= "Filter Type",combo_box_items_list=["Average Filter","Gaussian Filter","Median Filter","Low Pass Filter","High Pass Filter"])
         self.filter_type_custom_combo_box.currentIndexChanged.connect(self.on_filter_type_change)

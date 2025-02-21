@@ -9,7 +9,7 @@ from view.image_viewer import ImageViewer
 
 class HybridImageWindow(BasicStackedWindow):
     def __init__(self):
-        super().__init__()
+        super().__init__(header_text="Hybrid Image")
 
         self.image_viewers_container.deleteLater()
 
