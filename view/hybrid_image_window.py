@@ -14,13 +14,13 @@ class HybridImageWindow(BasicStackedWindow):
         self.image_viewers_container.deleteLater()
 
         self.first_image_filter_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
-        self.controls_container_layout.addWidget(self.first_image_filter_type_custom_combo_box)
+        self.inputs_container_layout.addWidget(self.first_image_filter_type_custom_combo_box)
 
         self.second_image_filter_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
-        self.controls_container_layout.addWidget(self.second_image_filter_type_custom_combo_box)
+        self.inputs_container_layout.addWidget(self.second_image_filter_type_custom_combo_box)
 
         self.radius_custom_spin_box = CustomSpinBox(label= "Filter Radius",range_start=0,range_end=10,initial_value=0)
-        self.controls_container_layout.addWidget(self.radius_custom_spin_box)
+        self.inputs_container_layout.addWidget(self.radius_custom_spin_box)
 
         self.image_viewers_container = QWidget()
         self.image_viewers_container_layout = QHBoxLayout(self.image_viewers_container)

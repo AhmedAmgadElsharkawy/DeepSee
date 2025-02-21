@@ -10,13 +10,13 @@ class NoiseWindow(BasicStackedWindow):
 
         self.noise_type_custom_combo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["Uniform Noise","Gaussian Noise","Salt & Pepper Noise"])
         self.noise_type_custom_combo_box.currentIndexChanged.connect(self.on_noise_type_change)
-        self.controls_container_layout.addWidget(self.noise_type_custom_combo_box)
+        self.inputs_container_layout.addWidget(self.noise_type_custom_combo_box)
 
 
         self.uniform_nosie_inputs_container = QWidget()
         self.uniform_nosie_inputs_container_layout = QHBoxLayout(self.uniform_nosie_inputs_container)
         self.uniform_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
-        self.controls_container_layout.addWidget(self.uniform_nosie_inputs_container)
+        self.inputs_container_layout.addWidget(self.uniform_nosie_inputs_container)
         self.noise_value_spin_box = CustomSpinBox(label="Noise Value",range_start=0,range_end=1000,initial_value=0,step_value=1)
         self.uniform_nosie_inputs_container_layout.addWidget(self.noise_value_spin_box)
 
@@ -24,7 +24,7 @@ class NoiseWindow(BasicStackedWindow):
         self.gaussian_nosie_inputs_container = QWidget()
         self.gaussian_nosie_inputs_container_layout = QHBoxLayout(self.gaussian_nosie_inputs_container)
         self.gaussian_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
-        self.controls_container_layout.addWidget(self.gaussian_nosie_inputs_container)
+        self.inputs_container_layout.addWidget(self.gaussian_nosie_inputs_container)
         self.gaussian_nosie_inputs_container.setVisible(False)
         self.guassian_noise_mean_spin_box = CustomSpinBox(label="Mean")
         self.guassian_noise_variance_spin_box  = CustomSpinBox(label="Variance")
@@ -36,7 +36,7 @@ class NoiseWindow(BasicStackedWindow):
         self.salt_and_pepper_nosie_inputs_container = QWidget()
         self.salt_and_pepper_nosie_inputs_container_layout = QHBoxLayout(self.salt_and_pepper_nosie_inputs_container)
         self.salt_and_pepper_nosie_inputs_container_layout.setContentsMargins(0,0,0,0)
-        self.controls_container_layout.addWidget(self.salt_and_pepper_nosie_inputs_container)
+        self.inputs_container_layout.addWidget(self.salt_and_pepper_nosie_inputs_container)
         self.salt_and_pepper_nosie_inputs_container.setVisible(False)
         self.salt_probability_spin_box = CustomSpinBox(label="Salt Probability")
         self.pepper_probability_spin_box  = CustomSpinBox(label="Pepper Probability")

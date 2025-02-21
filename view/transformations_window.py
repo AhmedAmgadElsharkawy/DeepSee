@@ -9,7 +9,7 @@ class TransformationsWindow(BasicStackedWindow):
         super().__init__()
 
         self.transformation_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
-        self.controls_container_layout.addWidget(self.transformation_type_custom_combo_box)
+        self.inputs_container_layout.addWidget(self.transformation_type_custom_combo_box)
 
         self.graphs_widget_container = QWidget()
         self.graphs_widget_container_layout = QHBoxLayout(self.graphs_widget_container)

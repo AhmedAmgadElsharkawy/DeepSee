@@ -49,6 +49,10 @@ class BasicStackedWindow(QWidget):
         self.main_widget_layout.addWidget(self.controls_container)
         self.main_widget_layout.addWidget(self.image_viewers_container)
 
+        self.inputs_container = QWidget()
+        self.inputs_container_layout = QHBoxLayout(self.inputs_container)
+        self.inputs_container_layout.setContentsMargins(0,0,0,0)
+        self.controls_container_layout.addWidget(self.inputs_container)
 
 
 
