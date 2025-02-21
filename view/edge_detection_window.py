@@ -4,13 +4,13 @@ from view.basic_stacked_window import BasicStackedWindow
 from view.custom_combo_box import CustomComboBox
 from view.custom_spin_box import CustomSpinBox
 
-class FiltersWindow(BasicStackedWindow):
+class EdgeDetectionsWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__()
 
-        self.filter_type_custom_combo_box = CustomComboBox(label= "Filter Type",combo_box_items_list=["Average Filter","Gaussian Filter","Median Filter","Low Pass Filter","High Pass Filter"])
-        self.filter_type_custom_combo_box.currentIndexChanged.connect(self.on_filter_type_change)
-        self.controls_container_layout.addWidget(self.filter_type_custom_combo_box)
+        self.edge_detector_type_custom_combo_box = CustomComboBox(label= "Filter Type",combo_box_items_list=["Average Filter","Gaussian Filter","Median Filter","Low Pass Filter","High Pass Filter"])
+        self.edge_detector_type_custom_combo_box.currentIndexChanged.connect(self.on_filter_type_change)
+        self.controls_container_layout.addWidget(self.edge_detector_type_custom_combo_box)
 
 
         self.average_filter_inputs_container = QWidget()
@@ -67,7 +67,7 @@ class FiltersWindow(BasicStackedWindow):
     def on_filter_type_change(self):
         self.hide_all_inputs()
 
-        selected_filter = self.filter_type_custom_combo_box.current_text()
+        selected_filter = self.edge_detector_type_custom_combo_box.current_text()
 
         match selected_filter:
             case "Average Filter":

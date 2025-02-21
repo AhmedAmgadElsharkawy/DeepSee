@@ -8,12 +8,12 @@ class ThresholdingWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__()
 
-        self.thresholding_type_custom_commbo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Optimal Thresholding","Otsu Thresholding","Spectral Thresholding"])
-        self.controls_container_layout.addWidget(self.thresholding_type_custom_commbo_box)
+        self.thresholding_type_custom_combo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Optimal Thresholding","Otsu Thresholding","Spectral Thresholding"])
+        self.controls_container_layout.addWidget(self.thresholding_type_custom_combo_box)
 
-        self.thresholding_scope_custom_commbo_box = CustomComboBox(label= "Thresholding Scope",combo_box_items_list=["Global Thresholding","Local Thresholding"])
-        self.thresholding_scope_custom_commbo_box.currentIndexChanged.connect(self.on_thresholding_scope_change)
-        self.controls_container_layout.addWidget(self.thresholding_scope_custom_commbo_box)
+        self.thresholding_scope_custom_combo_box = CustomComboBox(label= "Thresholding Scope",combo_box_items_list=["Global Thresholding","Local Thresholding"])
+        self.thresholding_scope_custom_combo_box.currentIndexChanged.connect(self.on_thresholding_scope_change)
+        self.controls_container_layout.addWidget(self.thresholding_scope_custom_combo_box)
 
         self.local_thresholding_inputs_container = QWidget()
         self.local_thresholding_inputs_container.setVisible(False)
@@ -31,7 +31,7 @@ class ThresholdingWindow(BasicStackedWindow):
         self.controls_container_layout.addWidget(self.apply_thresholding_button)
         
     def on_thresholding_scope_change(self):
-        selected_scope = self.thresholding_scope_custom_commbo_box.current_text()
+        selected_scope = self.thresholding_scope_custom_combo_box.current_text()
 
         if selected_scope == "Local Thresholding":
             self.local_thresholding_inputs_container.setVisible(True)

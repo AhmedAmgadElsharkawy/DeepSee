@@ -8,9 +8,9 @@ class NoiseWindow(BasicStackedWindow):
     def __init__(self):
         super().__init__()
 
-        self.noise_type_custom_commbo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["Uniform Noise","Gaussian Noise","Salt & Pepper Noise"])
-        self.noise_type_custom_commbo_box.currentIndexChanged.connect(self.on_noise_type_change)
-        self.controls_container_layout.addWidget(self.noise_type_custom_commbo_box)
+        self.noise_type_custom_combo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["Uniform Noise","Gaussian Noise","Salt & Pepper Noise"])
+        self.noise_type_custom_combo_box.currentIndexChanged.connect(self.on_noise_type_change)
+        self.controls_container_layout.addWidget(self.noise_type_custom_combo_box)
 
 
         self.uniform_nosie_inputs_container = QWidget()
@@ -51,7 +51,7 @@ class NoiseWindow(BasicStackedWindow):
     def on_noise_type_change(self):
         self.hide_all_inputs()
 
-        selected_noise = self.noise_type_custom_commbo_box.current_text()
+        selected_noise = self.noise_type_custom_combo_box.current_text()
 
         match selected_noise:
             case "Uniform Noise":

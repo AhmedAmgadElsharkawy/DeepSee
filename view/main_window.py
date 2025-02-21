@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QIcon
 from view.noise_window import NoiseWindow
 from view.filters_window import FiltersWindow
 from view.thresholding_window import ThresholdingWindow
+from view.edge_detection_window import EdgeDetectionsWindow
 
 
 class MainWindow(QMainWindow):
@@ -38,7 +39,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(NoiseWindow())
         self.stackedWidget.addWidget(FiltersWindow())
         self.stackedWidget.addWidget(ThresholdingWindow())
-        self.stackedWidget.addWidget(self.create_page("Hybrid Image Processor"))
+        self.stackedWidget.addWidget(EdgeDetectionsWindow())
 
         self.main_widget_layout.addWidget(self.listWidget, 1)
         self.main_widget_layout.addWidget(self.stackedWidget, 3)
