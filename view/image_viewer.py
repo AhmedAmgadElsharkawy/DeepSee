@@ -60,7 +60,7 @@ class ImageViewer(pg.ImageView):
     def display_image_matrix(self, image_matrix):
         self.temp_label.hide() 
         matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
-        matrix_to_display = np.transpose(image_matrix, (1, 0, 2))
+        matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
         self.setImage(matrix_to_display)
 
     def display_the_image_model(self):
