@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont, QIcon
 
 from view.noise_window import NoiseWindow
 from view.filters_window import FiltersWindow
+from view.thresholding_window import ThresholdingWindow
 
 
 class MainWindow(QMainWindow):
@@ -21,10 +22,11 @@ class MainWindow(QMainWindow):
         self.listWidget = QListWidget()
 
         self.list_widget_items = [
-            ("Noise", "icons/noise.png"),
-            ("Filters", "icons/filter.png"),
-            ("Edge Detection", "icons/edge.png"),
-            ("Hybrid Image", "icons/hybrid.png")
+            ("Noise", "assets/icons/noise.png"),
+            ("Filters", "assets/icons/filter.png"),
+            ("Thresholding","assets/icons/thresholding.png"),
+            ("Edge Detection", "assets/icons/edge.png"),
+            ("Hybrid Image", "assets/icons/hybrid.png")
         ]
 
         for name, icon_path in self.list_widget_items:
@@ -35,7 +37,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget = QStackedWidget()
         self.stackedWidget.addWidget(NoiseWindow())
         self.stackedWidget.addWidget(FiltersWindow())
-        self.stackedWidget.addWidget(self.create_page("Edge Detection Tools"))
+        self.stackedWidget.addWidget(ThresholdingWindow())
         self.stackedWidget.addWidget(self.create_page("Hybrid Image Processor"))
 
         self.main_widget_layout.addWidget(self.listWidget, 1)

@@ -89,8 +89,8 @@ class FiltersWindow(QWidget):
 
         self.controls_container_layout.addStretch()
         
-        self.apply_noise_button = QPushButton("Apply")
-        self.controls_container_layout.addWidget(self.apply_noise_button)
+        self.apply_filter_button = QPushButton("Apply")
+        self.controls_container_layout.addWidget(self.apply_filter_button)
         
     def on_filter_type_change(self):
         self.hide_all_inputs()
