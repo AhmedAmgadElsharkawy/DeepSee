@@ -23,4 +23,5 @@ class InteractiveImageViewer(ImageViewer):
             self.load_image(file_path)
 
     def load_image(self, file_path):
-        print("loaded")
+        self.image_model.load_image(file_path=file_path)
+        self.display_the_image_model()
