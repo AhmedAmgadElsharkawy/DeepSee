@@ -18,15 +18,15 @@ class BasicStackedWindow(QWidget):
 
         self.header_widget = QLabel("Noise")
 
-        self.image_viewer_container = QWidget()
-        self.image_viewer_container_layout = QHBoxLayout(self.image_viewer_container)
-        self.image_viewer_container_layout.setContentsMargins(0,0,0,0)
+        self.image_viewers_container = QWidget()
+        self.image_viewers_container_layout = QHBoxLayout(self.image_viewers_container)
+        self.image_viewers_container_layout.setContentsMargins(0,0,0,0)
 
         self.input_image_viewer = InteractiveImageViewer()
         self.output_image_viewer = ImageViewer()
 
-        self.image_viewer_container_layout.addWidget(self.input_image_viewer)
-        self.image_viewer_container_layout.addWidget(self.output_image_viewer)
+        self.image_viewers_container_layout.addWidget(self.input_image_viewer)
+        self.image_viewers_container_layout.addWidget(self.output_image_viewer)
 
         self.controls_container = QWidget()
         self.controls_container_layout = QHBoxLayout(self.controls_container)
@@ -47,7 +47,7 @@ class BasicStackedWindow(QWidget):
 
         self.main_widget_layout.addWidget(self.header_widget)
         self.main_widget_layout.addWidget(self.controls_container)
-        self.main_widget_layout.addWidget(self.image_viewer_container)
+        self.main_widget_layout.addWidget(self.image_viewers_container)
 
 
 
