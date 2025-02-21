@@ -39,9 +39,9 @@ class BasicStackedWindow(QWidget):
         self.controls_container_layout.addWidget(self.buttons_container)
         
         self.apply_button = QPushButton("Apply")
-        self.save_button = QPushButton("Save")
+        # self.save_button = QPushButton("Save")
         self.buttons_container_layout.addWidget(self.apply_button)
-        self.buttons_container_layout.addWidget(self.save_button)
+        # self.buttons_container_layout.addWidget(self.save_button)
 
         self.controls_container_layout.addStretch()
 
