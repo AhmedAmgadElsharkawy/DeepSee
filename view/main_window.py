@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 
 from view.noise_window import NoiseWindow
+from view.filters_window import FiltersWindow
 
 
 class MainWindow(QMainWindow):
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget = QStackedWidget()
         self.stackedWidget.addWidget(NoiseWindow())
-        self.stackedWidget.addWidget(self.create_page("Filter Settings"))
+        self.stackedWidget.addWidget(FiltersWindow())
         self.stackedWidget.addWidget(self.create_page("Edge Detection Tools"))
         self.stackedWidget.addWidget(self.create_page("Hybrid Image Processor"))
 

@@ -77,20 +77,23 @@ class NoiseWindow(QWidget):
         self.controls_container_layout.addWidget(self.apply_noise_button)
         
     def on_noise_type_change(self):
-        if self.noise_type_custom_commbo_box.current_text() == "Uniform Noise":
-            self.uniform_nosie_inputs_container.setVisible(True)
-            self.salt_and_pepper_nosie_inputs_container.setVisible(False)
-            self.gaussian_nosie_inputs_container.setVisible(False)
+        self.hide_all_inputs()
 
-        elif self.noise_type_custom_commbo_box.current_text() == "Gaussian Noise":
-            self.gaussian_nosie_inputs_container.setVisible(True)
-            self.salt_and_pepper_nosie_inputs_container.setVisible(False)
-            self.uniform_nosie_inputs_container.setVisible(False)
+        selected_noise = self.noise_type_custom_commbo_box.current_text()
 
-        else:
-            self.salt_and_pepper_nosie_inputs_container.setVisible(True)
-            self.gaussian_nosie_inputs_container.setVisible(False)
-            self.uniform_nosie_inputs_container.setVisible(False)
+        match selected_noise:
+            case "Uniform Noise":
+                self.uniform_nosie_inputs_container.setVisible(True)
+            case "Gaussian Noise":
+                self.gaussian_nosie_inputs_container.setVisible(True)
+            case "Salt & Pepper Noise":
+                self.salt_and_pepper_nosie_inputs_container.setVisible(True)
+
+    def hide_all_inputs(self):
+        self.uniform_nosie_inputs_container.setVisible(False)
+        self.gaussian_nosie_inputs_container.setVisible(False)
+        self.salt_and_pepper_nosie_inputs_container.setVisible(False)
+
 
 
         
