@@ -24,7 +24,6 @@ class ImageViewer(pg.ImageView):
             color: #A0A0A0;
             background: transparent;
         """)
-
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
 
     def resizeEvent(self, event):
