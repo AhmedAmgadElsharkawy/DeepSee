@@ -21,30 +21,10 @@ class MainWindow(QMainWindow):
         self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.main_widget_layout.setSpacing(10)
 
-        self.listWidget = QListWidget()
-        self.listWidget.setFont(QFont("Arial", 10))
-        self.listWidget.setFocusPolicy(Qt.NoFocus)
-
-
-        self.listWidget.setStyleSheet("""
-            QListWidget {
-                background-color: #E5E5E5;
-                color: #888;
-                border-right: 2px solid #B0B0B0;
-            }
-            QListWidget::item {
-                padding: 12px;
-                border-bottom: 1px solid #D0D0D0;
-            }
-            QListWidget::item:selected {
-                background-color: #C0C0C0;
-                color: #444;
-                font-weight: bold;
-            }
-            QListWidget::item:hover {
-                background-color: #D0D0D0;
-            }
-        """)
+        self.list_widget = QListWidget()
+        self.list_widget.setObjectName("list_widget")
+        self.list_widget.setFont(QFont("Arial", 10))
+        self.list_widget.setFocusPolicy(Qt.NoFocus)
 
 
         self.list_widget_items = [
@@ -59,7 +39,7 @@ class MainWindow(QMainWindow):
         for name, icon_path in self.list_widget_items:
             item = QListWidgetItem(name)
             item.setIcon(QIcon(icon_path))
-            self.listWidget.addItem(item)
+            self.list_widget.addItem(item)
 
         self.nosie_window = NoiseWindow()
         self.filters_window = FiltersWindow()
@@ -76,10 +56,30 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.transformations_window)
         self.stackedWidget.addWidget(self.hybrid_image_widnow)
 
-        self.main_widget_layout.addWidget(self.listWidget, 2)
+        self.main_widget_layout.addWidget(self.list_widget, 2)
         self.main_widget_layout.addWidget(self.stackedWidget, 10)
 
-        self.listWidget.currentRowChanged.connect(self.stackedWidget.setCurrentIndex)
+        self.list_widget.currentRowChanged.connect(self.stackedWidget.setCurrentIndex)
 
-        self.listWidget.setCurrentRow(0)
+        self.list_widget.setCurrentRow(0)
         self.stackedWidget.setCurrentIndex(0)
+
+        self.setStyleSheet("""
+            #list_widget {
+                background-color: #E5E5E5;
+                color: #888;
+                border-right: 2px solid #B0B0B0;
+            }
+            #list_widget::item {
+                padding: 12px;
+                border-bottom: 1px solid #D0D0D0;
+            }
+            #list_widget::item:selected {
+                background-color: #C0C0C0;
+                color: #444;
+                font-weight: bold;
+            }
+            #list_widget::item:hover {
+                background-color: #D0D0D0;
+            }           
+            """)

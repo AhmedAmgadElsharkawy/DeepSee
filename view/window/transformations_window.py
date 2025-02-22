@@ -83,6 +83,38 @@ class TransformationsWindow(BasicStackedWindow):
                 border:2px solid gray;
                 border-radius:6px;           
                 }
+                        #apply_button {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 25px;
+            border: 2px solid #888888;
+            border-radius: 8px;
+            background-color: #E0E0E0;
+            color: #333333;
+        }
+        
+        #apply_button:hover {
+            background-color: #D0D0D0;
+            border-color: #777777;
+        }
+
+        #apply_button:pressed {
+            background-color: #B0B0B0;
+            border-color: #666666;
+        }
+
+        #apply_button:disabled {
+            background-color: #C0C0C0;
+            border-color: #A0A0A0;
+            color: #666666;
+        }
+                           
+        #header_label{
+            color: #333;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;           
+            }
         """)
 
 

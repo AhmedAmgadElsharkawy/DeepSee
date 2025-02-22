@@ -29,7 +29,7 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
 
         if type == "input":
-            self.temp_label_placeholder_text = "Double click, or drop your image here\n\nAllowed Files: PNG, JPG, JPEG files"
+            self.temp_label_placeholder_text = "Double click, or drop image here\n\nAllowed Files: PNG, JPG, JPEG files"
         else:
             self.temp_label_placeholder_text = "Processed image will appear here"
             self.save_image_button = QPushButton(self)
