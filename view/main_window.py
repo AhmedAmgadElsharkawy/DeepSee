@@ -2,12 +2,12 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, Q
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 
-from view.noise_window import NoiseWindow
-from view.filters_window import FiltersWindow
-from view.thresholding_window import ThresholdingWindow
-from view.edge_detection_window import EdgeDetectionsWindow
-from view.transformations_window import TransformationsWindow
-from view.hybrid_image_window import HybridImageWindow
+from view.window.noise_window import NoiseWindow
+from view.window.filters_window import FiltersWindow
+from view.window.thresholding_window import ThresholdingWindow
+from view.window.edge_detection_window import EdgeDetectionsWindow
+from view.window.transformations_window import TransformationsWindow
+from view.window.hybrid_image_window import HybridImageWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):

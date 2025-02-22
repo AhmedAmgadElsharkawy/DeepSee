@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout,QVBoxLayout
-import pyqtgraph as pg
 
-from view.basic_stacked_window import BasicStackedWindow
-from view.custom_combo_box import CustomComboBox
-from view.custom_spin_box import CustomSpinBox
-from view.interactive_image_viewer import InteractiveImageViewer
-from view.image_viewer import ImageViewer
+from view.window.basic_stacked_window import BasicStackedWindow
+from view.widget.custom_combo_box import CustomComboBox
+from view.widget.custom_spin_box import CustomSpinBox
+from view.widget.interactive_image_viewer import InteractiveImageViewer
+from view.widget.image_viewer import ImageViewer
 
 from controller.hybrid_image_controller import HybridImageController
 

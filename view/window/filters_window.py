@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QWidget,QHBoxLayout
 
-from view.basic_stacked_window import BasicStackedWindow
-from view.custom_combo_box import CustomComboBox
-from view.custom_spin_box import CustomSpinBox
+from view.window.basic_stacked_window import BasicStackedWindow
+from view.widget.custom_combo_box import CustomComboBox
+from view.widget.custom_spin_box import CustomSpinBox
 
 from controller.filters_controller import FiltersController
 

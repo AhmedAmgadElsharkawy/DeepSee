@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QVBoxLayout
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal
 
 class CustomComboBox(QWidget):
     currentIndexChanged = pyqtSignal()

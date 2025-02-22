@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog
 
-from view.image_viewer import ImageViewer
+from view.widget.image_viewer import ImageViewer
 
 class InteractiveImageViewer(ImageViewer):
     def __init__(self):

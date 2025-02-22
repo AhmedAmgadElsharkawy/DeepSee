@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButt
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
-from view.interactive_image_viewer import InteractiveImageViewer
-from view.image_viewer import ImageViewer
+from view.widget.interactive_image_viewer import InteractiveImageViewer
+from view.widget.image_viewer import ImageViewer
 
 
 class BasicStackedWindow(QWidget):

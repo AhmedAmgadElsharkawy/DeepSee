@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout,QVBoxLayout
 import pyqtgraph as pg
 from PyQt5.QtGui import QFont
 
-from view.basic_stacked_window import BasicStackedWindow
-from view.custom_combo_box import CustomComboBox
-from view.interactive_image_viewer import InteractiveImageViewer
-from view.image_viewer import ImageViewer
+from view.window.basic_stacked_window import BasicStackedWindow
+from view.widget.custom_combo_box import CustomComboBox
+from view.widget.interactive_image_viewer import InteractiveImageViewer
+from view.widget.image_viewer import ImageViewer
 
 from controller.transformations_controller import TransformationsController
 
@@ -18,7 +18,6 @@ class TransformationsWindow(BasicStackedWindow):
         self.transformation_type_custom_combo_box = CustomComboBox(label= "Transformation Type",combo_box_items_list=["Grayscale","Equalization","Normalization"])
         self.inputs_container_layout.addWidget(self.transformation_type_custom_combo_box)
 
-        
         self.input_image_viewer = InteractiveImageViewer()
         self.output_image_viewer = ImageViewer()
 

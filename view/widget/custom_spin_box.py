@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSpinBox
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
 
 class CustomSpinBox(QWidget):
     def __init__(self, label="Label", double_value=False, range_start=0, range_end=100, initial_value=0, decimals=5, step_value=1):
