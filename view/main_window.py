@@ -76,7 +76,10 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.transformations_window)
         self.stackedWidget.addWidget(self.hybrid_image_widnow)
 
-        self.main_widget_layout.addWidget(self.listWidget, 1)
-        self.main_widget_layout.addWidget(self.stackedWidget, 6)
+        self.main_widget_layout.addWidget(self.listWidget, 2)
+        self.main_widget_layout.addWidget(self.stackedWidget, 10)
 
         self.listWidget.currentRowChanged.connect(self.stackedWidget.setCurrentIndex)
+
+        self.listWidget.setCurrentRow(0)
+        self.stackedWidget.setCurrentIndex(0)
