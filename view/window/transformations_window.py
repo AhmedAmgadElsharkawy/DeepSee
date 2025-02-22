@@ -22,12 +22,14 @@ class TransformationsWindow(BasicStackedWindow):
         self.output_image_viewer = ImageViewer()
 
         self.original_image_row = QWidget()
+        self.original_image_row.setObjectName("original_image_row")
         self.original_image_row_layout = QHBoxLayout(self.original_image_row)
         self.original_image_row_layout.setContentsMargins(0,0,0,0)
         self.main_widget_layout.addWidget(self.original_image_row)
         self.original_image_row_layout.addWidget(self.input_image_viewer,1)
 
         self.transformed_image_row = QWidget()
+        self.transformed_image_row.setObjectName("transformed_image_row")
         self.transformed_image_row_layout = QHBoxLayout(self.transformed_image_row)
         self.transformed_image_row_layout.setContentsMargins(0,0,0,0)
         self.main_widget_layout.addWidget(self.transformed_image_row)
@@ -37,13 +39,15 @@ class TransformationsWindow(BasicStackedWindow):
 
         
         self.orignal_image_graphs_container = QWidget()
+        self.orignal_image_graphs_container.setObjectName("orignal_image_graphs_container")
         self.orignal_image_graphs_container_layout = QVBoxLayout(self.orignal_image_graphs_container)
-        self.orignal_image_graphs_container_layout.setContentsMargins(0,0,0,0)
+        # self.orignal_image_graphs_container_layout.setContentsMargins(0,0,0,0)
         self.original_image_row_layout.addWidget(self.orignal_image_graphs_container,2)
 
         self.transformed_image_graphs_container = QWidget()
+        self.transformed_image_graphs_container.setObjectName("transformed_image_graphs_container")
         self.transformed_image_graphs_container_layout = QVBoxLayout(self.transformed_image_graphs_container)
-        self.transformed_image_graphs_container_layout.setContentsMargins(0,0,0,0)
+        # self.transformed_image_graphs_container_layout.setContentsMargins(0,0,0,0)
         self.transformed_image_row_layout.addWidget(self.transformed_image_graphs_container,2)
 
         self.orignal_image_histogram_graph = pg.PlotWidget(title="Original Histogram")
@@ -69,6 +73,17 @@ class TransformationsWindow(BasicStackedWindow):
 
         self.transformations_controller = TransformationsController(self)
 
+
+        self.setStyleSheet("""
+            #transformed_image_graphs_container{   
+                border:2px solid gray;
+                border-radius:6px;
+                           }
+            #orignal_image_graphs_container{
+                border:2px solid gray;
+                border-radius:6px;           
+                }
+        """)
 
 
         
