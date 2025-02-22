@@ -68,7 +68,7 @@ class HybridImageWindow(BasicStackedWindow):
                 border:2px solid gray;
                 border-radius:6px;           
             }
-                        #apply_button {
+            #apply_button {
             font-size: 18px;
             font-weight: bold;
             padding: 8px 25px;

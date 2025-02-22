@@ -15,8 +15,8 @@ class CustomSpinBox(QWidget):
 
         self.label = QLabel(label)
         self.label.setFont(QFont("Arial", 10, QFont.Bold))
+        self.label.setObjectName("label")
         # self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("color: #333;")
         self.main_widget_layout.addWidget(self.label)
 
         if double_value:
@@ -32,7 +32,8 @@ class CustomSpinBox(QWidget):
         self.spin_box.setRange(range_start, range_end)
         self.spin_box.setValue(initial_value)
         self.spin_box.setSingleStep(step_value)
-        self.spin_box.setStyleSheet("""
+        
+        self.setStyleSheet("""
             QSpinBox, QDoubleSpinBox {
                 border: 2px solid gray;
                 border-radius: 5px;
@@ -40,6 +41,9 @@ class CustomSpinBox(QWidget):
                 font-size: 12px;
                 background-color: white;
                 selection-background-color: #0078D7;
+            }
+            #label{
+                color: #333;
             }
         """)
 

@@ -22,10 +22,8 @@ class ImageViewer(pg.ImageView):
         self.temp_label = QLabel(parent= self)
         self.temp_label.setAlignment(Qt.AlignCenter)
         self.temp_label.setFont(QFont("Arial", 12, QFont.Bold))
-        self.temp_label.setStyleSheet("""
-            color: #A0A0A0;
-            background: transparent;
-        """)
+        self.temp_label.setObjectName("temp_label")
+
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
 
         if type == "input":
@@ -39,18 +37,23 @@ class ImageViewer(pg.ImageView):
             self.save_image_button.setCursor(Qt.CursorShape.PointingHandCursor)
             self.save_image_button.clicked.connect(self.on_save_image_click)
             self.save_image_button.setVisible(False)
-            self.save_image_button.setStyleSheet("""
-            QPushButton {
-                border: none;
-                background-color: transparent;
-            }
-            QPushButton:hover {
-                background-color: none; /* Optional: hover effect */
-            }
-        """)
-        
+            self.save_image_button.setObjectName("save_image_button")
 
         self.temp_label.setText(self.temp_label_placeholder_text)
+
+        self.setStyleSheet("""
+                #temp_label{
+                    color: #A0A0A0;
+                    background: transparent;     
+                }
+                #save_image_button{
+                    border: none;
+                    background-color: transparent;   
+                }
+                #save_image_button:hover{
+                    background-color: none;
+                    }
+                """)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

@@ -82,4 +82,4 @@ class MainWindow(QMainWindow):
             #list_widget::item:hover {
                 background-color: #D0D0D0;
             }           
-            """)
+        """)

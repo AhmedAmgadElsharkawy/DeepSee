@@ -18,28 +18,31 @@ class CustomComboBox(QWidget):
         self.main_widget_layout.setSpacing(2)
 
         self.combo_box_label = QLabel(label)
+        self.combo_box_label.setObjectName("combo_box_label")
         self.combo_box_label.setFont(QFont("Arial", 10, QFont.Bold))
         # self.combo_box_label.setAlignment(Qt.AlignCenter)
-        self.combo_box_label.setStyleSheet("color: #333;")
 
         self.combo_box = QComboBox()
         self.combo_box.addItems(combo_box_items_list)
-        self.combo_box.setStyleSheet(f"""
-            QComboBox {{
+
+        self.main_widget_layout.addWidget(self.combo_box_label)
+        self.main_widget_layout.addWidget(self.combo_box)
+
+        self.combo_box.currentIndexChanged.connect(self.on_combobox_change)
+
+        self.setStyleSheet("""
+            QComboBox {
                 border: 2px solid gray;
                 border-radius: 5px;
                 padding: 5px;
                 font-size: 12px;
                 background-color: white;
                 selection-background-color: #0078D7;
-            }}
-
+            }
+            #combo_box_label{
+                color: #333;               
+            }
         """)
-
-        self.main_widget_layout.addWidget(self.combo_box_label)
-        self.main_widget_layout.addWidget(self.combo_box)
-
-        self.combo_box.currentIndexChanged.connect(self.on_combobox_change)
 
     def on_combobox_change(self):
         self.currentIndexChanged.emit()
