@@ -34,8 +34,9 @@ class HybridImageWindow(BasicStackedWindow):
         self.image_viewers_container_layout.addWidget(self.input_images_viewers_container)
 
         self.first_image_viewers_container = QWidget()
+        self.first_image_viewers_container.setObjectName("first_image_viewers_container")
         self.first_image_viewers_container_layout = QHBoxLayout(self.first_image_viewers_container)
-        self.first_image_viewers_container_layout.setContentsMargins(0,0,0,0)
+        # self.first_image_viewers_container_layout.setContentsMargins(0,0,0,0)
         self.input_images_viewers_container_layout.addWidget(self.first_image_viewers_container)
         self.first_original_image_viewer = InteractiveImageViewer()
         self.first_filtered_image_viewer = ImageViewer()
@@ -43,8 +44,9 @@ class HybridImageWindow(BasicStackedWindow):
         self.first_image_viewers_container_layout.addWidget(self.first_filtered_image_viewer)
 
         self.second_image_viewers_container = QWidget()
+        self.second_image_viewers_container.setObjectName("second_image_viewers_container")
         self.second_image_viewers_container_layout = QHBoxLayout(self.second_image_viewers_container)
-        self.second_image_viewers_container_layout.setContentsMargins(0,0,0,0)
+        # self.second_image_viewers_container_layout.setContentsMargins(0,0,0,0)
         self.input_images_viewers_container_layout.addWidget(self.second_image_viewers_container)
         self.second_original_image_viewer = InteractiveImageViewer()
         self.second_filtered_image_viewer = ImageViewer()
@@ -55,6 +57,18 @@ class HybridImageWindow(BasicStackedWindow):
         self.image_viewers_container_layout.addWidget(self.hybrid_image_viewer)
 
         self.hybrid_image_controller = HybridImageController(self)
+
+
+        self.setStyleSheet("""
+            #second_image_viewers_container{
+                border:2px solid gray;
+                border-radius:6px;           
+            }
+            #first_image_viewers_container{
+                border:2px solid gray;
+                border-radius:6px;           
+            }
+        """)
 
 
         
