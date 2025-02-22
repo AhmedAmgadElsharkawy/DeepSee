@@ -14,8 +14,8 @@ class CustomComboBox(QWidget):
         self.main_widget = QWidget(self)
         self.centeral_layout.addWidget(self.main_widget)
         self.main_widget_layout = QVBoxLayout(self.main_widget)
-        self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_widget_layout.setSpacing(10)
+        self.main_widget_layout.setContentsMargins(0, 0, 10, 0)
+        self.main_widget_layout.setSpacing(2)
 
         self.combo_box_label = QLabel(label)
         self.combo_box_label.setFont(QFont("Arial", 10, QFont.Bold))
@@ -29,7 +29,7 @@ class CustomComboBox(QWidget):
                 border: 2px solid gray;
                 border-radius: 5px;
                 padding: 5px;
-                font-size: 14px;
+                font-size: 12px;
                 background-color: white;
                 selection-background-color: #0078D7;
             }}
