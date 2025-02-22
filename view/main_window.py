@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
 
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("list_widget")
-        self.list_widget.setFont(QFont("Arial", 10))
+        self.list_widget.setFont(QFont("Arial", 10,QFont.Bold))
         self.list_widget.setFocusPolicy(Qt.NoFocus)
 
 
