@@ -16,4 +16,9 @@ class ImageModel:
     def get_image_matrix(self):
         return self.image_matrix
     
+    def set_image_matrix(self,matrix):
+        self.image_matrix = matrix.copy()
+        
+    def correlate2d(self,matrix,kernel):
+        pass 
    
