@@ -59,8 +59,6 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_upper_threshold_spin_box)
 
         self.edge_detection_controller = EdgeDetectionController(self)
-
-
         
     def on_edge_detector_type_change(self):
         self.hide_all_inputs()
