@@ -70,6 +70,10 @@ class ImageViewer(pg.ImageView):
         matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
         self.setImage(matrix_to_display)
 
+    def display_and_set_image_matrix(self,image_matrix):
+        self.display_image_matrix(image_matrix)
+        self.image_model.set_image_matrix(image_matrix)
+        
     def display_the_image_model(self):
         self.display_image_matrix(self.image_model.get_image_matrix())
 
