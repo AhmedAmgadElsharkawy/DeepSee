@@ -27,6 +27,7 @@ class TransformationsController():
             return self.grayScale_histogram(image, min_range, max_range)
         elif len(image.shape) == 3:  # RGB image
             return self.rgb_histogram(image, min_range, max_range)
+        return image
     
     def grayScale_cdf(self, image):
         histogram = self.grayScale_histogram(image)
@@ -49,6 +50,7 @@ class TransformationsController():
                 return self.grayScale_cdf(image, min_range, max_range)  
             elif len(image.shape) == 3:
                 return self.rgb_cdf(image, min_range, max_range)
+            return image
             
     def equalize_grayScale(self, image):
         cdf = self.grayScale_cdf(image)
@@ -72,3 +74,37 @@ class TransformationsController():
         elif len(image.shape) == 3:
             image = self.equalize_rgb(image)
         return image
+    
+    def normalize_grayscale(self, image):
+        normalized_image = image.astype(np.float32)
+        min_value = np.min(normalized_image)
+        max_value = np.max(normalized_image)
+        range_value = max_value - min_value
+        
+        if range_value == 0:  # Avoid division by zero
+            return np.zeros_like(normalized_image)
+        
+        return (normalized_image - min_value) / range_value
+
+    def normalize_rgb(self, image):
+        normalized_image = image.astype(np.float32)
+        
+        for i in range(3):  # Iterate over R, G, B channels
+            min_value = np.min(normalized_image[:, :, i])
+            max_value = np.max(normalized_image[:, :, i])
+            range_value = max_value - min_value
+            
+            if range_value == 0:
+                normalized_image[:, :, i] = 0  # Set to zero if no variation
+            else:
+                normalized_image[:, :, i] = (normalized_image[:, :, i] - min_value) / range_value
+
+        return normalized_image
+
+    def normalize_image(self, image):
+        """Handles grayscale and RGB image normalization."""
+        if len(image.shape) == 2:
+            return self.normalize_grayscale(image)
+        elif len(image.shape) == 3:
+            return self.normalize_rgb(image)
+        return image  # Return unchanged if format is unknown
