@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from scipy.ndimage import convolve
 class EdgeDetectionController():
     def __init__(self,edge_detection_window):
         self.edge_detection_window = edge_detection_window
@@ -7,8 +8,13 @@ class EdgeDetectionController():
 
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
+        image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
         if type == "Sobel Detector":
-            result = self.sobel(self.edge_detection_window.input_image_viewer.image_model.get_image_matrix())
+            result = self.sobel(image)
+        elif type == "Roberts Detector":
+            print("ROB")
+        elif type == "Prewitt Detector":
+            result = self.prewitt(image)
         self.edge_detection_window.output_image_viewer.display_image_matrix(result)
 
     def sobel(self, image):
@@ -23,3 +29,18 @@ class EdgeDetectionController():
         # Convert to 8-bit for visualization
         sobel_combined = np.uint8(sobel_combined)
         return sobel_combined
+    
+    def prewitt(self, image):
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        prewitt_x = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)  # Horizontal edges
+        prewitt_y = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=np.float32)  # Vertical edges
+
+        # Apply convolution with Prewitt kernels
+        edge_x = convolve(gray_image, prewitt_x)
+        edge_y = convolve(gray_image, prewitt_y)
+
+        # Compute gradient magnitude
+        prewitt_combined = np.sqrt(edge_x**2 + edge_y**2)
+        prewitt_combined = (prewitt_combined / np.max(prewitt_combined) * 255).astype(np.uint8) 
+        return prewitt_combined
