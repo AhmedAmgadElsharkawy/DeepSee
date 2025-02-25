@@ -25,3 +25,7 @@ class InteractiveImageViewer(ImageViewer):
     def load_image(self, file_path):
         self.image_model.load_image(file_path=file_path)
         self.display_the_image_model()
+    
+    def get_image(self):
+        """Returns the stored image."""
+        return self.image
