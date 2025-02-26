@@ -69,6 +69,13 @@ class ImageViewer(pg.ImageView):
         matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
         matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
         self.setImage(matrix_to_display)
+    def display_image_matrix2(self, image_matrix):
+        self.temp_label.hide()
+        if self.save_image_button != None:
+            self.save_image_button.setVisible(True)
+        matrix_to_display = np.transpose(image_matrix)
+        print(matrix_to_display.shape)
+        self.setImage(matrix_to_display)
 
     def display_and_set_image_matrix(self,image_matrix):
         self.display_image_matrix(image_matrix)

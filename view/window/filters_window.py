@@ -19,7 +19,7 @@ class FiltersWindow(BasicStackedWindow):
         self.average_filter_inputs_container_layout = QHBoxLayout(self.average_filter_inputs_container)
         self.average_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.average_filter_inputs_container)
-        self.average_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.average_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=2)
         self.average_filter_inputs_container_layout.addWidget(self.average_filter_kernel_size_spin_box)
 
 
@@ -28,8 +28,8 @@ class FiltersWindow(BasicStackedWindow):
         self.gaussian_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.gaussian_filter_inputs_container)
         self.gaussian_filter_inputs_container.setVisible(False)
-        self.guassian_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
-        self.guassian_filter_variance_spin_box  = CustomSpinBox(label="Variance")
+        self.guassian_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=2)
+        self.guassian_filter_variance_spin_box = CustomSpinBox(label="Variance",initial_value=1)
         self.gaussian_filter_inputs_container_layout.addWidget(self.guassian_filter_kernel_size_spin_box)
         self.gaussian_filter_inputs_container_layout.addWidget(self.guassian_filter_variance_spin_box)
         
@@ -40,7 +40,7 @@ class FiltersWindow(BasicStackedWindow):
         self.median_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.median_filter_inputs_container)
         self.median_filter_inputs_container.setVisible(False)
-        self.median_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.median_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=2)
         self.median_filter_inputs_container_layout.addWidget(self.median_filter_kernel_size_spin_box)
 
 
@@ -49,7 +49,7 @@ class FiltersWindow(BasicStackedWindow):
         self.low_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.low_pass_filter_inputs_container)
         self.low_pass_filter_inputs_container.setVisible(False)
-        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=9,initial_value=2,step_value=1)
         self.low_pass_filter_inputs_container_layout.addWidget(self.low_pass_filter_radius_spin_box)
 
         self.high_pass_filter_inputs_container = QWidget()
@@ -57,7 +57,7 @@ class FiltersWindow(BasicStackedWindow):
         self.high_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.high_pass_filter_inputs_container)
         self.high_pass_filter_inputs_container.setVisible(False)
-        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=9,initial_value=2,step_value=1)
         self.high_pass_filter_inputs_container_layout.addWidget(self.high_pass_filter_radius_spin_box)
 
         self.filters_controller = FiltersController(self)
