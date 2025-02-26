@@ -48,6 +48,7 @@ class EdgeDetectionController():
     def sobel(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
+        direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
         sigma = 0
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
         sobel_x_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
@@ -57,9 +58,8 @@ class EdgeDetectionController():
 
         phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
         phase[phase < 0] += 180
-        direction = "y"
 
-        if direction == "x":
+        if direction == "Horizontal":
             sobel_x_normalized = (
                 exposure.rescale_intensity(
                     sobel_x, in_range="image", out_range=(0, 255)
@@ -69,7 +69,7 @@ class EdgeDetectionController():
             )
 
             return sobel_x_normalized
-        elif direction == "y":
+        elif direction == "Vertical":
             sobel_y_normalized = (
                 exposure.rescale_intensity(
                     sobel_y, in_range="image", out_range=(0, 255)
@@ -79,7 +79,7 @@ class EdgeDetectionController():
             )
 
             return sobel_y_normalized
-        elif direction == "both":
+        elif direction == "Combined":
             sobel_magnitude = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
             sobel_magnitude = (
                 exposure.rescale_intensity(
