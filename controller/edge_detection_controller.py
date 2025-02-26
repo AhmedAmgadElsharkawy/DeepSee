@@ -21,7 +21,7 @@ class EdgeDetectionController():
             result = self.canny(image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
     
-    def prewitt(self, image, kernel_size):
+    def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
@@ -38,11 +38,14 @@ class EdgeDetectionController():
         return prewitt_magnitude
     
     def canny(self, image):
-        kernel_size = self.edge_detection_window.canny_detector_kernel_size_spin_box.value()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        kernel_size = self.edge_detection_window.canny_detector_kernel_spin_box.value()
+        lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
+        upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
+        variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), variance)
 
-        # Apply Canny edge detection
-        edges = cv2.Canny(gray, 10, 20)
+        edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
 
     def sobel(self, image):
