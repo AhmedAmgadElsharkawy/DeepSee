@@ -67,8 +67,20 @@ class EdgeDetectionController():
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
         sigma = 0
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
-        sobel_kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-        sobel_kernel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+        if kernel_size == 3:
+            sobel_kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+            sobel_kernel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+        else:
+            sobel_kernel_x = np.array([[2, 1, 0, -1, -2],
+                            [3, 2, 0, -2, -3],
+                            [4, 3, 0, -3, -4],
+                            [3, 2, 0, -2, -3],
+                            [2, 1, 0, -1, -2]])
+            sobel_kernel_y = np.array([[2, 3, 4, 3, 2],
+                            [1, 2, 3, 2, 1],
+                            [0, 0, 0, 0, 0],
+                            [-1, -2, -3, -2, -1],
+                            [-2, -3, -4, -3, -2]])
         sobel_x = self.convolution(image, sobel_kernel_x)
         sobel_y = self.convolution(image, sobel_kernel_y)
 
