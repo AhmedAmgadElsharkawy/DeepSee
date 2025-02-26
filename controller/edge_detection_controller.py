@@ -24,11 +24,24 @@ class EdgeDetectionController():
     def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
-        prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
-        prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
-        prewitt_x = cv2.filter2D(image, cv2.CV_32F, prewitt_kernel_x)
-        prewitt_y = cv2.filter2D(image, cv2.CV_32F, prewitt_kernel_y)
+        # image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+        if kernel_size == 3:
+            prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
+            prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
+        else:
+            prewitt_kernel_x = np.array([[2, 1, 0, -1, -2],
+                            [2, 1, 0, -1, -2],
+                            [2, 1, 0, -1, -2],
+                            [2, 1, 0, -1, -2],
+                            [2, 1, 0, -1, -2]])
+
+            prewitt_kernel_y = np.array([[2, 2, 2, 2, 2],
+                            [1, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0],
+                            [-1, -1, -1, -1, -1],
+                            [-2, -2, -2, -2, -2]])
+        prewitt_x = self.convolution(image, prewitt_kernel_x)
+        prewitt_y = self.convolution(image, prewitt_kernel_y)
         magnitude = np.sqrt(np.square(prewitt_x) + np.square(prewitt_y))
         prewitt_magnitude = (
             exposure.rescale_intensity(magnitude, in_range="image", out_range=(0, 255))
@@ -54,10 +67,10 @@ class EdgeDetectionController():
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
         sigma = 0
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
-        sobel_x_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-        sobel_y_kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
-        sobel_x = cv2.filter2D(image, cv2.CV_32F, sobel_x_kernel)
-        sobel_y = cv2.filter2D(image, cv2.CV_32F, sobel_y_kernel)
+        sobel_kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+        sobel_kernel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+        sobel_x = self.convolution(image, sobel_kernel_x)
+        sobel_y = self.convolution(image, sobel_kernel_y)
 
         phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
         phase[phase < 0] += 180
@@ -94,3 +107,27 @@ class EdgeDetectionController():
             return sobel_magnitude
         else:
             raise ValueError("Invalid direction. Please use x, y or both.")
+        
+    def convolution(self, image, kernel):
+        img_height, img_width = image.shape
+        kernel_height, kernel_width = kernel.shape
+
+        # Compute padding size
+        pad_h = kernel_height // 2
+        pad_w = kernel_width // 2
+
+        # Pad the image (zero-padding)
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
+
+        # Initialize output image
+        output = np.zeros((img_height, img_width), dtype=np.float32)
+
+        # Perform convolution
+        for i in range(img_height):
+            for j in range(img_width):
+                # Extract the region
+                region = padded_image[i:i + kernel_height, j:j + kernel_width]
+                # Compute the sum of element-wise multiplication
+                output[i, j] = np.sum(region * kernel)
+
+        return output
