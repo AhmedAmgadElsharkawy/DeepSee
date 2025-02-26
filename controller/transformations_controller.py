@@ -60,8 +60,8 @@ class TransformationsController():
         self.transformations_window.transformed_image_histogram_graph.plot(transformed_histogram, pen="b", clear=True)
         self.transformations_window.transformed_image_cdf_graph.plot(transformed_cdf, pen="r", clear=True)
 
-
-    def grayscale_image(self, image):
+    @staticmethod
+    def grayscale_image(image):
         return np.dot(image[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
     
     def grayscale_histogram(self, image, min_range=0, max_range=256):
