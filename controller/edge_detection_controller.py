@@ -14,7 +14,7 @@ class EdgeDetectionController():
         elif type == "Roberts Detector":
             print("ROB")
         elif type == "Prewitt Detector":
-            result = self.prewitt(image)
+            result = self.prewitt_edge_detection(image)
         else:
             result = self.canny(image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
@@ -53,3 +53,73 @@ class EdgeDetectionController():
         # Apply Canny edge detection
         edges = cv2.Canny(gray, 10, 20)
         return edges
+    
+    def convolve2D(self, image, kernel):
+        """
+        Perform 2D convolution of an image with a kernel.
+        
+        Args:
+            image (numpy.ndarray): Input image (2D array).
+            kernel (numpy.ndarray): Convolution kernel (2D array).
+        
+        Returns:
+            numpy.ndarray: Convolved image.
+        """
+        img_height, img_width = image.shape
+        kernel_height, kernel_width = kernel.shape
+
+        # Calculate padding size
+        pad_h = kernel_height // 2
+        pad_w = kernel_width // 2
+
+        # Pad the image
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant')
+
+        # Initialize output array
+        output = np.zeros_like(image, dtype=np.float32)
+
+        print(img_height, img_width)
+
+        # Perform convolution
+        for i in range(kernel_height):
+            for j in range(kernel_width):
+                output += kernel[i, j] * padded_image[i:i + img_height, j:j + img_width]
+
+        return output
+
+    def prewitt_edge_detection(self, image):
+        """
+        Perform Prewitt edge detection on an image.
+        
+        Args:
+            image (numpy.ndarray): Input image (3D array, BGR format).
+        
+        Returns:
+            numpy.ndarray: Edge-detected image (2D array).
+        """
+        # Convert to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Define Prewitt kernels
+        prewitt_x = np.array([[-1, 0, 1], 
+                            [-1, 0, 1], 
+                            [-1, 0, 1]], dtype=np.float32)
+
+        prewitt_y = np.array([[-1, -1, -1], 
+                            [0, 0, 0], 
+                            [1, 1, 1]], dtype=np.float32)
+
+        # Apply convolution
+        grad_x = self.convolve2D(gray, prewitt_x)
+        grad_y = self.convolve2D(gray, prewitt_y)
+
+        # Compute gradient magnitude
+        prewitt_edges = np.sqrt(grad_x**2 + grad_y**2)
+
+        # Normalize to 0-255
+        if prewitt_edges.max() > 0:
+            prewitt_edges = (prewitt_edges / prewitt_edges.max() * 255).astype(np.uint8)
+        else:
+            prewitt_edges = np.zeros_like(prewitt_edges, dtype=np.uint8)
+
+        return prewitt_edges
