@@ -12,6 +12,8 @@ class NoiseController():
             result = self.add_gaussian_noise(gray_image)
         elif type == "Uniform Noise":
             result = self.add_uniform_noise(gray_image)
+        else:
+            result = self.add_salt_and_pepper_noise(gray_image)
         self.noise_window.output_image_viewer.display_and_set_image_matrix(result)
 
     def add_gaussian_noise(self, image):
@@ -28,3 +30,20 @@ class NoiseController():
         noisy_image = image.astype(np.float32) + noise  # Add noise to image
         noisy_image = np.clip(noisy_image, 0, 255)  # Ensure valid pixel range
         return noisy_image.astype(np.uint8)
+    
+    def add_salt_and_pepper_noise(self, image):
+        noisy_image = image.copy()
+        salt = self.noise_window.salt_probability_spin_box.value()
+        pepper = self.noise_window.pepper_probability_spin_box.value()
+        num_of_salt_pixels = int(salt * image.size)  # Total pixels to be modified
+        num_of_pepper_pixels = int(pepper * image.size) 
+
+        # Add salt (white) noise
+        coords = [np.random.randint(0, i - 1, num_of_salt_pixels) for i in image.shape]
+        noisy_image[coords[0], coords[1]] = 255
+
+        # Add pepper (black) noise
+        coords = [np.random.randint(0, i - 1, num_of_pepper_pixels) for i in image.shape]
+        noisy_image[coords[0], coords[1]] = 0
+
+        return noisy_image
