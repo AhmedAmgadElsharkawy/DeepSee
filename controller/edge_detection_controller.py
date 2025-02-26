@@ -15,7 +15,7 @@ class EdgeDetectionController():
             print("ROB")
         elif type == "Prewitt Detector":
             result = self.prewitt(image)
-        self.edge_detection_window.output_image_viewer.display_image_matrix(result)
+        self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
 
     def sobel(self, image):
         # Apply Sobel operator in X and Y directions
