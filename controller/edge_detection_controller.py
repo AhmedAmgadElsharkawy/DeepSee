@@ -12,18 +12,17 @@ class EdgeDetectionController():
         image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
         gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
         if type == "Sobel Detector":
-            result = self.sobel(image, gray_image)
+            result = self.sobel(gray_image)
         elif type == "Roberts Detector":
-            result = self.roberts(image)
+            result = self.roberts(gray_image)
         elif type == "Prewitt Detector":
-            result = self.prewitt(image)
+            result = self.prewitt(gray_image)
         else:
-            result = self.canny(image)
+            result = self.canny(gray_image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
     
     def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
         if kernel_size == 3:
             prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
@@ -55,14 +54,12 @@ class EdgeDetectionController():
         lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
         upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
         variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), variance)
 
         edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
 
-    def sobel(self, image, gray):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    def sobel(self, image):
         kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
         sigma = 0
@@ -123,7 +120,6 @@ class EdgeDetectionController():
     def roberts(self, image):
         """Applies the Roberts Cross edge detection filter."""
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
         # Define Roberts kernels
