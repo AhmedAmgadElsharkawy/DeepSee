@@ -10,11 +10,10 @@ class EdgeDetectionController():
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
         image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
-        kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         if type == "Sobel Detector":
             result = self.sobel(image)
         elif type == "Roberts Detector":
-            print("ROB")
+            result = self.roberts(image)
         elif type == "Prewitt Detector":
             result = self.prewitt(image)
         else:
@@ -119,6 +118,32 @@ class EdgeDetectionController():
             return sobel_magnitude
         else:
             raise ValueError("Invalid direction. Please use x, y or both.")
+        
+    def roberts(self, image):
+        """Applies the Roberts Cross edge detection filter."""
+        kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+
+        # Define Roberts kernels
+        roberts_x = np.array([[1, 0], [0, -1]])
+        roberts_y = np.array([[0, 1], [-1, 0]])
+
+        # Apply convolution
+        grad_x = self.convolution(image, roberts_x)
+        grad_y = self.convolution(image, roberts_y)
+
+        # Compute gradient magnitude
+        magnitude = np.sqrt(grad_x**2 + grad_y**2)
+        magnitude = (
+                exposure.rescale_intensity(
+                    magnitude, in_range="image", out_range=(0, 255)
+                )
+                .clip(0, 255)
+                .astype(np.uint8)
+            )
+
+        return magnitude
         
     def convolution(self, image, kernel):
         img_height, img_width = image.shape
