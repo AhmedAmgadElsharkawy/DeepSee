@@ -10,8 +10,9 @@ class EdgeDetectionController():
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
         image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
+        gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
         if type == "Sobel Detector":
-            result = self.sobel(image)
+            result = self.sobel(image, gray_image)
         elif type == "Roberts Detector":
             result = self.roberts(image)
         elif type == "Prewitt Detector":
@@ -60,7 +61,7 @@ class EdgeDetectionController():
         edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
 
-    def sobel(self, image):
+    def sobel(self, image, gray):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
