@@ -15,6 +15,8 @@ class EdgeDetectionController():
             print("ROB")
         elif type == "Prewitt Detector":
             result = self.prewitt(image)
+        else:
+            result = self.canny(image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
 
     def sobel(self, image):
@@ -44,3 +46,10 @@ class EdgeDetectionController():
         prewitt_combined = np.sqrt(edge_x**2 + edge_y**2)
         prewitt_combined = (prewitt_combined / np.max(prewitt_combined) * 255).astype(np.uint8) 
         return prewitt_combined
+    
+    def canny(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Apply Canny edge detection
+        edges = cv2.Canny(gray, 10, 20)
+        return edges
