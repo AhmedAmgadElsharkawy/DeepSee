@@ -10,13 +10,11 @@ class TransformationsController():
 
     def apply_transformation(self):
         """Applies the selected transformation and updates the UI."""
-        print("Transformation applied")
-
         # Get the selected transformation type
         transformation_type = self.transformations_window.transformation_type_custom_combo_box.current_text()
 
         # Get input image from the UI
-        input_image = self.transformations_window.input_image_viewer.get_image()
+        input_image = self.transformations_window.input_image_viewer.image_model.get_image_matrix()
 
         if input_image is None:
             print("No image loaded")
@@ -25,23 +23,26 @@ class TransformationsController():
         transformed_image = None
 
         if transformation_type == "Grayscale":
-            transformed_image = self.grayScale_image(input_image)
+            transformed_image = self.grayscale_image(input_image)
         elif transformation_type == "Equalization":
-            transformed_image = self.get_equalized_image(input_image)
+            transformed_image = self.equalize_image(input_image)
         elif transformation_type == "Normalization":
             transformed_image = self.normalize_image(input_image)
 
         if transformed_image is not None:
             self.update_ui(input_image, transformed_image)
 
+        print(f"{transformation_type} applied")
+
+
     def update_ui(self, original, transformed):
         """Updates the UI with the transformed image and histograms."""
-        # Convert images to QPixmap and display in image viewers
-        self.transformations_window.input_image_viewer.setImage((original))
-        self.transformations_window.output_image_viewer.setImage((transformed))
+
+        self.transformations_window.input_image_viewer.display_and_set_image_matrix((original))
+        self.transformations_window.output_image_viewer.display_and_set_image_matrix((transformed))
 
         # Compute and update histograms and CDFs
-        self.update_histograms(original, transformed)
+        # self.update_histograms(original, transformed)
 
     def update_histograms(self, original, transformed):
         """Updates histograms and CDFs in the UI."""
@@ -60,10 +61,10 @@ class TransformationsController():
         self.transformations_window.transformed_image_cdf_graph.plot(transformed_cdf, pen="r", clear=True)
 
 
-    def grayScale_image(self, image):
+    def grayscale_image(self, image):
         return np.dot(image[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
     
-    def grayScale_histogram(self, image, min_range=0, max_range=256):
+    def grayscale_histogram(self, image, min_range=0, max_range=256):
         histogram, _ = np.histogram(image.flatten(), bins=256, range=(min_range, max_range))
         return histogram
     
@@ -76,13 +77,13 @@ class TransformationsController():
     # Get histogram of an image
     def get_histogram(self, image, min_range=0, max_range=256):
         if len(image.shape) == 2:  # Grayscale image
-            return self.grayScale_histogram(image)
+            return self.grayscale_histogram(image)
         elif len(image.shape) == 3:  # RGB image
             return self.rgb_histogram(image)
         return image
     
-    def grayScale_cdf(self, image):
-        histogram = self.grayScale_histogram(image)
+    def grayscale_cdf(self, image):
+        histogram = self.grayscale_histogram(image)
         cdf = histogram.cumsum()
         cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())  # Normalize CDF
         return cdf_normalized.astype(np.uint8)
@@ -100,13 +101,13 @@ class TransformationsController():
     # Get CDF of an image
     def get_cdf(self, image):
             if len(image.shape) == 2:
-                return self.grayScale_cdf(image)  
+                return self.grayscale_cdf(image)  
             elif len(image.shape) == 3:
                 return self.rgb_cdf(image)
             return image
             
-    def equalize_grayScale(self, image):
-        histogram = self.grayScale_histogram(image)
+    def equalize_grayscale(self, image):
+        histogram = self.grayscale_histogram(image)
         # Calculate cumulative distribution function (CDF)
         cdf = histogram.copy()
         cdf = np.cumsum(cdf)
@@ -151,7 +152,7 @@ class TransformationsController():
         return equalized_image
         
     # Get the equalized image
-    def get_equalized_image(self, image):
+    def equalize_image(self, image):
         if len(image.shape) == 2:
             image = self.equalize_grayscale(image)
         elif len(image.shape) == 3:
