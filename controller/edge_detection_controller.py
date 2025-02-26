@@ -10,8 +10,9 @@ class EdgeDetectionController():
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
         image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
+        kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         if type == "Sobel Detector":
-            result = self.sobel_edge_detection(image)
+            result = self.sobel(image)
         elif type == "Roberts Detector":
             print("ROB")
         elif type == "Prewitt Detector":
@@ -20,9 +21,9 @@ class EdgeDetectionController():
             result = self.canny(image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
     
-    def prewitt(self, image):
+    def prewitt(self, image, kernel_size):
+        kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        kernel_size = 3
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
         prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
         prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
@@ -37,15 +38,16 @@ class EdgeDetectionController():
         return prewitt_magnitude
     
     def canny(self, image):
+        kernel_size = self.edge_detection_window.canny_detector_kernel_size_spin_box.value()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Apply Canny edge detection
         edges = cv2.Canny(gray, 10, 20)
         return edges
 
-    def sobel_edge_detection(self, image):
+    def sobel(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        kernel_size = 3
+        kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         sigma = 0
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
         sobel_x_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
