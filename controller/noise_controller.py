@@ -33,8 +33,8 @@ class NoiseController():
     
     def add_salt_and_pepper_noise(self, image):
         noisy_image = image.copy()
-        salt = self.noise_window.salt_probability_spin_box.value()
-        pepper = self.noise_window.pepper_probability_spin_box.value()
+        salt = self.noise_window.salt_probability_spin_box.value() / 100
+        pepper = self.noise_window.pepper_probability_spin_box.value() / 100
         num_of_salt_pixels = int(salt * image.size)
         num_of_pepper_pixels = int(pepper * image.size) 
 
