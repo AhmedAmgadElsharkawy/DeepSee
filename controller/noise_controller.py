@@ -20,29 +20,27 @@ class NoiseController():
         mean = self.noise_window.guassian_noise_mean_spin_box.value()
         sigma = self.noise_window.guassian_noise_variance_spin_box.value()
         noise = np.random.normal(mean, sigma, image.shape).astype(np.float32)
-        noisy_image = image.astype(np.float32) + noise  # Add noise to image
-        noisy_image = np.clip(noisy_image, 0, 255)  # Clip values to valid range
+        noisy_image = image.astype(np.float32) + noise
+        noisy_image = np.clip(noisy_image, 0, 255)
         return noisy_image.astype(np.uint8)
     
     def add_uniform_noise(self, image):
         noise_level = self.noise_window.noise_value_spin_box.value()
         noise = np.random.uniform(-noise_level, noise_level, image.shape).astype(np.float32)
-        noisy_image = image.astype(np.float32) + noise  # Add noise to image
-        noisy_image = np.clip(noisy_image, 0, 255)  # Ensure valid pixel range
+        noisy_image = image.astype(np.float32) + noise
+        noisy_image = np.clip(noisy_image, 0, 255)
         return noisy_image.astype(np.uint8)
     
     def add_salt_and_pepper_noise(self, image):
         noisy_image = image.copy()
         salt = self.noise_window.salt_probability_spin_box.value()
         pepper = self.noise_window.pepper_probability_spin_box.value()
-        num_of_salt_pixels = int(salt * image.size)  # Total pixels to be modified
+        num_of_salt_pixels = int(salt * image.size)
         num_of_pepper_pixels = int(pepper * image.size) 
 
-        # Add salt (white) noise
         coords = [np.random.randint(0, i - 1, num_of_salt_pixels) for i in image.shape]
         noisy_image[coords[0], coords[1]] = 255
 
-        # Add pepper (black) noise
         coords = [np.random.randint(0, i - 1, num_of_pepper_pixels) for i in image.shape]
         noisy_image[coords[0], coords[1]] = 0
 

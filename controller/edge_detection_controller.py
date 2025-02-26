@@ -23,7 +23,7 @@ class EdgeDetectionController():
     
     def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
-        # image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+
         if kernel_size == 3:
             prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
             prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
@@ -114,23 +114,17 @@ class EdgeDetectionController():
                 .astype(np.uint8)
             )
             return sobel_magnitude
-        else:
-            raise ValueError("Invalid direction. Please use x, y or both.")
         
     def roberts(self, image):
-        """Applies the Roberts Cross edge detection filter."""
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
-        # Define Roberts kernels
         roberts_x = np.array([[1, 0], [0, -1]])
         roberts_y = np.array([[0, 1], [-1, 0]])
 
-        # Apply convolution
         grad_x = self.convolution(image, roberts_x)
         grad_y = self.convolution(image, roberts_y)
 
-        # Compute gradient magnitude
         magnitude = np.sqrt(grad_x**2 + grad_y**2)
         magnitude = (
                 exposure.rescale_intensity(
@@ -146,22 +140,16 @@ class EdgeDetectionController():
         img_height, img_width = image.shape
         kernel_height, kernel_width = kernel.shape
 
-        # Compute padding size
         pad_h = kernel_height // 2
         pad_w = kernel_width // 2
 
-        # Pad the image (zero-padding)
         padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
 
-        # Initialize output image
         output = np.zeros((img_height, img_width), dtype=np.float32)
 
-        # Perform convolution
         for i in range(img_height):
             for j in range(img_width):
-                # Extract the region
                 region = padded_image[i:i + kernel_height, j:j + kernel_width]
-                # Compute the sum of element-wise multiplication
                 output[i, j] = np.sum(region * kernel)
 
         return output
