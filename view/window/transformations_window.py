@@ -54,15 +54,15 @@ class TransformationsWindow(BasicStackedWindow):
         self.orignal_image_pdf_graph = pg.PlotWidget(title="Original PDF")
         self.orignal_image_cdf_graph = pg.PlotWidget(title="Original CDF")
         self.orignal_image_graphs_container_layout.addWidget(self.orignal_image_histogram_graph)
-        self.orignal_image_graphs_container_layout.addWidget(self.orignal_image_pdf_graph)
-        # self.orignal_image_graphs_container_layout.addWidget(self.orignal_image_cdf_graph)
+        # self.orignal_image_graphs_container_layout.addWidget(self.orignal_image_pdf_graph)
+        self.orignal_image_graphs_container_layout.addWidget(self.orignal_image_cdf_graph)
 
         self.transformed_image_histogram_graph = pg.PlotWidget(title="Transformed Histogram")
         self.transformed_image_pdf_graph = pg.PlotWidget(title="Transformed PDF")
         self.transformed_image_cdf_graph = pg.PlotWidget(title="Transformed CDF")
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_histogram_graph)
-        self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_pdf_graph)
-        # self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_cdf_graph)
+        # self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_pdf_graph)
+        self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_cdf_graph)
 
         for graph in [self.orignal_image_histogram_graph, self.orignal_image_pdf_graph, self.orignal_image_cdf_graph,self.transformed_image_cdf_graph,self.transformed_image_histogram_graph,self.transformed_image_pdf_graph]:
             graph.showGrid(x=True, y=True)

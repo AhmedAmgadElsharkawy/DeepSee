@@ -43,23 +43,82 @@ class TransformationsController():
         self.transformations_window.output_image_viewer.display_and_set_image_matrix((transformed))
 
         # Compute and update histograms and CDFs
-        # self.update_histograms(original, transformed)
+        self.update_histograms(original, transformed)
 
     def update_histograms(self, original, transformed):
-        """Updates histograms and CDFs in the UI."""
+        # Compute histograms
         original_histogram = self.get_histogram(original)
         transformed_histogram = self.get_histogram(transformed)
-
+        
+        # Compute CDFs
         original_cdf = self.get_cdf(original)
         transformed_cdf = self.get_cdf(transformed)
 
-        # Update original image histograms
-        self.transformations_window.orignal_image_histogram_graph.plot(original_histogram, pen="b", clear=True)
-        self.transformations_window.orignal_image_cdf_graph.plot(original_cdf, pen="r", clear=True)
+        # Debugging output
+        print(f"Original Histogram Length: {len(original_histogram)}")
+        print(f"Transformed Histogram Length: {len(transformed_histogram)}")
+        print(f"Original CDF Length: {len(original_cdf)}")
+        print(f"Transformed CDF Length: {len(transformed_cdf)}")
 
-        # Update transformed image histograms
-        self.transformations_window.transformed_image_histogram_graph.plot(transformed_histogram, pen="b", clear=True)
-        self.transformations_window.transformed_image_cdf_graph.plot(transformed_cdf, pen="r", clear=True)
+        # Check if original is color (3 channels)
+        if len(original_histogram) == 3:
+            blue_hist_orig, green_hist_orig, red_hist_orig = original_histogram
+            blue_cdf_orig, green_cdf_orig, red_cdf_orig = original_cdf
+        else:
+            raise ValueError(f"Unexpected original histogram format: {len(original_histogram)}")
+
+        # Check if transformed is grayscale or color
+        if len(transformed_histogram) == 3:
+            blue_hist_trans, green_hist_trans, red_hist_trans = transformed_histogram
+            blue_cdf_trans, green_cdf_trans, red_cdf_trans = transformed_cdf
+        elif len(transformed_histogram) == 256:  # Grayscale case
+            gray_hist_trans = transformed_histogram
+            gray_cdf_trans = transformed_cdf
+        else:
+            raise ValueError(f"Unexpected transformed histogram format: {len(transformed_histogram)}")
+
+        # Convert to NumPy arrays
+        blue_hist_orig, green_hist_orig, red_hist_orig = map(np.array, [blue_hist_orig, green_hist_orig, red_hist_orig])
+        blue_cdf_orig, green_cdf_orig, red_cdf_orig = map(np.array, [blue_cdf_orig, green_cdf_orig, red_cdf_orig])
+
+        # Clear previous plots
+        self.transformations_window.orignal_image_histogram_graph.clear()
+        self.transformations_window.transformed_image_histogram_graph.clear()
+        self.transformations_window.orignal_image_cdf_graph.clear()
+        self.transformations_window.transformed_image_cdf_graph.clear()
+
+        # Plot original histograms
+        self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b", name="Blue (Original)")
+        self.transformations_window.orignal_image_histogram_graph.plot(green_hist_orig, pen="g", name="Green (Original)")
+        self.transformations_window.orignal_image_histogram_graph.plot(red_hist_orig, pen="r", name="Red (Original)")
+
+        # Plot original CDFs
+        self.transformations_window.orignal_image_cdf_graph.plot(blue_cdf_orig, pen="b", name="Blue CDF (Original)")
+        self.transformations_window.orignal_image_cdf_graph.plot(green_cdf_orig, pen="g", name="Green CDF (Original)")
+        self.transformations_window.orignal_image_cdf_graph.plot(red_cdf_orig, pen="r", name="Red CDF (Original)")
+
+        # Plot transformed histogram (color or grayscale)
+        if len(transformed_histogram) == 3:  # Color image case
+            blue_hist_trans, green_hist_trans, red_hist_trans = map(np.array, [blue_hist_trans, green_hist_trans, red_hist_trans])
+            blue_cdf_trans, green_cdf_trans, red_cdf_trans = map(np.array, [blue_cdf_trans, green_cdf_trans, red_cdf_trans])
+
+            self.transformations_window.transformed_image_histogram_graph.plot(blue_hist_trans, pen="b", name="Blue (Transformed)")
+            self.transformations_window.transformed_image_histogram_graph.plot(green_hist_trans, pen="g", name="Green (Transformed)")
+            self.transformations_window.transformed_image_histogram_graph.plot(red_hist_trans, pen="r", name="Red (Transformed)")
+
+            # Plot transformed CDFs
+            self.transformations_window.transformed_image_cdf_graph.plot(blue_cdf_trans, pen="b", name="Blue CDF (Transformed)")
+            self.transformations_window.transformed_image_cdf_graph.plot(green_cdf_trans, pen="g", name="Green CDF (Transformed)")
+            self.transformations_window.transformed_image_cdf_graph.plot(red_cdf_trans, pen="r", name="Red CDF (Transformed)")
+
+        else:  # Grayscale case
+            gray_hist_trans = np.array(gray_hist_trans)
+            gray_cdf_trans = np.array(gray_cdf_trans)
+
+            self.transformations_window.transformed_image_histogram_graph.plot(gray_hist_trans, pen="k", name="Grayscale (Transformed)")
+            self.transformations_window.transformed_image_cdf_graph.plot(gray_cdf_trans, pen="k", name="Grayscale CDF (Transformed)")
+
+        
 
     @staticmethod
     def grayscale_image(image):
@@ -76,12 +135,14 @@ class TransformationsController():
         return blue_histogram, green_histogram, red_histogram
 
     # Get histogram of an image
-    def get_histogram(self, image, min_range=0, max_range=256):
+    def get_histogram(self, image):
         if len(image.shape) == 2:  # Grayscale image
             return self.grayscale_histogram(image)
         elif len(image.shape) == 3:  # RGB image
             return self.rgb_histogram(image)
         return image
+        # image = self.grayscale_image(image)
+        # return self.grayscale_histogram(image)
     
     def grayscale_cdf(self, image):
         histogram = self.grayscale_histogram(image)
@@ -101,11 +162,11 @@ class TransformationsController():
 
     # Get CDF of an image
     def get_cdf(self, image):
-            if len(image.shape) == 2:
-                return self.grayscale_cdf(image)  
-            elif len(image.shape) == 3:
-                return self.rgb_cdf(image)
-            return image
+        if len(image.shape) == 2:
+            return self.grayscale_cdf(image)  
+        elif len(image.shape) == 3:
+            return self.rgb_cdf(image)
+        return image
             
     def equalize_grayscale(self, image):
         histogram = self.grayscale_histogram(image)
