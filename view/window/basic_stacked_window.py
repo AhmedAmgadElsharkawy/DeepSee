@@ -7,8 +7,9 @@ from view.widget.image_viewer import ImageViewer
 
 
 class BasicStackedWindow(QWidget):
-    def __init__(self, header_text=""):
+    def __init__(self, main_window, header_text=""):
         super().__init__()
+        self.main_window = main_window
 
         self.central_layout = QVBoxLayout(self)
         self.central_layout.setContentsMargins(10, 10, 10, 10)

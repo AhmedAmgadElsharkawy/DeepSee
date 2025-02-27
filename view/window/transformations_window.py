@@ -10,8 +10,8 @@ from view.widget.image_viewer import ImageViewer
 from controller.transformations_controller import TransformationsController
 
 class TransformationsWindow(BasicStackedWindow):
-    def __init__(self):
-        super().__init__("Transformations")
+    def __init__(self, main_window):
+        super().__init__(main_window, "Transformations")
 
         self.image_viewers_container.deleteLater()
 

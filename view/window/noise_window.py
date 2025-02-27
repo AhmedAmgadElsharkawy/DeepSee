@@ -7,8 +7,8 @@ from view.widget.custom_spin_box import CustomSpinBox
 from controller.noise_controller import NoiseController
 
 class NoiseWindow(BasicStackedWindow):
-    def __init__(self):
-        super().__init__("Noise")
+    def __init__(self, main_window):
+        super().__init__(main_window, "Noise")
 
         self.noise_type_custom_combo_box = CustomComboBox(label= "Noise Type",combo_box_items_list=["Uniform Noise","Gaussian Noise","Salt & Pepper Noise"])
         self.noise_type_custom_combo_box.currentIndexChanged.connect(self.on_noise_type_change)
