@@ -3,6 +3,17 @@ class HybridImageController():
     def __init__(self,hybrid_image_window):
         self.hybrid_image_window = hybrid_image_window
         self.hybrid_image_window.apply_button.clicked.connect(self.apply_image_mixing)
+        self.hybrid_image_window.first_image_filter_type_custom_combo_box.currentIndexChanged.connect(
+            lambda value: self.update_other_combo(self.hybrid_image_window.second_image_filter_type_custom_combo_box, value)
+        )
+        self.hybrid_image_window.second_image_filter_type_custom_combo_box.currentIndexChanged.connect(
+            lambda value: self.update_other_combo(self.hybrid_image_window.first_image_filter_type_custom_combo_box, value)
+        )
+
+    def update_other_combo(self, combo_box, value):
+        combo_box.combo_box.blockSignals(True)
+        combo_box.combo_box.setCurrentIndex(1 - value)
+        combo_box.combo_box.blockSignals(False)
 
     def apply_image_mixing(self):
         filters = self.hybrid_image_window.main_window.filters_window.filters_controller
