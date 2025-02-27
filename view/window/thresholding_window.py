@@ -10,7 +10,7 @@ class ThresholdingWindow(BasicStackedWindow):
     def __init__(self, main_window):
         super().__init__(main_window, "Thresholding")
 
-        self.thresholding_type_custom_combo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Optimal Thresholding","Otsu Thresholding","Spectral Thresholding"])
+        self.thresholding_type_custom_combo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Optimal Thresholding","Otsu Thresholding","Spectral Thresholding", "Global Mean"])
         self.inputs_container_layout.addWidget(self.thresholding_type_custom_combo_box)
 
         self.thresholding_scope_custom_combo_box = CustomComboBox(label= "Thresholding Scope",combo_box_items_list=["Global Thresholding","Local Thresholding"])
