@@ -53,6 +53,10 @@ class TransformationsController():
         # Compute CDFs
         original_cdf = self.get_cdf(original)
         transformed_cdf = self.get_cdf(transformed)
+        
+        # Compute PDFs
+        original_pdf = self.get_pdf(original)
+        transformed_pdf = self.get_pdf(transformed)
 
         # Debugging output
         print(f"Original Histogram Length: {len(original_histogram)}")
@@ -86,6 +90,9 @@ class TransformationsController():
         self.transformations_window.transformed_image_histogram_graph.clear()
         self.transformations_window.orignal_image_cdf_graph.clear()
         self.transformations_window.transformed_image_cdf_graph.clear()
+        self.transformations_window.orignal_image_pdf_graph.clear()
+        self.transformations_window.transformed_image_pdf_graph.clear()
+
 
         # Plot original histograms
         self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b", name="Blue (Original)")
@@ -117,8 +124,25 @@ class TransformationsController():
 
             self.transformations_window.transformed_image_histogram_graph.plot(gray_hist_trans, pen="k", name="Grayscale (Transformed)")
             self.transformations_window.transformed_image_cdf_graph.plot(gray_cdf_trans, pen="k", name="Grayscale CDF (Transformed)")
-
         
+        # Plot PDF for original image
+        if len(original_pdf) == 3:  # RGB Image
+            blue_pdf_orig, green_pdf_orig, red_pdf_orig = original_pdf
+            self.transformations_window.orignal_image_pdf_graph.plot(blue_pdf_orig, pen="b", name="Blue PDF (Original)")
+            self.transformations_window.orignal_image_pdf_graph.plot(green_pdf_orig, pen="g", name="Green PDF (Original)")
+            self.transformations_window.orignal_image_pdf_graph.plot(red_pdf_orig, pen="r", name="Red PDF (Original)")
+        else:  # Grayscale Image
+            self.transformations_window.orignal_image_pdf_graph.plot(np.array(original_pdf), pen="k", name="Grayscale PDF (Original)")
+
+        # Plot PDF for transformed image
+        if len(transformed_pdf) == 3:  # RGB Image
+            blue_pdf_trans, green_pdf_trans, red_pdf_trans = transformed_pdf
+            self.transformations_window.transformed_image_pdf_graph.plot(blue_pdf_trans, pen="b", name="Blue PDF (Transformed)")
+            self.transformations_window.transformed_image_pdf_graph.plot(green_pdf_trans, pen="g", name="Green PDF (Transformed)")
+            self.transformations_window.transformed_image_pdf_graph.plot(red_pdf_trans, pen="r", name="Red PDF (Transformed)")
+        else:  # Grayscale Image
+            self.transformations_window.transformed_image_pdf_graph.plot(np.array(transformed_pdf), pen="k", name="Grayscale PDF (Transformed)")
+                
 
     @staticmethod
     def grayscale_image(image):
@@ -167,7 +191,31 @@ class TransformationsController():
         elif len(image.shape) == 3:
             return self.rgb_cdf(image)
         return image
-            
+
+    def grayscale_pdf(self, image):
+        histogram = self.grayscale_histogram(image)
+        total_pixels = image.size
+        pdf = histogram / total_pixels  # Normalize to probability
+        return pdf
+
+    def rgb_pdf(self, image):
+        """Computes the PDF for each RGB channel."""
+        blue_histogram, green_histogram, red_histogram = self.rgb_histogram(image)
+        total_pixels = image.shape[0] * image.shape[1]
+
+        blue_pdf = blue_histogram / total_pixels
+        green_pdf = green_histogram / total_pixels
+        red_pdf = red_histogram / total_pixels
+
+        return blue_pdf, green_pdf, red_pdf
+
+    def get_pdf(self, image):
+        """Returns the PDF of the given image."""
+        if len(image.shape) == 2:  # Grayscale
+            return self.grayscale_pdf(image)
+        elif len(image.shape) == 3:  # RGB
+            return self.rgb_pdf(image)
+
     def equalize_grayscale(self, image):
         histogram = self.grayscale_histogram(image)
         # Calculate cumulative distribution function (CDF)
