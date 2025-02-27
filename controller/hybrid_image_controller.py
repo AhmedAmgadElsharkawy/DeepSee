@@ -18,20 +18,20 @@ class HybridImageController():
         if image1 is not None:
             type1 = self.hybrid_image_window.first_image_filter_type_custom_combo_box.current_text()
             if type1 == "Low Pass Filter":
-                img1 = filters.apply_low_pass_filter(gray_image1, radius)
+                fft1, img1 = filters.apply_low_pass_filter(gray_image1, radius)
             else:
-                img1 = filters.apply_high_pass_filter(gray_image1, radius)
-            result = img1.copy()
+                fft1, img1 = filters.apply_high_pass_filter(gray_image1, radius)
+            result = fft1
         if image2 is not None:
             type2 = self.hybrid_image_window.second_image_filter_type_custom_combo_box.current_text()
             if type2 == "Low Pass Filter":
-                img2 = filters.apply_low_pass_filter(gray_image2, radius)
+                fft2, img2 = filters.apply_low_pass_filter(gray_image2, radius)
             else:
-                img2 = filters.apply_high_pass_filter(gray_image2, radius)
+                fft2, img2 = filters.apply_high_pass_filter(gray_image2, radius)
             if result is not None:
-                result += img2
+                result += fft2
             else:
-                result = img2
+                result = fft2
 
         if gray_image1 is not None:
             self.hybrid_image_window.first_filtered_image_viewer.display_image_matrix2(img1)
@@ -40,6 +40,7 @@ class HybridImageController():
             self.hybrid_image_window.second_filtered_image_viewer.display_image_matrix2(img2)
 
         if result is not None:
+            result = filters.compute_ifft(result)
             self.hybrid_image_window.hybrid_image_viewer.display_image_matrix2(result)
 
     def img_adjustment(self, image_1, image_2):
