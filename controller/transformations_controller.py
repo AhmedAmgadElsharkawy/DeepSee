@@ -171,19 +171,18 @@ class TransformationsController():
     def grayscale_cdf(self, image):
         histogram = self.grayscale_histogram(image)
         cdf = histogram.cumsum()
-        cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())  # Normalize CDF
-        return cdf_normalized.astype(np.uint8)
+        cdf_normalized = cdf / float(cdf.max())  # Normalize CDF
+        return cdf_normalized
     
     def rgb_cdf(self, image):
         """Computes the CDF for each RGB channel."""
         blue_histogram, green_histogram, red_histogram = self.rgb_histogram(image)
 
-        blue_cdf = (blue_histogram.cumsum() - blue_histogram.min()) * 255 / (blue_histogram.max() - blue_histogram.min())
-        green_cdf = (green_histogram.cumsum() - green_histogram.min()) * 255 / (green_histogram.max() - green_histogram.min())
-        red_cdf = (red_histogram.cumsum() - red_histogram.min()) * 255 / (red_histogram.max() - red_histogram.min())
+        blue_cdf = blue_histogram.cumsum() / float(blue_histogram.max())
+        green_cdf = green_histogram.cumsum() / float(green_histogram.max())
+        red_cdf = red_histogram.cumsum() / float(red_histogram.max())   
 
-        return blue_cdf.astype(np.uint8), green_cdf.astype(np.uint8), red_cdf.astype(np.uint8)
-
+        return blue_cdf, green_cdf, red_cdf
     # Get CDF of an image
     def get_cdf(self, image):
         if len(image.shape) == 2:
