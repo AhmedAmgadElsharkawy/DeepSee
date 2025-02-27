@@ -74,7 +74,6 @@ class ImageViewer(pg.ImageView):
         if self.save_image_button != None:
             self.save_image_button.setVisible(True)
         matrix_to_display = np.transpose(image_matrix)
-        print(matrix_to_display.shape)
         self.setImage(matrix_to_display)
 
     def display_and_set_image_matrix(self,image_matrix):

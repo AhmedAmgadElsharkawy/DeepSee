@@ -28,11 +28,11 @@ class FiltersController():
 
             elif filter_type == "Low Pass Filter":
                 raduis = self.filters_window.low_pass_filter_radius_spin_box.value()
-                filtered_img = self.apply_low_pass_filter(image, Raduis=raduis)
+                _, filtered_img = self.apply_low_pass_filter(image, Raduis=raduis)
 
             elif filter_type == "High Pass Filter":
                 raduis = self.filters_window.high_pass_filter_radius_spin_box.value()
-                filtered_img = self.apply_high_pass_filter(image, Radius=raduis)
+                _, filtered_img = self.apply_high_pass_filter(image, Radius=raduis)
             else:
 
                 print("Incorrect filter type")
@@ -150,10 +150,10 @@ class FiltersController():
         dft_shift = self.compute_fft(image)
         mask = self.create_lowpass_mask(image.shape, Raduis)
         dft_shift_filtered = dft_shift * mask
-        return self.compute_ifft(dft_shift_filtered)
+        return dft_shift_filtered, self.compute_ifft(dft_shift_filtered)
 
     def apply_high_pass_filter(self, image, Radius=2):
         dft_shift = self.compute_fft(image)
         mask = self.create_highpass_mask(image.shape, Radius)
         dft_shift_filtered = dft_shift * mask
-        return self.compute_ifft(dft_shift_filtered)
+        return dft_shift_filtered, self.compute_ifft(dft_shift_filtered)

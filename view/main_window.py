@@ -41,12 +41,12 @@ class MainWindow(QMainWindow):
             item.setIcon(QIcon(icon_path))
             self.list_widget.addItem(item)
 
-        self.nosie_window = NoiseWindow()
-        self.filters_window = FiltersWindow()
-        self.thresholding_window = ThresholdingWindow()
-        self.edge_detection_window = EdgeDetectionsWindow()
-        self.transformations_window = TransformationsWindow()
-        self.hybrid_image_widnow = HybridImageWindow()
+        self.nosie_window = NoiseWindow(self)
+        self.filters_window = FiltersWindow(self)
+        self.thresholding_window = ThresholdingWindow(self)
+        self.edge_detection_window = EdgeDetectionsWindow(self)
+        self.transformations_window = TransformationsWindow(self)
+        self.hybrid_image_widnow = HybridImageWindow(self)
 
         self.stackedWidget = QStackedWidget()
         self.stackedWidget.addWidget(self.nosie_window)

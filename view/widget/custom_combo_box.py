@@ -3,7 +3,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import pyqtSignal
 
 class CustomComboBox(QWidget):
-    currentIndexChanged = pyqtSignal()
+    currentIndexChanged = pyqtSignal(int) 
 
     def __init__(self, label="", combo_box_items_list=[]):
         super().__init__()
@@ -44,8 +44,8 @@ class CustomComboBox(QWidget):
             }
         """)
 
-    def on_combobox_change(self):
-        self.currentIndexChanged.emit()
+    def on_combobox_change(self, index):
+        self.currentIndexChanged.emit(index)
 
     def current_text(self):
         return self.combo_box.currentText()
