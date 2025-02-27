@@ -23,7 +23,7 @@ class EdgeDetectionController():
     
     def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
-
+        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
         if kernel_size == 3:
             prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
             prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
@@ -54,7 +54,7 @@ class EdgeDetectionController():
         lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
         upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
         variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
-        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), variance)
+        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size, variance)
 
         edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
@@ -62,7 +62,6 @@ class EdgeDetectionController():
     def sobel(self, image):
         kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
-        sigma = 0
         image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
         if kernel_size == 3:
             sobel_kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
@@ -117,7 +116,7 @@ class EdgeDetectionController():
         
     def roberts(self, image):
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
-        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
 
         roberts_x = np.array([[1, 0], [0, -1]])
         roberts_y = np.array([[0, 1], [-1, 0]])
