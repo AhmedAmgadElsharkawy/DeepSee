@@ -52,15 +52,13 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.canny_detector_kernel_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
         self.canny_detector_variance_spin_box = CustomSpinBox(label="Variance",range_start=0,range_end=100,initial_value=0,step_value=1)
         self.canny_detector_lower_threshold_spin_box = CustomSpinBox(label="Lower Threshold",range_start=0,range_end=100,initial_value=0,step_value=1)
-        self.canny_detector_upper_threshold_spin_box = CustomSpinBox(label="Upper Threshold",range_start=0,range_end=100,initial_value=0,step_value=1)
+        self.canny_detector_upper_threshold_spin_box = CustomSpinBox(label="Upper Threshold",range_start=0,range_end=150,initial_value=0,step_value=1)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_kernel_spin_box)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_variance_spin_box)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_lower_threshold_spin_box)
         self.canny_detector_inputs_container_layout.addWidget(self.canny_detector_upper_threshold_spin_box)
 
         self.edge_detection_controller = EdgeDetectionController(self)
-
-
         
     def on_edge_detector_type_change(self):
         self.hide_all_inputs()

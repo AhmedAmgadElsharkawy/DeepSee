@@ -9,6 +9,7 @@ class TransformationsController():
         self.transformations_window.apply_button.clicked.connect(self.apply_transformation)
 
     def apply_transformation(self):
+
         """Applies the selected transformation and updates the UI."""
         # Get the selected transformation type
         transformation_type = self.transformations_window.transformation_type_custom_combo_box.current_text()
@@ -192,3 +193,5 @@ class TransformationsController():
         elif len(image.shape) == 3:
             return self.normalize_rgb(image)
         return image  # Return unchanged if format is unknown
+    
+
