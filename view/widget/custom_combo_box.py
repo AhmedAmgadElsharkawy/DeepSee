@@ -52,3 +52,7 @@ class CustomComboBox(QWidget):
 
     def current_index(self):
         return self.combo_box.currentIndex()
+    def clear_iteams(self):
+        self.combo_box.clear()
+    def add_item(self, item):
+        self.combo_box.addItems(item)

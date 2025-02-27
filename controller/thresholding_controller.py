@@ -6,12 +6,21 @@ class ThresholdingController():
 
 
     def apply_thresholding(self):
-        filter_type = self.thresholding_window.thresholding_type_custom_combo_box.current_text()
+        thresholding_type = self.thresholding_window.thresholding_type_custom_combo_box.current_text()
         gray_image = self.thresholding_window.input_image_viewer.image_model.get_gray_image_matrix()
-        if filter_type == "Otsu Thresholding":
+        if thresholding_type == "Otsu Thresholding":
             thresholded_image = self.global_otsu(gray_image)
-        elif filter_type == "Global Mean":
+        elif thresholding_type == "Global Mean":
             thresholded_image = self.global_mean(gray_image)
+        elif thresholding_type=="Adaptive Mean":
+            kernel,constant=self.return_parammeters()
+            thresholded_image=self.adaptive_gaussian_threshold(gray_image,kernel_size=kernel,constant=constant)
+
+        elif thresholding_type=="Adaptive Gaussian":
+            kernel,constant=self.return_parammeters()
+            sigma=self.thresholding_window.variance_spin_box.value()
+            thresholded_image=self.adaptive_gaussian_threshold(gray_image,kernel_size=kernel,constant=constant,sigma=sigma)
+
         self.thresholding_window.output_image_viewer.display_and_set_image_matrix(thresholded_image)
 
     def global_otsu(self, image):
@@ -41,3 +50,68 @@ class ThresholdingController():
                     thresholded[i, j] = 0
 
         return thresholded
+
+    def return_parammeters(self):
+            kernel=self.thresholding_window.local_thresholding_window_size_spin_box.value()
+            constant=self.thresholding_window.local_thresholding_window_offset_spin_box.value()
+            return kernel,constant
+    def adaptive_mean_threshold(self, image, kernel_size=11, constant=2):
+
+        height, width = image.shape
+
+        output_image = np.zeros_like(image)
+
+        pad_size = kernel_size // 2
+        # Pading
+        padded_image = np.pad(image, pad_size, mode="reflect")
+        for y in range(height):
+            for x in range(width):
+
+                neighborhood = padded_image[y:y + kernel_size, x:x + kernel_size]
+
+                mean_value = np.mean(neighborhood)
+
+                # thresholding
+                if image[y, x] > (mean_value - constant):
+                    output_image[y, x] = 255
+                else:
+                    output_image[y, x] = 0
+
+        return output_image
+
+    def gaussian_kernel(self, size=3, sigma=1):
+        kernel = np.zeros((size, size), dtype=np.float32)
+        center = size // 2
+        sum = 0
+
+        # Gaussian values
+        for i in range(size):
+            for j in range(size):
+                x, y = i - center, j - center
+                kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2)) * 1 / (2 * np.pi * sigma**2)
+                sum += kernel[i, j]
+
+        return kernel / sum
+
+    def adaptive_gaussian_threshold(self, image, kernel_size=11, constant=2,sigma=1):
+
+        height, width = image.shape
+
+        output_image = np.zeros_like(image)
+        pad_size = kernel_size // 2
+        kernel=self.gaussian_kernel(kernel_size,sigma=sigma)
+
+        padded_image = np.pad(image, pad_size, mode="reflect")
+
+        for y in range(height):
+            for x in range(width):
+                neighborhood = padded_image[y:y + kernel_size, x:x + kernel_size]
+                mean_value = np.sum(neighborhood*kernel)
+                if image[y, x] > (mean_value - constant):
+                    output_image[y, x] = 255
+                else:
+                    output_image[y, x] = 0
+
+        return output_image
+
+
