@@ -66,20 +66,26 @@ class MainWindow(QMainWindow):
 
         self.setStyleSheet("""
             #list_widget {
-                background-color: #E5E5E5;
-                color: #888;
-                border-right: 2px solid #B0B0B0;
+                background-color: white;
+                color: #B0B0B0; 
+                border-right: 1px solid #E0E0E0;
             }
+
             #list_widget::item {
                 padding: 12px;
-                border-bottom: 1px solid #D0D0D0;
+                margin-top: 4px;
+                margin-bottom: 4px
             }
+
             #list_widget::item:selected {
-                background-color: #C0C0C0;
-                color: #444;
+                background-color: transparent;
+                color: #2D60FF; 
                 font-weight: bold;
+                border-left: 4px solid #2D60FF;
             }
-            #list_widget::item:hover {
-                background-color: #D0D0D0;
-            }           
+
+            #list_widget::item:hover:!selected {
+                background-color: #F8F8F8; 
+            }
         """)
+
