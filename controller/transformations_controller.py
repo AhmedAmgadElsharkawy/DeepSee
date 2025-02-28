@@ -181,15 +181,22 @@ class TransformationsController():
         return cdf_normalized
     
     def rgb_cdf(self, image):
-        """Computes the CDF for each RGB channel."""
         blue_histogram, green_histogram, red_histogram = self.rgb_histogram(image)
 
-        blue_cdf = blue_histogram.cumsum() / float(blue_histogram.max())
-        green_cdf = green_histogram.cumsum() / float(green_histogram.max())
-        red_cdf = red_histogram.cumsum() / float(red_histogram.max())   
+        blue_histogram = blue_histogram.astype(np.float64)
+        green_histogram = green_histogram.astype(np.float64)
+        red_histogram = red_histogram.astype(np.float64)
 
-        return blue_cdf, green_cdf, red_cdf
-    # Get CDF of an image
+        blue_cdf = np.cumsum(blue_histogram)
+        green_cdf = np.cumsum(green_histogram)
+        red_cdf = np.cumsum(red_histogram)
+
+        blue_cdf_normalized = blue_cdf / blue_cdf.max()
+        green_cdf_normalized = green_cdf / green_cdf.max()
+        red_cdf_normalized = red_cdf / red_cdf.max()
+
+        return blue_cdf_normalized, green_cdf_normalized, red_cdf_normalized
+    
     def get_cdf(self, image):
         if len(image.shape) == 2:
             return self.grayscale_cdf(image)  
