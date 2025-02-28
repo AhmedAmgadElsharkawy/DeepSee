@@ -9,6 +9,8 @@ class ImageModel:
 
     def load_image(self, file_path):
         self.image_matrix = cv2.imread(file_path)
+        # self.image_matrix = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+
         self.gray_image_matrix = TransformationsController.grayscale_image(self.image_matrix)
             
 

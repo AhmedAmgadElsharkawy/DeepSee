@@ -17,14 +17,15 @@ class TransformationsController():
 
         # Get input image from the UI
         input_image = self.transformations_window.input_image_viewer.image_model.get_image_matrix()
-
         if input_image is None:
             print("No image loaded")
             return
 
         transformed_image = None
 
-        if transformation_type == "Grayscale":
+        if transformation_type == "Grayscale" and  len(input_image.shape) == 2:
+            transformed_image = input_image
+        elif transformation_type == "Grayscale":
             transformed_image = self.grayscale_image(input_image)
         elif transformation_type == "Equalization":
             transformed_image = self.equalize_image(input_image)
@@ -69,6 +70,10 @@ class TransformationsController():
         if len(original_histogram) == 3:
             blue_hist_orig, green_hist_orig, red_hist_orig = original_histogram
             blue_cdf_orig, green_cdf_orig, red_cdf_orig = original_cdf
+        elif len(original_histogram) == 256:  # Grayscale case
+            gray_hist_orig = original_histogram
+            gray_cdf_orig = original_cdf
+            
         else:
             raise ValueError(f"Unexpected original histogram format: {len(original_histogram)}")
 
@@ -79,12 +84,11 @@ class TransformationsController():
         elif len(transformed_histogram) == 256:  # Grayscale case
             gray_hist_trans = transformed_histogram
             gray_cdf_trans = transformed_cdf
+       
         else:
             raise ValueError(f"Unexpected transformed histogram format: {len(transformed_histogram)}")
 
-        # Convert to NumPy arrays
-        blue_hist_orig, green_hist_orig, red_hist_orig = map(np.array, [blue_hist_orig, green_hist_orig, red_hist_orig])
-        blue_cdf_orig, green_cdf_orig, red_cdf_orig = map(np.array, [blue_cdf_orig, green_cdf_orig, red_cdf_orig])
+        
 
         # Clear previous plots
         self.transformations_window.orignal_image_histogram_graph.clear()
@@ -100,16 +104,28 @@ class TransformationsController():
         red_brush = pg.mkBrush(255, 0, 0, 100)    # Red with transparency
         gray_brush = pg.mkBrush(128, 128, 128, 150)  # Gray with transparency
 
-        # Plot original histograms
-        self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b",fillLevel = 0, brush = blue_brush, name="Blue (Original)")
-        self.transformations_window.orignal_image_histogram_graph.plot(green_hist_orig, pen="g",fillLevel = 0, brush = green_brush, name="Green (Original)")
-        self.transformations_window.orignal_image_histogram_graph.plot(red_hist_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red (Original)")
+        if len(original_histogram) == 3:  # Color image case
+            # Convert to NumPy arrays
+            blue_hist_orig, green_hist_orig, red_hist_orig = map(np.array, [blue_hist_orig, green_hist_orig, red_hist_orig])
+            blue_cdf_orig, green_cdf_orig, red_cdf_orig = map(np.array, [blue_cdf_orig, green_cdf_orig, red_cdf_orig])
+            
+            # Plot original histograms
+            self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b",fillLevel = 0, brush = blue_brush, name="Blue (Original)")
+            self.transformations_window.orignal_image_histogram_graph.plot(green_hist_orig, pen="g",fillLevel = 0, brush = green_brush, name="Green (Original)")
+            self.transformations_window.orignal_image_histogram_graph.plot(red_hist_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red (Original)")
 
-        # Plot original CDFs
-        self.transformations_window.orignal_image_cdf_graph.plot(blue_cdf_orig, pen="b", fillLevel = 0, brush = blue_brush, name="Blue CDF (Original)")
-        self.transformations_window.orignal_image_cdf_graph.plot(green_cdf_orig, pen="g", fillLevel = 0, brush = green_brush,name="Green CDF (Original)")
-        self.transformations_window.orignal_image_cdf_graph.plot(red_cdf_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red CDF (Original)")
+            # Plot original CDFs
+            self.transformations_window.orignal_image_cdf_graph.plot(blue_cdf_orig, pen="b", fillLevel = 0, brush = blue_brush, name="Blue CDF (Original)")
+            self.transformations_window.orignal_image_cdf_graph.plot(green_cdf_orig, pen="g", fillLevel = 0, brush = green_brush,name="Green CDF (Original)")
+            self.transformations_window.orignal_image_cdf_graph.plot(red_cdf_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red CDF (Original)")
+        else:  # Grayscale case
+            gray_hist_orig = np.array(gray_hist_orig)
+            gray_cdf_orig = np.array(gray_cdf_orig)
 
+            self.transformations_window.orignal_image_histogram_graph.plot(gray_hist_orig, pen="k", fillLevel = 0, brush = gray_brush, name="Grayscale (Transformed)")
+            self.transformations_window.orignal_image_cdf_graph.plot(gray_cdf_orig, pen="k", fillLevel = 0, brush = gray_brush, name="Grayscale CDF (Transformed)")
+        
+        
         # Plot transformed histogram (color or grayscale)
         if len(transformed_histogram) == 3:  # Color image case
             blue_hist_trans, green_hist_trans, red_hist_trans = map(np.array, [blue_hist_trans, green_hist_trans, red_hist_trans])
@@ -131,24 +147,6 @@ class TransformationsController():
             self.transformations_window.transformed_image_histogram_graph.plot(gray_hist_trans, pen="k", fillLevel = 0, brush = gray_brush, name="Grayscale (Transformed)")
             self.transformations_window.transformed_image_cdf_graph.plot(gray_cdf_trans, pen="k", fillLevel = 0, brush = gray_brush, name="Grayscale CDF (Transformed)")
         
-        # # Plot PDF for original image
-        # if len(original_pdf) == 3:  # RGB Image
-        #     blue_pdf_orig, green_pdf_orig, red_pdf_orig = original_pdf
-        #     self.transformations_window.orignal_image_pdf_graph.plot(blue_pdf_orig, pen="b", name="Blue PDF (Original)")
-        #     self.transformations_window.orignal_image_pdf_graph.plot(green_pdf_orig, pen="g", name="Green PDF (Original)")
-        #     self.transformations_window.orignal_image_pdf_graph.plot(red_pdf_orig, pen="r", name="Red PDF (Original)")
-        # else:  # Grayscale Image
-        #     self.transformations_window.orignal_image_pdf_graph.plot(np.array(original_pdf), pen="k", name="Grayscale PDF (Original)")
-
-        # # Plot PDF for transformed image
-        # if len(transformed_pdf) == 3:  # RGB Image
-        #     blue_pdf_trans, green_pdf_trans, red_pdf_trans = transformed_pdf
-        #     self.transformations_window.transformed_image_pdf_graph.plot(blue_pdf_trans, pen="b", name="Blue PDF (Transformed)")
-        #     self.transformations_window.transformed_image_pdf_graph.plot(green_pdf_trans, pen="g", name="Green PDF (Transformed)")
-        #     self.transformations_window.transformed_image_pdf_graph.plot(red_pdf_trans, pen="r", name="Red PDF (Transformed)")
-        # else:  # Grayscale Image
-        #     self.transformations_window.transformed_image_pdf_graph.plot(np.array(transformed_pdf), pen="k", name="Grayscale PDF (Transformed)")
-                
 
     @staticmethod
     def grayscale_image(image):
