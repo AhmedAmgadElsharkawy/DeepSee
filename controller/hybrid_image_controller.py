@@ -39,8 +39,8 @@ class HybridImageController():
             height = height_2
         else:
             height = height_1
-        adjusted_img1 = cv2.resize(image_1, (width, height))
-        adjusted_img2 = cv2.resize(image_2, (width, height))
+        adjusted_img1 = cv2.resize(image_1, (height, width))
+        adjusted_img2 = cv2.resize(image_2, (height, width))
         return adjusted_img1, adjusted_img2
     
     def calculate_ffts(self, image1, image2, filters):
