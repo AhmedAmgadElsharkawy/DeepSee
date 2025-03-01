@@ -31,14 +31,14 @@ class MainWindow(QMainWindow):
             ("Noise", "assets/icons/noise.png"),
             ("Filters", "assets/icons/filter.png"),
             ("Thresholding", "assets/icons/thresholding.png"),
-            ("Edge Detection", "assets/icons/edge.png"),
+            ("Edge Detection", "assets/icons/edge_detection.png"),
             ("Transformations", "assets/icons/transformations.png"),
             ("Hybrid Image", "assets/icons/hybrid_image.png")
         ]
 
         for name, icon_path in self.list_widget_items:
             item = QListWidgetItem(name)
-            icon = self.change_icon_color(icon_path,"#B1B1B1")
+            icon = self.change_icon_color(icon_path,original_color="black",new_color="#B1B1B1")
             item.setIcon(icon)
             self.list_widget.addItem(item)
 
@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
             #list_widget::item {
                 padding: 12px;
                 margin-top: 4px;
-                margin-bottom: 4px
+                margin-bottom: 4px;
             }
 
             #list_widget::item:selected {
@@ -91,27 +91,26 @@ class MainWindow(QMainWindow):
         """)
 
 
-    def change_icon_color(self,icon_path,color):
-        # note the image must have only one solid color to mask in a right way
+    def change_icon_color(self,icon_path,original_color,new_color):
+        # note the image must have only one solid color to mask it in a right way
         pixmap = QPixmap(icon_path)
-        background_color = QColor(pixmap.toImage().pixel(0, 0))  
-        mask = pixmap.createMaskFromColor(background_color, Qt.MaskOutColor)
-        pixmap.fill((QColor(color)))
+        mask = pixmap.createMaskFromColor(QColor(original_color), Qt.MaskOutColor)
+        pixmap.fill((QColor(new_color)))
         pixmap.setMask(mask)
         return QIcon(pixmap)
     
-    def on_sidebar_item_select(self):
+    def on_sidebar_item_select(self,index):
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
             icon_path = self.list_widget_items[i][1]
             
-            if i == self.list_widget.currentRow():
-                icon = self.change_icon_color(icon_path, "#2D60FF")
+            if i == index:
+                icon = self.change_icon_color(icon_path,original_color="black",new_color= "#2D60FF")
             else:
-                icon = self.change_icon_color(icon_path, "#B1B1B1")
+                icon = self.change_icon_color(icon_path,original_color="black", new_color="#B1B1B1")
             
             item.setIcon(icon)
 
-        self.stackedWidget.setCurrentIndex(self.list_widget.currentRow())
+        self.stackedWidget.setCurrentIndex(index)
 
 
