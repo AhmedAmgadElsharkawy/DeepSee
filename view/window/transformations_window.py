@@ -66,9 +66,9 @@ class TransformationsWindow(BasicStackedWindow):
 
         for graph in [self.orignal_image_histogram_graph, self.orignal_image_pdf_graph, self.orignal_image_cdf_graph,self.transformed_image_cdf_graph,self.transformed_image_histogram_graph,self.transformed_image_pdf_graph]:
             graph.showGrid(x=True, y=True)
-            graph.setBackground("#F5F5F5")
-            graph.getAxis("left").setPen("#333")
-            graph.getAxis("bottom").setPen("#333")
+            graph.setBackground("#FFFFFF")
+            graph.getAxis("left").setPen("#DFE5EE")
+            graph.getAxis("bottom").setPen("#DFE5EE")
             graph.getPlotItem().titleLabel.item.setFont(QFont("Arial"))
 
         self.transformations_controller = TransformationsController(self)
@@ -78,14 +78,6 @@ class TransformationsWindow(BasicStackedWindow):
             QLabel#header_label {
                 background-color: #f5f7fa;
             }
-            #transformed_image_graphs_container{   
-                border:2px solid gray;
-                border-radius:6px;
-                           }
-            #orignal_image_graphs_container{
-                border:2px solid gray;
-                border-radius:6px;           
-                }
             #apply_button {
             font-size: 18px;
             font-weight: bold;
