@@ -49,7 +49,7 @@ class FiltersWindow(BasicStackedWindow):
         self.low_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.low_pass_filter_inputs_container)
         self.low_pass_filter_inputs_container.setVisible(False)
-        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=9,initial_value=2,step_value=1)
+        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=180,initial_value=60,step_value=1)
         self.low_pass_filter_inputs_container_layout.addWidget(self.low_pass_filter_radius_spin_box)
 
         self.high_pass_filter_inputs_container = QWidget()
@@ -57,7 +57,7 @@ class FiltersWindow(BasicStackedWindow):
         self.high_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.high_pass_filter_inputs_container)
         self.high_pass_filter_inputs_container.setVisible(False)
-        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=9,initial_value=2,step_value=1)
+        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=180,initial_value=2,step_value=1)
         self.high_pass_filter_inputs_container_layout.addWidget(self.high_pass_filter_radius_spin_box)
 
         self.filters_controller = FiltersController(self)
