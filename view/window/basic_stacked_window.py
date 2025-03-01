@@ -22,7 +22,7 @@ class BasicStackedWindow(QWidget):
 
         self.header_label = QLabel(header_text)
         self.header_label.setObjectName("header_label")  # Set object name once
-        font = QFont("Arial", 24, QFont.Bold)
+        font = QFont("Inter", 28)
         self.header_label.setFont(font)
         self.header_label.setAlignment(Qt.AlignCenter)
 

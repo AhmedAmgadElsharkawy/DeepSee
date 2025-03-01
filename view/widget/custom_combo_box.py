@@ -19,7 +19,9 @@ class CustomComboBox(QWidget):
 
         self.combo_box_label = QLabel(label)
         self.combo_box_label.setObjectName("combo_box_label")
-        self.combo_box_label.setFont(QFont("Arial", 10, QFont.Bold))
+        font = QFont("Inter", 9)
+        font.setWeight(QFont.DemiBold)
+        self.combo_box_label.setFont(font)
         # self.combo_box_label.setAlignment(Qt.AlignCenter)
 
         self.combo_box = QComboBox()

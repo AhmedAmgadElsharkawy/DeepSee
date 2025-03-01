@@ -67,8 +67,8 @@ class TransformationsWindow(BasicStackedWindow):
         for graph in [self.orignal_image_histogram_graph, self.orignal_image_pdf_graph, self.orignal_image_cdf_graph,self.transformed_image_cdf_graph,self.transformed_image_histogram_graph,self.transformed_image_pdf_graph]:
             graph.showGrid(x=True, y=True)
             graph.setBackground("#FFFFFF")
-            graph.getAxis("left").setPen("#DFE5EE")
-            graph.getAxis("bottom").setPen("#DFE5EE")
+            graph.getAxis("left").setPen("#718EBF")
+            graph.getAxis("bottom").setPen("#718EBF")
             graph.getPlotItem().titleLabel.item.setFont(QFont("Arial"))
 
         self.transformations_controller = TransformationsController(self)

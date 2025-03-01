@@ -14,7 +14,9 @@ class CustomSpinBox(QWidget):
         self.central_layout.addWidget(self.main_widget)
 
         self.spin_box_label = QLabel(label)
-        self.spin_box_label.setFont(QFont("Arial", 10, QFont.Bold))
+        font = QFont("Inter", 9)
+        font.setWeight(QFont.DemiBold)
+        self.spin_box_label.setFont(font)
         self.spin_box_label.setObjectName("spin_box_label")
         # self.label.setAlignment(Qt.AlignCenter)
         self.main_widget_layout.addWidget(self.spin_box_label)

@@ -21,7 +21,7 @@ class ImageViewer(pg.ImageView):
 
         self.temp_label = QLabel(parent= self)
         self.temp_label.setAlignment(Qt.AlignCenter)
-        self.temp_label.setFont(QFont("Arial", 12, QFont.Bold))
+        self.temp_label.setFont(QFont("Inter", 12, QFont.Bold))
         self.temp_label.setObjectName("temp_label")
 
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
@@ -41,19 +41,7 @@ class ImageViewer(pg.ImageView):
 
         self.temp_label.setText(self.temp_label_placeholder_text)
 
-        self.setStyleSheet("""
-                #temp_label{
-                    color: #A0A0A0;
-                    background: transparent;     
-                }
-                #save_image_button{
-                    border: none;
-                    background-color: transparent;   
-                }
-                #save_image_button:hover{
-                    background-color: none;
-                    }
-                """)
+
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

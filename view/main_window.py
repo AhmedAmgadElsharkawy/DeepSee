@@ -24,7 +24,6 @@ class MainWindow(QMainWindow):
 
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("list_widget")
-        self.list_widget.setFont(QFont("Arial", 10,QFont.Bold))
         self.list_widget.setFocusPolicy(Qt.NoFocus)
 
 
@@ -37,10 +36,14 @@ class MainWindow(QMainWindow):
             ("Hybrid Image", "assets/icons/hybrid_image.png")
         ]
 
+        font = QFont("Inter",11)
+        font.setWeight(QFont.DemiBold)  
+
         for name, icon_path in self.list_widget_items:
             item = QListWidgetItem(name)
-            icon = self.change_icon_color(icon_path,original_color="black",new_color="#B1B1B1")
+            icon = self.change_icon_color(icon_path, original_color="black", new_color="#B1B1B1")
             item.setIcon(icon)
+            item.setFont(font)
             self.list_widget.addItem(item)
 
         self.nosie_window = NoiseWindow(self)
@@ -95,21 +98,22 @@ class MainWindow(QMainWindow):
                            
             QLabel#header_label {
                 background-color: #f5f7fa;
+                color: #343C6A;
             }
                            
             QPushButton#apply_button {
                 font-size: 18px;
                 font-weight: bold;
                 padding: 8px 25px;
-                border: 2px solid #888888;
                 border-radius: 8px;
-                background-color: #E0E0E0;
-                color: #333333;
+                background-color: #2D60FF;
+                color: #FFFFFF;
             }
 
             QPushButton#apply_button:hover {
-                background-color: #D0D0D0;
-                border-color: #777777;
+                background-color: #FFFFFF;
+                border: 1px solid #2D60FF;
+                color:#2D60FF;
             }
 
             QPushButton#apply_button:pressed {
@@ -120,7 +124,7 @@ class MainWindow(QMainWindow):
             QPushButton#apply_button:disabled {
                 background-color: #C0C0C0;
                 border-color: #A0A0A0;
-                color: #666666;
+                color: #B1B1B1;
             }
                            
             QSpinBox#spin_box, QDoubleSpinBox#combo_box {
@@ -132,7 +136,7 @@ class MainWindow(QMainWindow):
                 selection-background-color: #0078D7;
             }
             QLabel#spin_box_label , QLabel#combo_box_label{
-                color: #333;
+                color: #343C6A;
             }
                            
             QComboBox#combo_box {
@@ -143,6 +147,18 @@ class MainWindow(QMainWindow):
                 background-color: white;
                 selection-background-color: #0078D7;
             }
+                           
+            ImageViewer QLabel#temp_label{
+                    color: #A0A0A0;
+                    background: transparent;     
+                }
+            ImageViewer QPushButton#save_image_button{
+                    border: none;
+                    background-color: transparent;   
+                }
+            ImageViewer QPushButton#save_image_button:hover{
+                    background-color: none;
+                }
         """)
 
 
