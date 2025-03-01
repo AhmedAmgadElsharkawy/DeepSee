@@ -122,6 +122,27 @@ class MainWindow(QMainWindow):
                 border-color: #A0A0A0;
                 color: #666666;
             }
+                           
+            QSpinBox#spin_box, QDoubleSpinBox#combo_box {
+                border: 2px solid gray;
+                border-radius: 5px;
+                padding: 3px;
+                font-size: 12px;
+                background-color: white;
+                selection-background-color: #0078D7;
+            }
+            QLabel#spin_box_label , QLabel#combo_box_label{
+                color: #333;
+            }
+                           
+            QComboBox#combo_box {
+                border: 2px solid gray;
+                border-radius: 5px;
+                padding: 5px;
+                font-size: 12px;
+                background-color: white;
+                selection-background-color: #0078D7;
+            }
         """)
 
 

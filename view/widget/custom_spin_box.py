@@ -13,11 +13,11 @@ class CustomSpinBox(QWidget):
         self.main_widget_layout.setSpacing(2)
         self.central_layout.addWidget(self.main_widget)
 
-        self.label = QLabel(label)
-        self.label.setFont(QFont("Arial", 10, QFont.Bold))
-        self.label.setObjectName("label")
+        self.spin_box_label = QLabel(label)
+        self.spin_box_label.setFont(QFont("Arial", 10, QFont.Bold))
+        self.spin_box_label.setObjectName("spin_box_label")
         # self.label.setAlignment(Qt.AlignCenter)
-        self.main_widget_layout.addWidget(self.label)
+        self.main_widget_layout.addWidget(self.spin_box_label)
 
         if double_value:
             self.spin_box = QDoubleSpinBox()
@@ -29,23 +29,12 @@ class CustomSpinBox(QWidget):
             initial_value = int(initial_value)
             range_start, range_end = int(range_start), int(range_end)
 
+        self.spin_box.setObjectName("spin_box")
+
         self.spin_box.setRange(range_start, range_end)
         self.spin_box.setValue(initial_value)
         self.spin_box.setSingleStep(step_value)
         
-        self.setStyleSheet("""
-            QSpinBox, QDoubleSpinBox {
-                border: 2px solid gray;
-                border-radius: 5px;
-                padding: 3px;
-                font-size: 12px;
-                background-color: white;
-                selection-background-color: #0078D7;
-            }
-            #label{
-                color: #333;
-            }
-        """)
 
         self.main_widget_layout.addWidget(self.spin_box)
         # self.spin_box.setButtonSymbols(QDoubleSpinBox.NoButtons)
