@@ -28,3 +28,19 @@ def pad_image(image, pad_size,pading_type='constant', pad_value=0):
 
 
     return padded_image
+
+def convolution(image,kernel,kernel_size):
+        # Pading
+        pad_size = kernel_size // 2
+        padded_image = pad_image(image=image, pad_size=pad_size)
+        # Initialize the output image
+        output_image = np.zeros_like(image, dtype=np.float32)
+
+        # convolution
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                output_image[i, j] = np.sum(padded_image[i:i+kernel_size, j:j+kernel_size] * kernel)
+
+
+        output_image = np.clip(output_image, 0, 255).astype(np.uint8)
+        return output_image

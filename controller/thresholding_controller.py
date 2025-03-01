@@ -1,4 +1,5 @@
 import numpy as np
+import utils.utils as utils
 class ThresholdingController():
     def __init__(self,thresholding_window):
         self.thresholding_window = thresholding_window
@@ -63,7 +64,7 @@ class ThresholdingController():
 
         pad_size = kernel_size // 2
         # Pading
-        padded_image = np.pad(image, pad_size, mode="reflect")
+        padded_image = utils.pad_image(image=image, pad_size=pad_size, pading_type="reflect")
         for y in range(height):
             for x in range(width):
 
@@ -79,19 +80,7 @@ class ThresholdingController():
 
         return output_image
 
-    def gaussian_kernel(self, size=3, sigma=1):
-        kernel = np.zeros((size, size), dtype=np.float32)
-        center = size // 2
-        sum = 0
 
-        # Gaussian values
-        for i in range(size):
-            for j in range(size):
-                x, y = i - center, j - center
-                kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2)) * 1 / (2 * np.pi * sigma**2)
-                sum += kernel[i, j]
-
-        return kernel / sum
 
     def adaptive_gaussian_threshold(self, image, kernel_size=11, constant=2,sigma=1):
 
@@ -99,9 +88,9 @@ class ThresholdingController():
 
         output_image = np.zeros_like(image)
         pad_size = kernel_size // 2
-        kernel=self.gaussian_kernel(kernel_size,sigma=sigma)
+        kernel=utils.gaussian_kernel(kernel_size,sigma=sigma)
 
-        padded_image = np.pad(image, pad_size, mode="reflect")
+        padded_image = utils.pad_image(image=image, pad_size=pad_size, pading_type="reflect")
 
         for y in range(height):
             for x in range(width):

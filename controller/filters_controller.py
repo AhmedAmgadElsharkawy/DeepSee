@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import utils.utils as utils
 
 class FiltersController():
     def __init__(self,filters_window):
@@ -40,75 +41,27 @@ class FiltersController():
         except Exception as e:
             print(f"Error: {e}")
 
-    def pad_image(self, image, pad_size, pad_value=0):
 
-        if image.ndim == 2:
-            padded_image = np.pad(image, ((pad_size, pad_size), (pad_size, pad_size)), mode='constant', constant_values=pad_value)
-        elif image.ndim == 3:
-            padded_image = np.pad(image, ((pad_size, pad_size), (pad_size, pad_size), (0, 0)), mode='constant', constant_values=pad_value)
-        else:
-            raise ValueError("Unsupported image shape")
-
-        return padded_image
 
     def average_filter(self, image, kernel_size=3):
 
-        # Pading
-        pad_size = kernel_size // 2
-        padded_image = self.pad_image(image, pad_size)
-
 
         kernel = np.ones((kernel_size, kernel_size), dtype=np.float32) / (kernel_size**2)
-
-        # Initialize the output image
-        output_image = np.zeros_like(image, dtype=np.float32)
-
-        # convolution
-        for i in range(image.shape[0]):
-            for j in range(image.shape[1]):
-                output_image[i, j] = np.sum(padded_image[i:i+kernel_size, j:j+kernel_size] * kernel)
-
-
-        output_image = np.clip(output_image, 0, 255).astype(np.uint8)
+        output_image = utils.convolution(image, kernel,kernel_size=kernel_size)
         return output_image
-    def gaussian_kernel(self, size=3, sigma=1):
-        kernel = np.zeros((size, size), dtype=np.float32)
-        center = size // 2
-        sum = 0
 
-        # Gaussian values
-        for i in range(size):
-            for j in range(size):
-                x, y = i - center, j - center
-                kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2)) * 1 / (2 * np.pi * sigma**2)
-                sum += kernel[i, j]
-
-        return kernel / sum
 
     def gaussian_filter(self, image, kernel_size=3, sigma=1):
 
-        # Pading
-        pad_size = kernel_size // 2
-        padded_image = self.pad_image(image, pad_size)
-
         # Gaussian kernel
-        kernel = self.gaussian_kernel(kernel_size, sigma)
-
-        # Initialize the output image
-        output_image = np.zeros_like(image, dtype=np.float32)
-
-        # convolution
-        for i in range(image.shape[0]):
-            for j in range(image.shape[1]):
-                output_image[i, j] = np.sum(padded_image[i:i+kernel_size, j:j+kernel_size] * kernel)
-
-        output_image = np.clip(output_image, 0, 255).astype(np.uint8)
+        kernel = utils.gaussian_kernel(kernel_size, sigma)
+        output_image = utils.convolution(image, kernel,kernel_size=kernel_size)
         return output_image
 
     def median_filter(self, image, kernel_size=3):
         # Pading
         pad_size = kernel_size // 2
-        padded_image = self.pad_image(image, pad_size)
+        padded_image = utils.pad_image(image=image, pad_size=pad_size)
 
         # Initialize the output image
         output_image = np.zeros_like(image, dtype=np.float32)
@@ -157,3 +110,4 @@ class FiltersController():
         mask = self.create_highpass_mask(image.shape, Radius)
         dft_shift_filtered = dft_shift * mask
         return dft_shift_filtered, self.compute_ifft(dft_shift_filtered)
+
