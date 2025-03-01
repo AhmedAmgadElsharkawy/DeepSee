@@ -92,6 +92,36 @@ class MainWindow(QMainWindow):
             #list_widget::item:hover:!selected {
                 background-color: #F8F8F8; 
             }
+                           
+            QLabel#header_label {
+                background-color: #f5f7fa;
+            }
+                           
+            QPushButton#apply_button {
+                font-size: 18px;
+                font-weight: bold;
+                padding: 8px 25px;
+                border: 2px solid #888888;
+                border-radius: 8px;
+                background-color: #E0E0E0;
+                color: #333333;
+            }
+
+            QPushButton#apply_button:hover {
+                background-color: #D0D0D0;
+                border-color: #777777;
+            }
+
+            QPushButton#apply_button:pressed {
+                background-color: #B0B0B0;
+                border-color: #666666;
+            }
+
+            QPushButton#apply_button:disabled {
+                background-color: #C0C0C0;
+                border-color: #A0A0A0;
+                color: #666666;
+            }
         """)
 
 
