@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QColor, QPixmap
 from PyQt5.QtCore import Qt
 
 from view.window.noise_window import NoiseWindow
@@ -38,7 +38,8 @@ class MainWindow(QMainWindow):
 
         for name, icon_path in self.list_widget_items:
             item = QListWidgetItem(name)
-            item.setIcon(QIcon(icon_path))
+            icon = self.change_icon_color(icon_path,"#B1B1B1")
+            item.setIcon(icon)
             self.list_widget.addItem(item)
 
         self.nosie_window = NoiseWindow(self)
@@ -59,7 +60,7 @@ class MainWindow(QMainWindow):
         self.main_widget_layout.addWidget(self.list_widget, 2)
         self.main_widget_layout.addWidget(self.stackedWidget, 10)
 
-        self.list_widget.currentRowChanged.connect(self.stackedWidget.setCurrentIndex)
+        self.list_widget.currentRowChanged.connect(self.on_sidebar_item_select)
 
         self.list_widget.setCurrentRow(0)
         self.stackedWidget.setCurrentIndex(0)
@@ -67,7 +68,7 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("""
             #list_widget {
                 background-color: white;
-                color: #B0B0B0; 
+                color: #B1B1B1; 
                 border-right: 1px solid #E0E0E0;
             }
 
@@ -88,4 +89,29 @@ class MainWindow(QMainWindow):
                 background-color: #F8F8F8; 
             }
         """)
+
+
+    def change_icon_color(self,icon_path,color):
+        # note the image must have only one solid color to mask in a right way
+        pixmap = QPixmap(icon_path)
+        background_color = QColor(pixmap.toImage().pixel(0, 0))  
+        mask = pixmap.createMaskFromColor(background_color, Qt.MaskOutColor)
+        pixmap.fill((QColor(color)))
+        pixmap.setMask(mask)
+        return QIcon(pixmap)
+    
+    def on_sidebar_item_select(self):
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            icon_path = self.list_widget_items[i][1]
+            
+            if i == self.list_widget.currentRow():
+                icon = self.change_icon_color(icon_path, "#2D60FF")
+            else:
+                icon = self.change_icon_color(icon_path, "#B1B1B1")
+            
+            item.setIcon(icon)
+
+        self.stackedWidget.setCurrentIndex(self.list_widget.currentRow())
+
 
