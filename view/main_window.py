@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('DeepSee')
 
         self.main_widget = QWidget(self)
+        self.main_widget.setObjectName("main_widget")
         self.setCentralWidget(self.main_widget)
         self.main_widget_layout = QHBoxLayout(self.main_widget)
         self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
@@ -66,10 +67,13 @@ class MainWindow(QMainWindow):
         self.stackedWidget.setCurrentIndex(0)
 
         self.setStyleSheet("""
+            #main_widget {
+                background-color: #f5f7fa;
+            }      
             #list_widget {
                 background-color: white;
                 color: #B1B1B1; 
-                border-right: 1px solid #E0E0E0;
+                border: none;
             }
 
             #list_widget::item {

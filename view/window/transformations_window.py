@@ -75,6 +75,9 @@ class TransformationsWindow(BasicStackedWindow):
 
 
         self.setStyleSheet("""
+            QLabel#header_label {
+                background-color: #f5f7fa;
+            }
             #transformed_image_graphs_container{   
                 border:2px solid gray;
                 border-radius:6px;

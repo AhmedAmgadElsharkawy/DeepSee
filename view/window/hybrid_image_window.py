@@ -61,6 +61,9 @@ class HybridImageWindow(BasicStackedWindow):
 
 
         self.setStyleSheet("""
+            QLabel#header_label {
+                background-color: #f5f7fa;
+            }
             #second_image_viewers_container{
                 border:2px solid gray;
                 border-radius:6px;           
