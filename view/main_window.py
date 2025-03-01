@@ -129,11 +129,41 @@ class MainWindow(QMainWindow):
                            
             #spin_box {
                 border: 1px solid #343C6A;
-                border-radius: 5px;
                 padding: 3px;
                 font-size: 12px;
                 background-color: #f5f7fa;
                 selection-background-color: #0078D7;
+            }
+                           
+
+            #spin_box::up-button {
+                subcontrol-position: top right;
+                width: 16px; /* Adjust width */
+                background: #f5f7fa; /* Background color */
+
+            }
+
+            #spin_box::down-button {
+                subcontrol-position: bottom right;
+                width: 16px;
+                background: #f5f7fa;
+
+            }
+
+            #spin_box::up-arrow {
+                image: url(assets/icons/up_arrow.png); /* Replace with your custom up arrow */
+                width: 10px;
+                height: 10px;
+            }
+
+            #spin_box::down-arrow {
+                image: url(assets/icons/down_arrow.png); /* Replace with your custom down arrow */
+                width: 10px;
+                height: 10px;
+            }
+
+            #spin_box::up-button:pressed, #spin_box::down-button:pressed {
+                background: #A1A1A1;
             }
                            
             QLabel#spin_box_label , QLabel#combo_box_label{

@@ -15,12 +15,12 @@ class CustomComboBox(QWidget):
         self.centeral_layout.addWidget(self.main_widget)
         self.main_widget_layout = QVBoxLayout(self.main_widget)
         self.main_widget_layout.setContentsMargins(0, 0, 10, 0)
-        self.main_widget_layout.setSpacing(2)
+        self.main_widget_layout.setSpacing(5)
 
         self.combo_box_label = QLabel(label)
         self.combo_box_label.setObjectName("combo_box_label")
         font = QFont("Inter", 9)
-        font.setWeight(QFont.DemiBold)
+        font.setWeight(QFont.Medium)
         self.combo_box_label.setFont(font)
         # self.combo_box_label.setAlignment(Qt.AlignCenter)
 
