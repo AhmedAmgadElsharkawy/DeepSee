@@ -27,7 +27,7 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
 
         if type == "input":
-            self.temp_label_placeholder_text = "Double click, or drop image here\n\nAllowed Files: PNG, JPG, JPEG files"
+            self.temp_label_placeholder_text = "Double click, or drop image here\n\nAllowed Files: PNG, JPG, JPEG BMP files"
         else:
             self.temp_label_placeholder_text = "Processed image will appear here"
             self.save_image_button = QPushButton(self)
@@ -84,6 +84,6 @@ class ImageViewer(pg.ImageView):
         self.display_image_matrix(self.image_model.get_image_matrix())
 
     def on_save_image_click(self):
-        save_path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG Files (*.png);;JPEG Files (*.jpg *.jpeg);;All Files (*)")
+        save_path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG Files (*.png);;JPEG Files (*.jpg *.jpeg);;BMP Files (*.bmp);;All Files (*)")
         if save_path:
             self.image_model.save_image(save_path=save_path)

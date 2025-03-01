@@ -14,11 +14,11 @@ class InteractiveImageViewer(ImageViewer):
     def dropEvent(self, event):
         for url in event.mimeData().urls():
             file_path = url.toLocalFile()
-            if file_path.lower().endswith((".png", ".jpg", ".jpeg")):
+            if file_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
                 self.load_image(file_path)
 
     def mouseDoubleClickEvent(self, event):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
         if file_path:
             self.load_image(file_path)
 
