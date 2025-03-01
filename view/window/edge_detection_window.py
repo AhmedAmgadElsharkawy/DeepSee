@@ -20,7 +20,7 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.sobel_detector_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.sobel_detector_inputs_container)
         self.sobel_detector_direction_custom_combo_box = CustomComboBox(label = "Direction",combo_box_items_list=["Horizontal","Vertical","Combined"])
-        self.sobel_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.sobel_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=5,initial_value=3,step_value=2)
         self.sobel_detector_inputs_container_layout.addWidget(self.sobel_detector_direction_custom_combo_box)
         self.sobel_detector_inputs_container_layout.addWidget(self.sobel_detector_kernel_size_spin_box)
 
@@ -30,7 +30,7 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.roberts_detector_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.roberts_detector_inputs_container)
         self.roberts_detector_inputs_container.setVisible(False)
-        self.roberts_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.roberts_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=2,range_end=2,initial_value=2,step_value=0)
         self.roberts_detector_inputs_container_layout.addWidget(self.roberts_detector_kernel_size_spin_box)
         
 
@@ -40,7 +40,7 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.prewitt_detector_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.prewitt_detector_inputs_container)
         self.prewitt_detector_inputs_container.setVisible(False)
-        self.prewitt_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.prewitt_detector_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=5,initial_value=3,step_value=2)
         self.prewitt_detector_inputs_container_layout.addWidget(self.prewitt_detector_kernel_size_spin_box)
 
 
@@ -49,7 +49,7 @@ class EdgeDetectionsWindow(BasicStackedWindow):
         self.canny_detector_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.canny_detector_inputs_container)
         self.canny_detector_inputs_container.setVisible(False)
-        self.canny_detector_kernel_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=1)
+        self.canny_detector_kernel_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=5,initial_value=3,step_value=2)
         self.canny_detector_variance_spin_box = CustomSpinBox(label="Variance",range_start=0,range_end=100,initial_value=0,step_value=1)
         self.canny_detector_lower_threshold_spin_box = CustomSpinBox(label="Lower Threshold",range_start=0,range_end=100,initial_value=0,step_value=1)
         self.canny_detector_upper_threshold_spin_box = CustomSpinBox(label="Upper Threshold",range_start=0,range_end=150,initial_value=0,step_value=1)

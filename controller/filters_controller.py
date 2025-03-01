@@ -47,7 +47,8 @@ class FiltersController():
 
 
         kernel = np.ones((kernel_size, kernel_size), dtype=np.float32) / (kernel_size**2)
-        output_image = utils.convolution(image, kernel,kernel_size=kernel_size)
+        output_image = utils.convolution(image, kernel)
+        output_image = np.clip(output_image, 0, 255).astype(np.uint8)
         return output_image
 
 
@@ -55,7 +56,8 @@ class FiltersController():
 
         # Gaussian kernel
         kernel = utils.gaussian_kernel(kernel_size, sigma)
-        output_image = utils.convolution(image, kernel,kernel_size=kernel_size)
+        output_image = utils.convolution(image, kernel)
+        output_image = np.clip(output_image, 0, 255).astype(np.uint8)
         return output_image
 
     def median_filter(self, image, kernel_size=3):

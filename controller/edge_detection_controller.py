@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from scipy.ndimage import convolve
 import skimage.exposure as exposure
+import utils.utils as utils
 class EdgeDetectionController():
     def __init__(self,edge_detection_window):
         self.edge_detection_window = edge_detection_window
@@ -39,8 +40,8 @@ class EdgeDetectionController():
                             [0, 0, 0, 0, 0],
                             [-1, -1, -1, -1, -1],
                             [-2, -2, -2, -2, -2]])
-        prewitt_x = self.convolution(image, prewitt_kernel_x)
-        prewitt_y = self.convolution(image, prewitt_kernel_y)
+        prewitt_x = utils.convolution(image, prewitt_kernel_x)
+        prewitt_y = utils.convolution(image, prewitt_kernel_y)
         magnitude = np.sqrt(np.square(prewitt_x) + np.square(prewitt_y))
         prewitt_magnitude = (
             exposure.rescale_intensity(magnitude, in_range="image", out_range=(0, 255))
@@ -77,8 +78,8 @@ class EdgeDetectionController():
                             [0, 0, 0, 0, 0],
                             [-1, -2, -3, -2, -1],
                             [-2, -3, -4, -3, -2]])
-        sobel_x = self.convolution(image, sobel_kernel_x)
-        sobel_y = self.convolution(image, sobel_kernel_y)
+        sobel_x = utils.convolution(image, sobel_kernel_x)
+        sobel_y = utils.convolution(image, sobel_kernel_y)
 
         phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
         phase[phase < 0] += 180
@@ -121,8 +122,8 @@ class EdgeDetectionController():
         roberts_x = np.array([[1, 0], [0, -1]])
         roberts_y = np.array([[0, 1], [-1, 0]])
 
-        grad_x = self.convolution(image, roberts_x)
-        grad_y = self.convolution(image, roberts_y)
+        grad_x = utils.convolution(image, roberts_x)
+        grad_y = utils.convolution(image, roberts_y)
 
         magnitude = np.sqrt(grad_x**2 + grad_y**2)
         magnitude = (
@@ -135,20 +136,20 @@ class EdgeDetectionController():
 
         return magnitude
         
-    def convolution(self, image, kernel):
-        img_height, img_width = image.shape
-        kernel_height, kernel_width = kernel.shape
-
-        pad_h = kernel_height // 2
-        pad_w = kernel_width // 2
-
-        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
-
-        output = np.zeros((img_height, img_width), dtype=np.float32)
-
-        for i in range(img_height):
-            for j in range(img_width):
-                region = padded_image[i:i + kernel_height, j:j + kernel_width]
-                output[i, j] = np.sum(region * kernel)
-
-        return output
+    # def convolution(self, image, kernel):
+    #     img_height, img_width = image.shape
+    #     kernel_height, kernel_width = kernel.shape
+    #
+    #     pad_h = kernel_height // 2
+    #     pad_w = kernel_width // 2
+    #
+    #     padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
+    #
+    #     output = np.zeros((img_height, img_width), dtype=np.float32)
+    #
+    #     for i in range(img_height):
+    #         for j in range(img_width):
+    #             region = padded_image[i:i + kernel_height, j:j + kernel_width]
+    #             output[i, j] = np.sum(region * kernel)
+    #
+    #     return output
