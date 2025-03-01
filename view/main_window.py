@@ -127,27 +127,44 @@ class MainWindow(QMainWindow):
                 color: #B1B1B1;
             }
                            
-            QSpinBox#spin_box, QDoubleSpinBox#combo_box {
-                border: 2px solid gray;
+            #spin_box {
+                border: 1px solid #343C6A;
                 border-radius: 5px;
                 padding: 3px;
                 font-size: 12px;
-                background-color: white;
+                background-color: #f5f7fa;
                 selection-background-color: #0078D7;
             }
+                           
             QLabel#spin_box_label , QLabel#combo_box_label{
                 color: #343C6A;
             }
                            
             QComboBox#combo_box {
-                border: 2px solid gray;
-                border-radius: 5px;
+                border: 1px solid #343C6A;
                 padding: 5px;
-                font-size: 12px;
-                background-color: white;
-                selection-background-color: #0078D7;
+                color: #343C6A;
+                background-color: #f5f7fa;
+                selection-background-color: #f5f7fa;
+            }
+            QComboBox#combo_box QAbstractItemView {
+                background-color: #f5f7fa;
+                color: #343C6A;
+                selection-background-color: #F8F8F8;
+                selection-color: #343C6A;
             }
                            
+            QComboBox#combo_box::drop-down {
+                background-color: #f5f7fa; /* Change this to your desired color */
+                width: 20px; /* Adjust the width */
+            }
+
+            QComboBox#combo_box::down-arrow {
+                image: url(assets/icons/down_arrow.png); /* Set a custom arrow icon if needed */
+                width: 10px;
+                height: 10px;
+            }
+         
             ImageViewer QLabel#temp_label{
                     color: #A0A0A0;
                     background: transparent;     
