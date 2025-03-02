@@ -18,13 +18,12 @@ class BasicStackedWindow(QWidget):
         self.main_widget.setObjectName("main_widget")
         self.central_layout.addWidget(self.main_widget)
         self.main_widget_layout = QVBoxLayout(self.main_widget)
-        # self.main_widget_layout.setContentsMargins(10, 10, 10, 10)
         self.main_widget_layout.setSpacing(15)
 
         self.header_label = QLabel(header_text)
-        font = QFont("Arial", 24, QFont.Bold)
+        self.header_label.setObjectName("header_label")  # Set object name once
+        font = QFont("Inter", 28)
         self.header_label.setFont(font)
-        self.header_label.setObjectName("header_label")
         self.header_label.setAlignment(Qt.AlignCenter)
 
         self.image_viewers_container = QWidget()
@@ -53,7 +52,6 @@ class BasicStackedWindow(QWidget):
         self.apply_button.setObjectName("apply_button")
         self.apply_button.setCursor(Qt.PointingHandCursor)
 
-
         self.buttons_container_layout.addWidget(self.apply_button)
 
         self.controls_container_layout.addStretch()
@@ -66,42 +64,4 @@ class BasicStackedWindow(QWidget):
         self.inputs_container_layout = QHBoxLayout(self.inputs_container)
         self.inputs_container_layout.setContentsMargins(0, 0, 0, 0)
         self.controls_container_layout.addWidget(self.inputs_container)
-
-
-        self.setStyleSheet("""
-            #apply_button {
-            font-size: 18px;
-            font-weight: bold;
-            padding: 8px 25px;
-            border: 2px solid #888888;
-            border-radius: 8px;
-            background-color: #E0E0E0;
-            color: #333333;
-        }
-        
-        #apply_button:hover {
-            background-color: #D0D0D0;
-            border-color: #777777;
-        }
-
-        #apply_button:pressed {
-            background-color: #B0B0B0;
-            border-color: #666666;
-        }
-
-        #apply_button:disabled {
-            background-color: #C0C0C0;
-            border-color: #A0A0A0;
-            color: #666666;
-        }
-                           
-        #header_label{
-            color: #333;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;           
-            }
-        """)
-
-
 

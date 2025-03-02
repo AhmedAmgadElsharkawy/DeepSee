@@ -9,8 +9,19 @@ from view.widget.image_viewer import ImageViewer
 from controller.hybrid_image_controller import HybridImageController
 
 class HybridImageWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(HybridImageWindow, cls).__new__(cls)
+        return cls.__instance    
+
     def __init__(self, main_window):
+        if HybridImageWindow.__instance != None:
+            return
+        
         super().__init__(main_window, header_text="Hybrid Image")
+        HybridImageWindow.__instance =self
 
         self.image_viewers_container.deleteLater()
 
@@ -21,7 +32,7 @@ class HybridImageWindow(BasicStackedWindow):
         self.second_image_filter_type_custom_combo_box = CustomComboBox(label= "Second Image Filter",combo_box_items_list=["Low Pass Filter","High Pass Filter"])
         self.inputs_container_layout.addWidget(self.second_image_filter_type_custom_combo_box)
 
-        self.radius_custom_spin_box = CustomSpinBox(label= "Filter Radius",range_start=0,range_end=100,initial_value=10)
+        self.radius_custom_spin_box = CustomSpinBox(label= "Filter Radius",range_start=0,range_end=100,initial_value=15)
         self.inputs_container_layout.addWidget(self.radius_custom_spin_box)
 
         self.image_viewers_container = QWidget()
@@ -37,7 +48,7 @@ class HybridImageWindow(BasicStackedWindow):
         self.first_image_viewers_container = QWidget()
         self.first_image_viewers_container.setObjectName("first_image_viewers_container")
         self.first_image_viewers_container_layout = QHBoxLayout(self.first_image_viewers_container)
-        # self.first_image_viewers_container_layout.setContentsMargins(0,0,0,0)
+        self.first_image_viewers_container_layout.setContentsMargins(0,0,0,0)
         self.input_images_viewers_container_layout.addWidget(self.first_image_viewers_container)
         self.first_original_image_viewer = InteractiveImageViewer()
         self.first_filtered_image_viewer = ImageViewer()
@@ -47,7 +58,7 @@ class HybridImageWindow(BasicStackedWindow):
         self.second_image_viewers_container = QWidget()
         self.second_image_viewers_container.setObjectName("second_image_viewers_container")
         self.second_image_viewers_container_layout = QHBoxLayout(self.second_image_viewers_container)
-        # self.second_image_viewers_container_layout.setContentsMargins(0,0,0,0)
+        self.second_image_viewers_container_layout.setContentsMargins(0,0,0,0)
         self.input_images_viewers_container_layout.addWidget(self.second_image_viewers_container)
         self.second_original_image_viewer = InteractiveImageViewer()
         self.second_filtered_image_viewer = ImageViewer()
@@ -59,49 +70,6 @@ class HybridImageWindow(BasicStackedWindow):
 
         self.hybrid_image_controller = HybridImageController(self)
 
-
-        self.setStyleSheet("""
-            #second_image_viewers_container{
-                border:2px solid gray;
-                border-radius:6px;           
-            }
-            #first_image_viewers_container{
-                border:2px solid gray;
-                border-radius:6px;           
-            }
-            #apply_button {
-            font-size: 18px;
-            font-weight: bold;
-            padding: 8px 25px;
-            border: 2px solid #888888;
-            border-radius: 8px;
-            background-color: #E0E0E0;
-            color: #333333;
-        }
-        
-        #apply_button:hover {
-            background-color: #D0D0D0;
-            border-color: #777777;
-        }
-
-        #apply_button:pressed {
-            background-color: #B0B0B0;
-            border-color: #666666;
-        }
-
-        #apply_button:disabled {
-            background-color: #C0C0C0;
-            border-color: #A0A0A0;
-            color: #666666;
-        }
-                           
-        #header_label{
-            color: #333;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;           
-            }               
-        """)
 
 
         
