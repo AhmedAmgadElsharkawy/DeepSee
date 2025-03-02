@@ -40,7 +40,7 @@ class FiltersWindow(BasicStackedWindow):
         self.inputs_container_layout.addWidget(self.gaussian_filter_inputs_container)
         self.gaussian_filter_inputs_container.setVisible(False)
         self.guassian_filter_kernel_size_spin_box = CustomSpinBox(label="Kernel Size",range_start=3,range_end=9,initial_value=3,step_value=2)
-        self.guassian_filter_variance_spin_box = CustomSpinBox(label="Variance",initial_value=1)
+        self.guassian_filter_variance_spin_box = CustomSpinBox(label="Variance",range_start=1,initial_value=1)
         self.gaussian_filter_inputs_container_layout.addWidget(self.guassian_filter_kernel_size_spin_box)
         self.gaussian_filter_inputs_container_layout.addWidget(self.guassian_filter_variance_spin_box)
         
@@ -60,7 +60,7 @@ class FiltersWindow(BasicStackedWindow):
         self.low_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.low_pass_filter_inputs_container)
         self.low_pass_filter_inputs_container.setVisible(False)
-        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=180,initial_value=60,step_value=1)
+        self.low_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=0,range_end=180,initial_value=60,step_value=1)
         self.low_pass_filter_inputs_container_layout.addWidget(self.low_pass_filter_radius_spin_box)
 
         self.high_pass_filter_inputs_container = QWidget()
@@ -68,7 +68,7 @@ class FiltersWindow(BasicStackedWindow):
         self.high_pass_filter_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.high_pass_filter_inputs_container)
         self.high_pass_filter_inputs_container.setVisible(False)
-        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=1,range_end=180,initial_value=2,step_value=1)
+        self.high_pass_filter_radius_spin_box = CustomSpinBox(label="Radius",range_start=0,range_end=180,initial_value=2,step_value=1)
         self.high_pass_filter_inputs_container_layout.addWidget(self.high_pass_filter_radius_spin_box)
 
         self.filters_controller = FiltersController(self)

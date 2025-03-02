@@ -37,7 +37,7 @@ class ThresholdingWindow(BasicStackedWindow):
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_size_spin_box)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_offset_spin_box)
         self.variance_spin_box = CustomSpinBox(
-            label="Variance", range_start=0, range_end=10, initial_value=1, step_value=1
+            label="Variance", range_start=1, range_end=10, initial_value=1, step_value=1
         )
         self.variance_spin_box.setVisible(False)
         self.inputs_container_layout.addWidget(self.variance_spin_box)
