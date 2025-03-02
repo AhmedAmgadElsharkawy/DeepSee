@@ -72,8 +72,9 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.transformations_window)
         self.stackedWidget.addWidget(self.hybrid_image_widnow)
 
-        self.main_widget_layout.addWidget(self.list_widget, 2)
-        self.main_widget_layout.addWidget(self.stackedWidget, 10)
+        self.list_widget.setFixedWidth(250)
+        self.main_widget_layout.addWidget(self.list_widget)
+        self.main_widget_layout.addWidget(self.stackedWidget)
 
         self.list_widget.currentRowChanged.connect(self.on_sidebar_item_select)
 
@@ -91,13 +92,13 @@ class MainWindow(QMainWindow):
             }
 
             #list_widget::item {
-                padding: 12px;
+                padding: 10px 15px;
                 margin-top: 4px;
                 margin-bottom: 4px;
+                background-color: transparent; 
             }
 
             #list_widget::item:selected {
-                background-color: transparent;
                 color: #2D60FF; 
                 font-weight: bold;
                 border-left: 4px solid #2D60FF;
