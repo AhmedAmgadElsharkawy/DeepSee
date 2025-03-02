@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel, QPushButton, QFileDialog, QMenu, QAction, QDialog, QVBoxLayout, QSlider
+from PyQt5.QtWidgets import QLabel, QPushButton, QFileDialog, QMenu, QAction
 from PyQt5.QtGui import QColor, QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
 

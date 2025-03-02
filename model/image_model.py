@@ -27,6 +27,9 @@ class ImageModel:
     def set_gray_image_matrix(self, matrix):
         self.gray_image_matrix = matrix.copy()
 
+    def get_gray_image_matrix(self):
+        return self.gray_image_matrix
+
     def reset(self):
         self.image_matrix = None 
         self.gray_image_matrix = None
