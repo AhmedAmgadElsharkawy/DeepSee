@@ -16,6 +16,7 @@ class ImageViewer(pg.ImageView):
         self.ui.roiBtn.hide()
         self.ui.menuBtn.hide()
 
+        self.getView().setMenuEnabled(False)
         self.getView().setBackgroundColor(QColor("white"))
 
         self.save_image_button = None
@@ -43,6 +44,7 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setText(self.temp_label_placeholder_text)
 
     def contextMenuEvent(self, event):
+        event.accept()
         menu = QMenu(self)
 
         move_menu = menu.addMenu("Move To")
