@@ -57,9 +57,6 @@ class ImageViewer(pg.ImageView):
         first_viewer_action = QAction("First Image Viewer", self)
         second_viewer_action = QAction("Second Image Viewer", self)
 
-        first_viewer_action.triggered.connect(lambda: print("First Image Viewer Selected"))
-        second_viewer_action.triggered.connect(lambda: print("Second Image Viewer Selected"))
-
         hybrid_menu.addAction(first_viewer_action)
         hybrid_menu.addAction(second_viewer_action)
 
@@ -67,6 +64,16 @@ class ImageViewer(pg.ImageView):
         move_menu.addAction(threshold_action)
         move_menu.addAction(edge_action)
         move_menu.addAction(transformations_action)
+
+        from view.main_window import MainWindow
+        main_window = MainWindow()
+
+        filters_action.triggered.connect(lambda : main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        threshold_action.triggered.connect(lambda : main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        edge_action.triggered.connect(lambda : main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        transformations_action.triggered.connect(lambda : main_window.transformations_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        first_viewer_action.triggered.connect(lambda : main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        second_viewer_action.triggered.connect(lambda : main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
 
         menu.exec_(event.globalPos())
 
