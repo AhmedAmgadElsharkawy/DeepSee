@@ -117,12 +117,12 @@ class ImageViewer(pg.ImageView):
     def move_to_first_viewer(self):
         self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.hybrid_image_widnow.first_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.output_image_viewer.reset()
+        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
 
     def move_to_second_viewer(self):
         self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.output_image_viewer.reset()
+        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
 
 
     def resizeEvent(self, event):
