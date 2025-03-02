@@ -49,27 +49,30 @@ class ImageViewer(pg.ImageView):
 
         move_menu = menu.addMenu("Move To")
 
+        noise_action = QAction("Noise", self)
         filters_action = QAction("Filters", self)
         threshold_action = QAction("Thresholding", self)
         edge_action = QAction("Edge Detection", self)
         transformations_action = QAction("Transformations", self)
 
-        hybrid_menu = move_menu.addMenu("Hybrid Image")
 
         first_viewer_action = QAction("First Image Viewer", self)
         second_viewer_action = QAction("Second Image Viewer", self)
 
-        hybrid_menu.addAction(first_viewer_action)
-        hybrid_menu.addAction(second_viewer_action)
-
+        move_menu.addAction(noise_action)
         move_menu.addAction(filters_action)
         move_menu.addAction(threshold_action)
         move_menu.addAction(edge_action)
         move_menu.addAction(transformations_action)
 
+        hybrid_menu = move_menu.addMenu("Hybrid Image")
+        hybrid_menu.addAction(first_viewer_action)
+        hybrid_menu.addAction(second_viewer_action)
+
         from view.main_window import MainWindow
         main_window = MainWindow()
 
+        noise_action.triggered.connect(lambda : main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
         filters_action.triggered.connect(lambda : main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
         threshold_action.triggered.connect(lambda : main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
         edge_action.triggered.connect(lambda : main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
