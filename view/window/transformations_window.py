@@ -10,8 +10,21 @@ from view.widget.image_viewer import ImageViewer
 from controller.transformations_controller import TransformationsController
 
 class TransformationsWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(TransformationsWindow, cls).__new__(cls)
+        return cls.__instance    
+
+
     def __init__(self, main_window):
+        if TransformationsWindow.__instance != None:
+            return
+        
         super().__init__(main_window, "Transformations")
+        TransformationsWindow.__instance =self
+
 
         self.image_viewers_container.deleteLater()
 
@@ -66,56 +79,13 @@ class TransformationsWindow(BasicStackedWindow):
 
         for graph in [self.orignal_image_histogram_graph, self.orignal_image_pdf_graph, self.orignal_image_cdf_graph,self.transformed_image_cdf_graph,self.transformed_image_histogram_graph,self.transformed_image_pdf_graph]:
             graph.showGrid(x=True, y=True)
-            graph.setBackground("#F5F5F5")
-            graph.getAxis("left").setPen("#333")
-            graph.getAxis("bottom").setPen("#333")
+            graph.setBackground("#FFFFFF")
+            graph.getAxis("left").setPen("#718EBF")
+            graph.getAxis("bottom").setPen("#718EBF")
             graph.getPlotItem().titleLabel.item.setFont(QFont("Arial"))
 
         self.transformations_controller = TransformationsController(self)
 
-
-        self.setStyleSheet("""
-            #transformed_image_graphs_container{   
-                border:2px solid gray;
-                border-radius:6px;
-                           }
-            #orignal_image_graphs_container{
-                border:2px solid gray;
-                border-radius:6px;           
-                }
-            #apply_button {
-            font-size: 18px;
-            font-weight: bold;
-            padding: 8px 25px;
-            border: 2px solid #888888;
-            border-radius: 8px;
-            background-color: #E0E0E0;
-            color: #333333;
-        }
-        
-        #apply_button:hover {
-            background-color: #D0D0D0;
-            border-color: #777777;
-        }
-
-        #apply_button:pressed {
-            background-color: #B0B0B0;
-            border-color: #666666;
-        }
-
-        #apply_button:disabled {
-            background-color: #C0C0C0;
-            border-color: #A0A0A0;
-            color: #666666;
-        }
-                           
-        #header_label{
-            color: #333;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;           
-            }
-        """)
 
 
         
