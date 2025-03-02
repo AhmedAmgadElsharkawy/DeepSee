@@ -26,7 +26,7 @@ class ImageViewer(pg.ImageView):
 
         self.temp_label = QLabel(parent=self)
         self.temp_label.setAlignment(Qt.AlignCenter)
-        self.temp_label.setFont(QFont("Inter", 12, QFont.Bold))
+        self.temp_label.setFont(QFont("Inter", 10, QFont.Bold))
         self.temp_label.setObjectName("temp_label")
 
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
@@ -128,8 +128,8 @@ class ImageViewer(pg.ImageView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
-        if self.save_image_button is not None:
-            self.save_image_button.setGeometry(20, 20, 30, 30)
+        # if self.save_image_button is not None:
+        #     self.save_image_button.setGeometry(20, 20, 30, 30)
 
     def display_image_matrix(self, image_matrix):
         self.temp_label.hide()
