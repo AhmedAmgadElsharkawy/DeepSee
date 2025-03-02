@@ -65,8 +65,8 @@ class EdgeDetectionController():
         direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
         image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
         if kernel_size == 3:
-            sobel_kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-            sobel_kernel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+            sobel_kernel_x = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+            sobel_kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
         else:
             sobel_kernel_x = np.array([[2, 1, 0, -1, -2],
                             [3, 2, 0, -2, -3],
@@ -119,8 +119,8 @@ class EdgeDetectionController():
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
         image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
 
-        roberts_x = np.array([[1, 0], [0, -1]])
-        roberts_y = np.array([[0, 1], [-1, 0]])
+        roberts_x = np.array([[-1, 0], [0, 1]])
+        roberts_y = np.array([[0, -1], [1, 0]])
 
         grad_x = utils.convolution(image, roberts_x)
         grad_y = utils.convolution(image, roberts_y)
