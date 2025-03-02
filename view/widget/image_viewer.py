@@ -15,6 +15,9 @@ class ImageViewer(pg.ImageView):
         self.ui.histogram.hide()
         self.ui.roiBtn.hide()
         self.ui.menuBtn.hide()
+        from view.main_window import MainWindow
+        self.main_window = MainWindow()
+
 
         self.getView().setMenuEnabled(False)
         self.getView().setBackgroundColor(QColor("white"))
@@ -55,7 +58,6 @@ class ImageViewer(pg.ImageView):
         edge_action = QAction("Edge Detection", self)
         transformations_action = QAction("Transformations", self)
 
-
         first_viewer_action = QAction("First Image Viewer", self)
         second_viewer_action = QAction("Second Image Viewer", self)
 
@@ -69,18 +71,52 @@ class ImageViewer(pg.ImageView):
         hybrid_menu.addAction(first_viewer_action)
         hybrid_menu.addAction(second_viewer_action)
 
-        from view.main_window import MainWindow
-        main_window = MainWindow()
-
-        noise_action.triggered.connect(lambda : main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        filters_action.triggered.connect(lambda : main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        threshold_action.triggered.connect(lambda : main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        edge_action.triggered.connect(lambda : main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        transformations_action.triggered.connect(lambda : main_window.transformations_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        first_viewer_action.triggered.connect(lambda : main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
-        second_viewer_action.triggered.connect(lambda : main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix))
+        noise_action.triggered.connect(self.move_to_noise)
+        filters_action.triggered.connect(self.move_to_filters)
+        threshold_action.triggered.connect(self.move_to_thresholding)
+        edge_action.triggered.connect(self.move_to_edge_detection)
+        transformations_action.triggered.connect(self.move_to_transformations)
+        first_viewer_action.triggered.connect(self.move_to_first_viewer)
+        second_viewer_action.triggered.connect(self.move_to_second_viewer)
 
         menu.exec_(event.globalPos())
+
+    def move_to_noise(self):
+        self.main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.nosie_window.output_image_viewer.reset()
+
+    def move_to_filters(self):
+        self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.filters_window.output_image_viewer.reset()
+
+
+    def move_to_thresholding(self):
+        self.main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.thresholding_window.output_image_viewer.reset()
+
+    def move_to_edge_detection(self):
+        self.main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.edge_detection_window.output_image_viewer.reset()
+
+    def move_to_transformations(self):
+        self.main_window.transformations_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.transformations_window.output_image_viewer.reset()
+        self.main_window.transformations_window.orignal_image_histogram_graph.clear()
+        self.main_window.transformations_window.orignal_image_cdf_graph.clear()
+        self.main_window.transformations_window.orignal_image_pdf_graph.clear()
+        self.main_window.transformations_window.transformed_image_histogram_graph.clear()
+        self.main_window.transformations_window.transformed_image_cdf_graph.clear()
+        self.main_window.transformations_window.transformed_image_pdf_graph.clear()
+
+    def move_to_first_viewer(self):
+        self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_widnow.first_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_widnow.output_image_viewer.reset()
+
+    def move_to_second_viewer(self):
+        self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_widnow.output_image_viewer.reset()
 
 
     def resizeEvent(self, event):
@@ -108,3 +144,12 @@ class ImageViewer(pg.ImageView):
         save_path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG Files (*.png);;JPEG Files (*.jpg *.jpeg);;BMP Files (*.bmp);;All Files (*)")
         if save_path:
             self.image_model.save_image(save_path=save_path)
+
+    def reset(self):
+        self.image_model.reset() 
+        self.temp_label.setText(self.temp_label_placeholder_text)  
+        self.temp_label.show()  
+        self.clear()
+        if self.save_image_button is not None:
+            self.save_image_button.setEnabled(False)
+
