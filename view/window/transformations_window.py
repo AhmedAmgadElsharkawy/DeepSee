@@ -10,8 +10,21 @@ from view.widget.image_viewer import ImageViewer
 from controller.transformations_controller import TransformationsController
 
 class TransformationsWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(TransformationsWindow, cls).__new__(cls)
+        return cls.__instance    
+
+
     def __init__(self, main_window):
+        if TransformationsWindow.__instance != None:
+            return
+        
         super().__init__(main_window, "Transformations")
+        TransformationsWindow.__instance =self
+
 
         self.image_viewers_container.deleteLater()
 

@@ -7,8 +7,19 @@ from view.widget.custom_spin_box import CustomSpinBox
 from controller.thresholding_controller import ThresholdingController
 
 class ThresholdingWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(ThresholdingWindow, cls).__new__(cls)
+        return cls.__instance    
+
     def __init__(self, main_window):
+        if ThresholdingWindow.__instance != None:
+            return
+        
         super().__init__(main_window, "Thresholding")
+        ThresholdingWindow.__instance =self
 
         self.thresholding_scope_custom_combo_box = CustomComboBox(label= "Thresholding Scope",combo_box_items_list=["Global Thresholding","Local Thresholding"])
         self.thresholding_scope_custom_combo_box.currentIndexChanged.connect(self.on_thresholding_scope_change)

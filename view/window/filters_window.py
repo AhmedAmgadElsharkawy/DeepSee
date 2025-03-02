@@ -7,8 +7,19 @@ from view.widget.custom_spin_box import CustomSpinBox
 from controller.filters_controller import FiltersController
 
 class FiltersWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(FiltersWindow, cls).__new__(cls)
+        return cls.__instance    
+    
     def __init__(self, main_window):
+        if FiltersWindow.__instance != None:
+            return
+        
         super().__init__(main_window, "Filters")
+        FiltersWindow.__instance =self
 
         self.filter_type_custom_combo_box = CustomComboBox(label= "Filter Type",combo_box_items_list=["Average Filter","Gaussian Filter","Median Filter","Low Pass Filter","High Pass Filter"])
         self.filter_type_custom_combo_box.currentIndexChanged.connect(self.on_filter_type_change)

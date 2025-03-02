@@ -9,8 +9,19 @@ from view.widget.image_viewer import ImageViewer
 from controller.hybrid_image_controller import HybridImageController
 
 class HybridImageWindow(BasicStackedWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(HybridImageWindow, cls).__new__(cls)
+        return cls.__instance    
+
     def __init__(self, main_window):
+        if HybridImageWindow.__instance != None:
+            return
+        
         super().__init__(main_window, header_text="Hybrid Image")
+        HybridImageWindow.__instance =self
 
         self.image_viewers_container.deleteLater()
 

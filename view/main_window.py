@@ -10,8 +10,19 @@ from view.window.transformations_window import TransformationsWindow
 from view.window.hybrid_image_window import HybridImageWindow
 
 class MainWindow(QMainWindow):
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            return super(MainWindow, cls).__new__(cls)
+        return cls.__instance     
+
     def __init__(self):
-        super().__init__()
+        if MainWindow.__instance != None:
+            return
+        
+        super().__init__() 
+        MainWindow.__instance = self
 
         self.setWindowTitle('DeepSee')
 
