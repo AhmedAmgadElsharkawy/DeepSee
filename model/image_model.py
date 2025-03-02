@@ -23,6 +23,7 @@ class ImageModel:
     
     def set_image_matrix(self,matrix):
         self.image_matrix = matrix.copy()
+        self.gray_image_matrix = TransformationsController.grayscale_image(self.image_matrix)
 
     def set_gray_image_matrix(self, matrix):
         self.gray_image_matrix = matrix.copy()

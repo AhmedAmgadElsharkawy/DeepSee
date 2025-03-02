@@ -35,22 +35,28 @@ class ImageViewer(pg.ImageView):
             self.temp_label_placeholder_text = "Double click, or drop image here\n\nAllowed Files: PNG, JPG, JPEG BMP files"
         else:
             self.temp_label_placeholder_text = "Processed image will appear here"
-            self.save_image_button = QPushButton(self)
-            self.save_image_button.setIcon(QIcon("assets/icons/save_icon.png"))
-            self.save_image_button.setIconSize(QSize(30, 30))
-            self.save_image_button.setGeometry(20, 20, 30, 30)
-            self.save_image_button.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.save_image_button.clicked.connect(self.on_save_image_click)
-            self.save_image_button.setEnabled(False)
-            self.save_image_button.setObjectName("save_image_button")
+            # self.save_image_button = QPushButton(self)
+            # self.save_image_button.setIcon(QIcon("assets/icons/save_icon.png"))
+            # self.save_image_button.setIconSize(QSize(30, 30))
+            # self.save_image_button.setGeometry(20, 20, 30, 30)
+            # self.save_image_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            # self.save_image_button.clicked.connect(self.on_save_image_click)
+            # self.save_image_button.setEnabled(False)
+            # self.save_image_button.setObjectName("save_image_button")
 
         self.temp_label.setText(self.temp_label_placeholder_text)
 
     def contextMenuEvent(self, event):
-        event.accept()
+        if self.image_model.image_matrix is None:
+            return 
+
         menu = QMenu(self)
 
         move_menu = menu.addMenu("Move To")
+        
+        save_image_action = QAction("Save")
+        save_image_action.triggered.connect(self.on_save_image_click)
+        menu.addAction(save_image_action)
 
         noise_action = QAction("Noise", self)
         filters_action = QAction("Filters", self)
