@@ -287,8 +287,8 @@ class TransformationsController():
         
         if range_value == 0:  # Avoid division by zero
             return np.zeros_like(normalized_image)
-        
-        return (normalized_image - min_value) / range_value
+        normalized_image = (normalized_image - min_value) / range_value
+        return (normalized_image * 255).astype(np.uint8)
 
     def normalize_rgb(self, image):
         normalized_image = image.astype(np.float32)
@@ -303,7 +303,8 @@ class TransformationsController():
             else:
                 normalized_image[:, :, i] = (normalized_image[:, :, i] - min_value) / range_value
 
-        return normalized_image
+        return (normalized_image * 255).astype(np.uint8)
+
 
     def normalize_image(self, image):
         """Handles grayscale and RGB image normalization."""
