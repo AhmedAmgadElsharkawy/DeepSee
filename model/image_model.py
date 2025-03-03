@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 from controller.transformations_controller import TransformationsController
 
@@ -34,6 +33,9 @@ class ImageModel:
 
     def get_gray_image_matrix(self):
         return self.gray_image_matrix
+    
+    def is_grayscale(self,image_matrix):
+        return len(image_matrix.shape) < 3
 
     def reset(self):
         self.image_matrix = None 

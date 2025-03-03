@@ -37,7 +37,7 @@ class FiltersController():
             else:
 
                 print("Incorrect filter type")
-            self.filters_window.output_image_viewer.display_image_matrix2(filtered_img)
+            self.filters_window.output_image_viewer.display_and_set_image_matrix(filtered_img)
         except Exception as e:
             print(f"Error: {e}")
 
