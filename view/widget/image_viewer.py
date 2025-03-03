@@ -140,7 +140,7 @@ class ImageViewer(pg.ImageView):
         self.temp_label.hide()
         if self.save_image_button is not None:
             self.save_image_button.setEnabled(True)
-        if gray:
+        if gray or image_matrix.ndim == 2:
             matrix_to_display = np.transpose(image_matrix)
         else:
             matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
