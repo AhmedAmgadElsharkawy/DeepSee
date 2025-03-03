@@ -69,13 +69,13 @@ class HybridImageController():
     
     def plotting_images(self, image1, image2, mix, filters):
         if image1 is not None:
-            self.hybrid_image_window.first_filtered_image_viewer.display_and_set_image_matrix(image1)
+            self.hybrid_image_window.first_filtered_image_viewer.display_image_matrix2(image1)
 
         if image2 is not None:
-            self.hybrid_image_window.second_filtered_image_viewer.display_and_set_image_matrix(image2)
+            self.hybrid_image_window.second_filtered_image_viewer.display_image_matrix2(image2)
 
         if mix is not None:
             mix = filters.compute_ifft(mix)
-            self.hybrid_image_window.hybrid_image_viewer.display_and_set_image_matrix(mix)
+            self.hybrid_image_window.hybrid_image_viewer.display_image_matrix2(mix)
 
         

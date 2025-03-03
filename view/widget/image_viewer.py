@@ -136,23 +136,27 @@ class ImageViewer(pg.ImageView):
         # if self.save_image_button is not None:
         #     self.save_image_button.setGeometry(20, 20, 30, 30)
 
-    def display_image_matrix(self, image_matrix, gray):
+    def display_image_matrix(self, image_matrix):
         self.temp_label.hide()
         if self.save_image_button is not None:
             self.save_image_button.setEnabled(True)
-        if gray or image_matrix.ndim == 2:
-            matrix_to_display = np.transpose(image_matrix)
-        else:
-            matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
-            matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
+        matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
+        matrix_to_display = np.transpose(matrix_to_display, (1, 0, 2))
         self.setImage(matrix_to_display)
 
-    def display_and_set_image_matrix(self, image_matrix, gray = False):
-        self.display_image_matrix(image_matrix, gray)
+    def display_image_matrix2(self, image_matrix):
+        self.temp_label.hide()
+        if self.save_image_button != None:
+            self.save_image_button.setEnabled(True)
+        matrix_to_display = np.transpose(image_matrix)
+        self.setImage(matrix_to_display)
+
+    def display_and_set_image_matrix(self, image_matrix):
+        self.display_image_matrix(image_matrix)
         self.image_model.set_image_matrix(image_matrix)
 
-    def display_the_image_model(self, gray = False):
-        self.display_image_matrix(self.image_model.get_image_matrix(), gray)
+    def display_the_image_model(self):
+        self.display_image_matrix(self.image_model.get_image_matrix())
 
     def on_save_image_click(self):
         save_path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG Files (*.png);;JPEG Files (*.jpg *.jpeg);;BMP Files (*.bmp);;All Files (*)")
