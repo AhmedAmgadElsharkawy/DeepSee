@@ -88,24 +88,29 @@ class ImageViewer(pg.ImageView):
         menu.exec_(event.globalPos())
 
     def move_to_noise(self):
-        self.main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.nosie_window.output_image_viewer.reset()
 
     def move_to_filters(self):
-        self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.filters_window.output_image_viewer.reset()
+        print(self.image_model.image_matrix.shape)
+        self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
+        print(self.main_window.filters_window.input_image_viewer.image_model.get_gray_image_matrix().shape)
+        print(self.main_window.filters_window.input_image_viewer.image_model.get_image_matrix().shape)
+
+
 
 
     def move_to_thresholding(self):
-        self.main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.thresholding_window.output_image_viewer.reset()
 
     def move_to_edge_detection(self):
-        self.main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.edge_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.edge_detection_window.output_image_viewer.reset()
 
     def move_to_transformations(self):
-        self.main_window.transformations_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.transformations_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.transformations_window.output_image_viewer.reset()
         self.main_window.transformations_window.orignal_image_histogram_graph.clear()
         self.main_window.transformations_window.orignal_image_cdf_graph.clear()
@@ -115,12 +120,12 @@ class ImageViewer(pg.ImageView):
         self.main_window.transformations_window.transformed_image_pdf_graph.clear()
 
     def move_to_first_viewer(self):
-        self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.hybrid_image_widnow.first_filtered_image_viewer.reset()
         self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
 
     def move_to_second_viewer(self):
-        self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix,gray=True)
         self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
         self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
 
