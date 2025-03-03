@@ -17,7 +17,7 @@ class NoiseController():
 
     def add_gaussian_noise(self, image):
         mean = self.noise_window.guassian_noise_mean_spin_box.value()
-        sigma = self.noise_window.guassian_noise_variance_spin_box.value()
+        sigma = self.noise_window.guassian_noise_sigma_spin_box.value()
         noise = np.random.normal(mean, sigma, image.shape).astype(np.float32)
         noisy_image = image.astype(np.float32) + noise
         noisy_image = np.clip(noisy_image, 0, 255)
