@@ -99,10 +99,10 @@ class TransformationsController():
         self.transformations_window.transformed_image_pdf_graph.clear()
 
         # Semi-transparent colors using pg.mkBrush(R, G, B, Alpha)
-        blue_brush = pg.mkBrush(0, 0, 255, 100)   # Blue with transparency
-        green_brush = pg.mkBrush(0, 255, 0, 150)  # Green with transparency
-        red_brush = pg.mkBrush(255, 0, 0, 100)    # Red with transparency
-        gray_brush = pg.mkBrush(128, 128, 128, 150)  # Gray with transparency
+        blue_brush = pg.mkBrush(0, 0, 255, 20)   # Blue with transparency
+        green_brush = pg.mkBrush(0, 255, 0, 20)  # Green with transparency
+        red_brush = pg.mkBrush(255, 0, 0, 20)    # Red with transparency
+        gray_brush = pg.mkBrush(128, 128, 128, 20)  # Gray with transparency
 
         if len(original_histogram) == 3:  # Color image case
             # Convert to NumPy arrays
@@ -110,14 +110,14 @@ class TransformationsController():
             blue_cdf_orig, green_cdf_orig, red_cdf_orig = map(np.array, [blue_cdf_orig, green_cdf_orig, red_cdf_orig])
             
             # Plot original histograms
-            self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b",fillLevel = 0, brush = blue_brush, name="Blue (Original)")
-            self.transformations_window.orignal_image_histogram_graph.plot(green_hist_orig, pen="g",fillLevel = 0, brush = green_brush, name="Green (Original)")
             self.transformations_window.orignal_image_histogram_graph.plot(red_hist_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red (Original)")
+            self.transformations_window.orignal_image_histogram_graph.plot(green_hist_orig, pen="g",fillLevel = 0, brush = green_brush, name="Green (Original)")
+            self.transformations_window.orignal_image_histogram_graph.plot(blue_hist_orig, pen="b",fillLevel = 0, brush = blue_brush, name="Blue (Original)")
 
             # Plot original CDFs
-            self.transformations_window.orignal_image_cdf_graph.plot(blue_cdf_orig, pen="b", fillLevel = 0, brush = blue_brush, name="Blue CDF (Original)")
-            self.transformations_window.orignal_image_cdf_graph.plot(green_cdf_orig, pen="g", fillLevel = 0, brush = green_brush,name="Green CDF (Original)")
             self.transformations_window.orignal_image_cdf_graph.plot(red_cdf_orig, pen="r", fillLevel = 0, brush = red_brush, name="Red CDF (Original)")
+            self.transformations_window.orignal_image_cdf_graph.plot(green_cdf_orig, pen="g", fillLevel = 0, brush = green_brush,name="Green CDF (Original)")
+            self.transformations_window.orignal_image_cdf_graph.plot(blue_cdf_orig, pen="b", fillLevel = 0, brush = blue_brush, name="Blue CDF (Original)")
         else:  # Grayscale case
             gray_hist_orig = np.array(gray_hist_orig)
             gray_cdf_orig = np.array(gray_cdf_orig)
