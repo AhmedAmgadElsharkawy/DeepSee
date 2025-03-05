@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import Qt
 import pyqtgraph as pg
 
 class TransformationsController():
@@ -35,7 +33,6 @@ class TransformationsController():
         if transformed_image is not None:
             self.update_ui(input_image, transformed_image)
 
-        print(f"{transformation_type} applied")
 
 
     def update_ui(self, original, transformed):
@@ -60,11 +57,6 @@ class TransformationsController():
         original_pdf = self.get_pdf(original)
         transformed_pdf = self.get_pdf(transformed)
 
-        # Debugging output
-        print(f"Original Histogram Length: {len(original_histogram)}")
-        print(f"Transformed Histogram Length: {len(transformed_histogram)}")
-        print(f"Original CDF Length: {len(original_cdf)}")
-        print(f"Transformed CDF Length: {len(transformed_cdf)}")
 
         # Check if original is color (3 channels)
         if len(original_histogram) == 3:

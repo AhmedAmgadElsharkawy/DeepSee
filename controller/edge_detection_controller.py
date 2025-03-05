@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from scipy.ndimage import convolve
 import skimage.exposure as exposure
 import utils.utils as utils
 class EdgeDetectionController():

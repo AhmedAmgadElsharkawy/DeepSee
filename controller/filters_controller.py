@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 import utils.utils as utils
 
 class FiltersController():
@@ -11,7 +10,6 @@ class FiltersController():
         try:
             filter_type=self.filters_window.filter_type_custom_combo_box.current_text()
             image=self.filters_window.input_image_viewer.image_model.get_gray_image_matrix()
-            print("Image type:", type(image))
 
 
             if filter_type == "Average Filter":

@@ -85,10 +85,7 @@ class ImageViewer(pg.ImageView):
 
     def move_to_filters(self):
         self.main_window.filters_window.output_image_viewer.reset()
-        print(self.image_model.image_matrix.shape)
         self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        print(self.main_window.filters_window.input_image_viewer.image_model.get_gray_image_matrix().shape)
-        print(self.main_window.filters_window.input_image_viewer.image_model.get_image_matrix().shape)
 
 
 
