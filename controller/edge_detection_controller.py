@@ -10,7 +10,7 @@ class EdgeDetectionController():
 
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
-        image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
+        # image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
         gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
         if type == "Sobel Detector":
             result = self.sobel(gray_image)
@@ -81,38 +81,15 @@ class EdgeDetectionController():
         sobel_x = utils.convolution(image, sobel_kernel_x)
         sobel_y = utils.convolution(image, sobel_kernel_y)
 
-        phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
-        phase[phase < 0] += 180
-
         if direction == "Horizontal":
-            sobel_x_normalized = (
-                exposure.rescale_intensity(
-                    sobel_x, in_range="image", out_range=(0, 255)
-                )
-                .clip(0, 255)
-                .astype(np.uint8)
-            )
-
+            sobel_x_normalized = self.normalize(sobel_x)
             return sobel_x_normalized
         elif direction == "Vertical":
-            sobel_y_normalized = (
-                exposure.rescale_intensity(
-                    sobel_y, in_range="image", out_range=(0, 255)
-                )
-                .clip(0, 255)
-                .astype(np.uint8)
-            )
-
+            sobel_y_normalized = self.normalize(sobel_y)
             return sobel_y_normalized
         elif direction == "Combined":
             sobel_magnitude = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
-            sobel_magnitude = (
-                exposure.rescale_intensity(
-                    sobel_magnitude, in_range="image", out_range=(0, 255)
-                )
-                .clip(0, 255)
-                .astype(np.uint8)
-            )
+            sobel_magnitude = self.normalize(sobel_magnitude)
             return sobel_magnitude
         
     def roberts(self, image):
@@ -135,6 +112,17 @@ class EdgeDetectionController():
             )
 
         return magnitude
+    
+    def normalize(self, image):
+        normalized = (
+                exposure.rescale_intensity(
+                    image, in_range="image", out_range=(0, 255)
+                )
+                .clip(0, 255)
+                .astype(np.uint8)
+            )
+
+        return normalized
         
     # def convolution(self, image, kernel):
     #     img_height, img_width = image.shape
