@@ -16,7 +16,6 @@ class ThresholdingController():
         elif thresholding_type=="Adaptive Mean":
             kernel,constant=self.return_parammeters()
             thresholded_image=self.adaptive_gaussian_threshold(gray_image,kernel_size=kernel,constant=constant)
-
         elif thresholding_type=="Adaptive Gaussian":
             kernel,constant=self.return_parammeters()
             sigma=self.thresholding_window.variance_spin_box.value()
