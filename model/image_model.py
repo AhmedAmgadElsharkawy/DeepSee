@@ -1,5 +1,6 @@
-import numpy as np
 import cv2
+import numpy as np
+
 from controller.transformations_controller import TransformationsController
 
 class ImageModel:
@@ -8,15 +9,25 @@ class ImageModel:
         self.gray_image_matrix = None
 
     def load_image(self, file_path):
-        self.image_matrix = cv2.imread(file_path)
-        # self.image_matrix = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+        with open(file_path, "rb") as f:
+            file_bytes = np.asarray(bytearray(f.read()), dtype=np.uint8)
 
-        self.gray_image_matrix = TransformationsController.grayscale_image(self.image_matrix)
-            
+        temp_image = cv2.imdecode(file_bytes, cv2.IMREAD_UNCHANGED)
+
+        self.image_matrix = temp_image
+        if temp_image.ndim == 2:
+            self.gray_image_matrix = temp_image
+        else:
+            self.gray_image_matrix = TransformationsController.grayscale_image(temp_image)
 
     def save_image(self, save_path):
         if self.image_matrix is not None:
-            cv2.imwrite(save_path, self.image_matrix)
+            ext = save_path.split('.')[-1] 
+            success, buffer = cv2.imencode(f'.{ext}', self.image_matrix)
+
+            if success:
+                with open(save_path, "wb") as f:
+                    f.write(buffer)
 
     def get_image_matrix(self):
         return self.image_matrix
@@ -34,6 +45,9 @@ class ImageModel:
 
     def get_gray_image_matrix(self):
         return self.gray_image_matrix
+    
+    def is_grayscale(self,image_matrix):
+        return len(image_matrix.shape) < 3
 
     def reset(self):
         self.image_matrix = None 

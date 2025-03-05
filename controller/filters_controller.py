@@ -29,15 +29,15 @@ class FiltersController():
 
             elif filter_type == "Low Pass Filter":
                 raduis = self.filters_window.low_pass_filter_radius_spin_box.value()
-                _, filtered_img = self.apply_low_pass_filter(image, Raduis=raduis)
+                _, filtered_img = self.apply_low_or_high_pass_filter(image, Radius=raduis,Type="low")
 
             elif filter_type == "High Pass Filter":
                 raduis = self.filters_window.high_pass_filter_radius_spin_box.value()
-                _, filtered_img = self.apply_high_pass_filter(image, Radius=raduis)
+                _, filtered_img = self.apply_low_or_high_pass_filter(image, Radius=raduis,Type="high")
             else:
 
                 print("Incorrect filter type")
-            self.filters_window.output_image_viewer.display_image_matrix2(filtered_img)
+            self.filters_window.output_image_viewer.display_and_set_image_matrix(filtered_img)
         except Exception as e:
             print(f"Error: {e}")
 
@@ -82,34 +82,29 @@ class FiltersController():
         fft_shifted = np.fft.fftshift(fft)
         return fft_shifted
 
-    def create_lowpass_mask(self, shape, radius):
-        rows, cols = shape
-        center_row, center_col = rows // 2, cols // 2
-        y, x = np.ogrid[:rows, :cols]     # mesh grid
-        mask = np.sqrt((x - center_col) ** 2 + (y - center_row) ** 2) <= radius
-        return mask.astype(np.float32)
 
-    def create_highpass_mask(self, shape, radius):
-        rows, cols = shape
-        center_row, center_col = rows // 2, cols // 2
-        y, x = np.ogrid[:rows, :cols]        # mesh grid
-        mask = np.sqrt((x - center_col) ** 2 + (y - center_row) ** 2) > radius
-        return mask.astype(np.float32)
 
     def compute_ifft(self, fft_shifted):    # inverse fourier transform
         fft_shifted_back = np.fft.ifftshift(fft_shifted)
         image_filtered = np.fft.ifft2(fft_shifted_back)
         return np.abs(image_filtered)
 
-    def apply_low_pass_filter(self, image, Raduis=2):
-        dft_shift = self.compute_fft(image)
-        mask = self.create_lowpass_mask(image.shape, Raduis)
-        dft_shift_filtered = dft_shift * mask
-        return dft_shift_filtered, self.compute_ifft(dft_shift_filtered)
 
-    def apply_high_pass_filter(self, image, Radius=2):
+
+    def create_mask(self, shape, radius,type):
+        rows, cols = shape
+        center_row, center_col = rows // 2, cols // 2
+        y, x = np.ogrid[:rows, :cols]        # mesh grid
+        if type == "low":
+            mask = np.sqrt((x - center_col) ** 2 + (y - center_row) ** 2) <= radius
+        elif type == "high":
+            mask = np.sqrt((x - center_col) ** 2 + (y - center_row) ** 2) > radius
+        return mask.astype(np.float32)
+
+
+    def apply_low_or_high_pass_filter(self, image, Radius=2,Type="low"):
         dft_shift = self.compute_fft(image)
-        mask = self.create_highpass_mask(image.shape, Radius)
+        mask = self.create_mask(image.shape, Radius,Type)
         dft_shift_filtered = dft_shift * mask
         return dft_shift_filtered, self.compute_ifft(dft_shift_filtered)
 

@@ -124,20 +124,4 @@ class EdgeDetectionController():
 
         return normalized
         
-    # def convolution(self, image, kernel):
-    #     img_height, img_width = image.shape
-    #     kernel_height, kernel_width = kernel.shape
-    #
-    #     pad_h = kernel_height // 2
-    #     pad_w = kernel_width // 2
-    #
-    #     padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
-    #
-    #     output = np.zeros((img_height, img_width), dtype=np.float32)
-    #
-    #     for i in range(img_height):
-    #         for j in range(img_width):
-    #             region = padded_image[i:i + kernel_height, j:j + kernel_width]
-    #             output[i, j] = np.sum(region * kernel)
-    #
-    #     return output
+    
