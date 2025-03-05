@@ -50,16 +50,16 @@ class HybridImageController():
         if image1 is not None:
             type1 = self.hybrid_image_window.first_image_filter_type_custom_combo_box.current_text()
             if type1 == "Low Pass Filter":
-                fft1, img1 = filters.apply_low_pass_filter(image1, radius)
+                fft1, img1 = filters.apply_low_or_high_pass_filter(image1, radius,"low")
             else:
-                fft1, img1 = filters.apply_high_pass_filter(image1, radius)
+                fft1, img1 = filters.apply_low_or_high_pass_filter(image1, radius,"high")
             result = fft1
         if image2 is not None:
             type2 = self.hybrid_image_window.second_image_filter_type_custom_combo_box.current_text()
             if type2 == "Low Pass Filter":
-                fft2, img2 = filters.apply_low_pass_filter(image2, radius)
+                fft2, img2 = filters.apply_low_or_high_pass_filter(image2, radius,"low")
             else:
-                fft2, img2 = filters.apply_high_pass_filter(image2, radius)
+                fft2, img2 = filters.apply_low_or_high_pass_filter(image2, radius,"high")
             if result is not None:
                 result += fft2
             else:

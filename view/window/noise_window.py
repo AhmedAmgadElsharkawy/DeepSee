@@ -40,9 +40,9 @@ class NoiseWindow(BasicStackedWindow):
         self.inputs_container_layout.addWidget(self.gaussian_nosie_inputs_container)
         self.gaussian_nosie_inputs_container.setVisible(False)
         self.guassian_noise_mean_spin_box = CustomSpinBox(label="Mean")
-        self.guassian_noise_variance_spin_box  = CustomSpinBox(label="Variance")
+        self.guassian_noise_sigma_spin_box  = CustomSpinBox(label="Sigma")
         self.gaussian_nosie_inputs_container_layout.addWidget(self.guassian_noise_mean_spin_box)
-        self.gaussian_nosie_inputs_container_layout.addWidget(self.guassian_noise_variance_spin_box)
+        self.gaussian_nosie_inputs_container_layout.addWidget(self.guassian_noise_sigma_spin_box)
         
 
 
