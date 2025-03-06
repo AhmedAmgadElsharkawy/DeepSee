@@ -30,7 +30,7 @@ class ImageModel:
                     f.write(buffer)
 
     def get_image_matrix(self):
-        return self.image_matrix
+        return self.image_matrix.copy()
     
     def set_image_matrix(self,matrix):
         self.image_matrix = matrix.copy()
@@ -44,7 +44,7 @@ class ImageModel:
         self.gray_image_matrix = matrix.copy()
 
     def get_gray_image_matrix(self):
-        return self.gray_image_matrix
+        return self.gray_image_matrix.copy()
     
     def is_grayscale(self,image_matrix):
         return len(image_matrix.shape) < 3
