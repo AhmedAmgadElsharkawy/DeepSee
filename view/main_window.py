@@ -8,6 +8,7 @@ from view.window.thresholding_window import ThresholdingWindow
 from view.window.edge_detection_window import EdgeDetectionsWindow
 from view.window.transformations_window import TransformationsWindow
 from view.window.hybrid_image_window import HybridImageWindow
+from view.window.hough_transform_window import HoughTransformWindow
 
 class MainWindow(QMainWindow):
     __instance = None
@@ -44,7 +45,8 @@ class MainWindow(QMainWindow):
             ("Thresholding", "assets/icons/thresholding.png"),
             ("Edge Detection", "assets/icons/edge_detection.png"),
             ("Transformations", "assets/icons/transformations.png"),
-            ("Hybrid Image", "assets/icons/hybrid_image.png")
+            ("Hybrid Image", "assets/icons/hybrid_image.png"),
+            ("Hough Transform","assets/icons/hough_transform.png")
         ]
 
         font = QFont("Inter",11)
@@ -63,6 +65,7 @@ class MainWindow(QMainWindow):
         self.edge_detection_window = EdgeDetectionsWindow(self)
         self.transformations_window = TransformationsWindow(self)
         self.hybrid_image_widnow = HybridImageWindow(self)
+        self.hough_transform_window = HoughTransformWindow(self)
 
         self.stackedWidget = QStackedWidget()
         self.stackedWidget.addWidget(self.nosie_window)
@@ -71,6 +74,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.edge_detection_window)
         self.stackedWidget.addWidget(self.transformations_window)
         self.stackedWidget.addWidget(self.hybrid_image_widnow)
+        self.stackedWidget.addWidget(self.hough_transform_window)
 
         self.list_widget.setFixedWidth(250)
         self.main_widget_layout.addWidget(self.list_widget)
@@ -178,7 +182,7 @@ class MainWindow(QMainWindow):
                 background: #A1A1A1;
             }
                            
-            QLabel#spin_box_label , QLabel#combo_box_label{
+            QLabel#spin_box_label , QLabel#combo_box_label, #choose_color_label{
                 color: #343C6A;
             }
                            
@@ -218,6 +222,21 @@ class MainWindow(QMainWindow):
             ImageViewer QPushButton#save_image_button:hover{
                     background-color: none;
                 }
+            
+            #choose_color_button{
+                border: 1px solid #343C6A;
+                padding: 3px 10px;
+                margin:0px;
+                color: #343C6A;
+                background-color: #f5f7fa;
+                border-radius:4px;      
+            }
+                           
+            #choose_color_button:hover {
+                background-color: #2D60FF; 
+                color: #FFFFFF;
+                border-color: none; 
+            }              
         """)
 
 
