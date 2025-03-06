@@ -89,9 +89,9 @@ class HoughTransformWindow(BasicStackedWindow):
     def on_detected_objects_type_change(self):
         self.hide_all_inputs()
 
-        selected_detector = self.detected_objects_type_custom_combo_box.current_text()
+        detected_objects_type = self.detected_objects_type_custom_combo_box.current_text()
 
-        match selected_detector:
+        match detected_objects_type:
             case "Lines Detection":
                 self.linear_detection_inputs_container.setVisible(True)
             case "Circles Detection":
