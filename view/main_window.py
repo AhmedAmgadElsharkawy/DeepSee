@@ -9,6 +9,7 @@ from view.window.edge_detection_window import EdgeDetectionsWindow
 from view.window.transformations_window import TransformationsWindow
 from view.window.hybrid_image_window import HybridImageWindow
 from view.window.hough_transform_window import HoughTransformWindow
+from view.window.active_contours_window import ActiveContoursWindow
 
 class MainWindow(QMainWindow):
     __instance = None
@@ -46,7 +47,8 @@ class MainWindow(QMainWindow):
             ("Edge Detection", "assets/icons/edge_detection.png"),
             ("Transformations", "assets/icons/transformations.png"),
             ("Hybrid Image", "assets/icons/hybrid_image.png"),
-            ("Hough Transform","assets/icons/hough_transform.png")
+            ("Hough Transform","assets/icons/hough_transform.png"),
+            ("Active Contours","assets/icons/active_contours.png")
         ]
 
         font = QFont("Inter",11)
@@ -66,6 +68,7 @@ class MainWindow(QMainWindow):
         self.transformations_window = TransformationsWindow(self)
         self.hybrid_image_widnow = HybridImageWindow(self)
         self.hough_transform_window = HoughTransformWindow(self)
+        self.active_contours_window = ActiveContoursWindow(self)
 
         self.stackedWidget = QStackedWidget()
         self.stackedWidget.addWidget(self.nosie_window)
@@ -75,6 +78,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.transformations_window)
         self.stackedWidget.addWidget(self.hybrid_image_widnow)
         self.stackedWidget.addWidget(self.hough_transform_window)
+        self.stackedWidget.addWidget(self.active_contours_window)
 
         self.list_widget.setFixedWidth(250)
         self.main_widget_layout.addWidget(self.list_widget)
