@@ -55,6 +55,8 @@ class ImageViewer(pg.ImageView):
         threshold_action = QAction("Thresholding", self)
         edge_action = QAction("Edge Detection", self)
         transformations_action = QAction("Transformations", self)
+        hough_action = QAction("Hough Transform", self)
+        active_contours_action = QAction("Active Contours", self)
 
         first_viewer_action = QAction("First Image Viewer", self)
         second_viewer_action = QAction("Second Image Viewer", self)
@@ -64,6 +66,8 @@ class ImageViewer(pg.ImageView):
         move_menu.addAction(threshold_action)
         move_menu.addAction(edge_action)
         move_menu.addAction(transformations_action)
+        move_menu.addAction(hough_action)
+        move_menu.addAction(active_contours_action)
 
         hybrid_menu = move_menu.addMenu("Hybrid Image")
         hybrid_menu.addAction(first_viewer_action)
@@ -76,6 +80,8 @@ class ImageViewer(pg.ImageView):
         transformations_action.triggered.connect(self.move_to_transformations)
         first_viewer_action.triggered.connect(self.move_to_first_viewer)
         second_viewer_action.triggered.connect(self.move_to_second_viewer)
+        hough_action.triggered.connect(self.move_to_hough_transform_viewer)
+        active_contours_action.triggered.connect(self.move_to_active_contours_viewer)
 
         menu.exec_(event.globalPos())
 
@@ -86,9 +92,6 @@ class ImageViewer(pg.ImageView):
     def move_to_filters(self):
         self.main_window.filters_window.output_image_viewer.reset()
         self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-
-
-
 
     def move_to_thresholding(self):
         self.main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
@@ -117,6 +120,14 @@ class ImageViewer(pg.ImageView):
         self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
         self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
+
+    def move_to_hough_transform_viewer(self):
+        self.main_window.hough_transform_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hough_transform_window.output_image_viewer.reset()
+    
+    def move_to_active_contours_viewer(self):
+        self.main_window.active_contours_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.active_contours_window.output_image_viewer.reset()
 
 
     def resizeEvent(self, event):

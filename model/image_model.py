@@ -37,7 +37,7 @@ class ImageModel:
         if self.image_matrix.ndim == 3:
             self.gray_image_matrix = TransformationsController.grayscale_image(self.image_matrix)
         elif self.image_matrix.ndim == 2:
-            self.gray_image_matrix=self.image_matrix
+            self.gray_image_matrix = self.image_matrix.copy()
 
 
     def set_gray_image_matrix(self, matrix):
