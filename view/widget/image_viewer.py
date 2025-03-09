@@ -90,8 +90,8 @@ class ImageViewer(pg.ImageView):
         self.main_window.nosie_window.output_image_viewer.reset()
 
     def move_to_filters(self):
-        self.main_window.filters_window.output_image_viewer.reset()
         self.main_window.filters_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.filters_window.output_image_viewer.reset()
 
     def move_to_thresholding(self):
         self.main_window.thresholding_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
@@ -147,10 +147,6 @@ class ImageViewer(pg.ImageView):
     def display_and_set_image_matrix(self, image_matrix):
         self.display_image_matrix(image_matrix)
         self.image_model.set_image_matrix(image_matrix)
-
-
-    def display_the_image_model(self):
-        self.display_and_set_image_matrix(self.image_model.get_image_matrix())
 
     def on_save_image_click(self):
         save_path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG Files (*.png);;JPEG Files (*.jpg *.jpeg);;BMP Files (*.bmp);;All Files (*)")
