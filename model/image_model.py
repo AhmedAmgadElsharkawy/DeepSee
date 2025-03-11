@@ -30,9 +30,14 @@ class ImageModel:
                     f.write(buffer)
 
     def get_image_matrix(self):
+        if self.image_matrix == None:
+            return None
         return self.image_matrix.copy()
     
     def set_image_matrix(self,matrix):
+        if matrix == None:
+            print("set None Image matrix")
+            return
         self.image_matrix = matrix.copy()
         if self.image_matrix.ndim == 3:
             self.gray_image_matrix = TransformationsController.grayscale_image(self.image_matrix)
@@ -41,9 +46,14 @@ class ImageModel:
 
 
     def set_gray_image_matrix(self, matrix):
+        if matrix == None:
+            print("set None Image matrix")
+            return
         self.gray_image_matrix = matrix.copy()
 
     def get_gray_image_matrix(self):
+        if self.gray_image_matrix == None:
+            return None
         return self.gray_image_matrix.copy()
     
     def is_grayscale(self,image_matrix):
