@@ -30,12 +30,12 @@ class ImageModel:
                     f.write(buffer)
 
     def get_image_matrix(self):
-        if self.image_matrix == None:
+        if self.image_matrix is None:
             return None
         return self.image_matrix.copy()
     
     def set_image_matrix(self,matrix):
-        if matrix == None:
+        if matrix is None:
             print("set None Image matrix")
             return
         self.image_matrix = matrix.copy()
@@ -46,13 +46,13 @@ class ImageModel:
 
 
     def set_gray_image_matrix(self, matrix):
-        if matrix == None:
+        if matrix is None:
             print("set None Image matrix")
             return
         self.gray_image_matrix = matrix.copy()
 
     def get_gray_image_matrix(self):
-        if self.gray_image_matrix == None:
+        if self.gray_image_matrix is None:
             return None
         return self.gray_image_matrix.copy()
     
