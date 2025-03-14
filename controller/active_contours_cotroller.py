@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import cv2
+
 class ActiveContoursController():
     def __init__(self,active_contours_window):
         self.active_contours_window = active_contours_window
@@ -25,7 +26,9 @@ class ActiveContoursController():
         for i in range(num_iterations):
             new_curve=self.snake_operation(image, curve, window_size, alpha, beta, gamma)
         curve=new_curve
-        output_image=self.draw_contours(input_image, output_image, curve)
+        output_image,contour_area,contour_perimeter,chain_code=self.process_contour(input_image, output_image, curve)
+        self.update_perimeter_area(contour_perimeter,contour_area )
+        self.update_chain_code_display(chain_code)
         self.active_contours_window.output_image_viewer.display_and_set_image_matrix(output_image)
         print("apply_active_contour")
 
@@ -99,39 +102,83 @@ class ActiveContoursController():
         curve[:] = new_curve
         return curve
 
-    def draw_contours(self,image, output_image, snake_points, chain_code=None):
+    def process_contour(self, image, output_image, snake_points):
         output_image[:] = image.copy()
-        # chain_code.clear()
+        area = 0.0
+        perimeter = 0.0
+        chain_code = []
+        j = len(snake_points) - 1
 
         for i in range(len(snake_points)):
+            # Draw points
             cv2.circle(output_image, snake_points[i], 4, (0, 0, 255), -1)
+
+            # Draw lines
             if i > 0:
                 cv2.line(output_image, snake_points[i - 1], snake_points[i], (255, 0, 0), 2)
-            cv2.line(output_image, snake_points[0], snake_points[-1], (255, 0, 0), 2)
+            # Closing the contour loop
+            if i == len(snake_points) - 1:
+                cv2.line(output_image, snake_points[i], snake_points[0], (255, 0, 0), 2)
 
-            # dx = snake_points[(i + 1) % len(snake_points)][0] - snake_points[i][0]
-            # dy = snake_points[(i + 1) % len(snake_points)][1] - snake_points[i][1]
-            #
-            # code = None
-            # if dx == 0 and dy == 1:
-            #     code = 0
-            # elif dx == 1 and dy == 1:
-            #     code = 1
-            # elif dx == 1 and dy == 0:
-            #     code = 2
-            # elif dx == 1 and dy == -1:
-            #     code = 3
-            # elif dx == 0 and dy == -1:
-            #     code = 4
-            # elif dx == -1 and dy == -1:
-            #     code = 5
-            # elif dx == -1 and dy == 0:
-            #     code = 6
-            # elif dx == -1 and dy == 1:
-            #     code = 7
-            #
-            # chain_code.append(code)
-        return output_image
+            # Area calculation (Shoelace formula)
+            area += (snake_points[j][0] + snake_points[i][0]) * (snake_points[j][1] - snake_points[i][1])
+
+            # Perimeter calculation
+            next_i = (i + 1) % len(snake_points)
+            dx = snake_points[i][0] - snake_points[next_i][0]
+            dy = snake_points[i][1] - snake_points[next_i][1]
+
+            perimeter += math.hypot(dx, dy)
+            direction_code = self.get_chain_code_direction(dx,dy)
+            chain_code.append(direction_code)
+            print(direction_code)
+
+            j = i  # Update j for next iteration
+
+        area = abs(area / 2.0)
+
+        return output_image, area, perimeter,chain_code
+
+
+    def get_chain_code_direction(self,dx, dy):
+        angle_rad = math.atan2(dy, dx)
+        angle_deg = math.degrees(angle_rad)
+
+        if angle_deg < 0:
+            angle_deg += 360
+        if angle_deg >= 337.5 or angle_deg < 22.5:
+            return 0
+        elif angle_deg < 67.5:
+            return 1
+        elif angle_deg < 112.5:
+            return 2
+        elif angle_deg < 157.5:
+            return 3
+        elif angle_deg < 202.5:
+            return 4
+        elif angle_deg < 247.5:
+            return 5
+        elif angle_deg < 292.5:
+            return 6
+        else:
+            return 7
+
+
+    def update_perimeter_area(self, contour_perimeter, contour_area ):
+        self.active_contours_window.active_contours_detector_perimeter.setText(f"{contour_perimeter:.2f} ")
+        self.active_contours_window.active_contours_detector_area.setText(f"{contour_area:.2f} ")
+
+    def update_chain_code_display(self, chain_code):
+        chain_text = "".join(str(code) for code in chain_code)
+        print(chain_text)
+        self.active_contours_window.active_contours_detector_chaincode.setText(f"{chain_text} ")
+
+
+
+
+
+
+
 
 
 
