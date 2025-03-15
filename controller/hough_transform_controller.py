@@ -24,7 +24,7 @@ class HoughTransformController():
             case "Lines Detection":
                 output_image_matrix = self.detect_lines(input_image_matrix, theta = theta, threshold = threshold, color = color)
             case "Circles Detection":
-                output_image_matrix = self.detect_circles(input_image_matrix)
+                output_image_matrix = self.detect_circles(input_image_matrix, min_radius = min_radius, max_radius = max_radius, color = color)
             case "Ellipses Detection":
                 output_image_matrix = self.detect_ellipses(input_image_matrix)
             
@@ -70,7 +70,8 @@ class HoughTransformController():
         height, width = edges.shape
         max_rho = int(np.sqrt(height**2 + width**2))  # Maximum possible rho value
         rhos = np.arange(-max_rho, max_rho + 1, rho)  # Range of rho values
-        thetas = np.arange(0, np.pi, theta)  # Range of theta values in radians
+        thetas = np.linspace(-np.pi/2, np.pi/2, num=theta)  # Range of theta values in radians
+
         num_thetas = len(thetas)
 
         # Precompute cosine and sine values for all thetas
@@ -86,7 +87,7 @@ class HoughTransformController():
         # Fill the accumulator
         for i in range(num_thetas):
             rho_values = x_indices * cos_thetas[i] + y_indices * sin_thetas[i]
-            rho_values = np.round(rho_values).astype(int) + max_rho
+            rho_values = np.clip(np.round(rho_values).astype(int) + max_rho, 0, len(rhos) - 1)
             np.add.at(accumulator[:, i], rho_values, 1)
 
         # Find candidate lines that exceed the threshold
@@ -125,7 +126,7 @@ class HoughTransformController():
             cv2.line(image, (x1, y1), (x2, y2), color, 2)
         return image
 
-    def detect_lines(self, input_image_matrix, rho=1, theta=np.pi / 180, threshold=90, color=(0, 0, 255)):
+    def detect_lines(self, input_image_matrix, rho=1, theta=np.pi / 360, threshold=90, color=(0, 0, 255)):
         """
         Detect and draw lines in an image using the Hough Transform.
 
@@ -139,6 +140,7 @@ class HoughTransformController():
         Returns:
             result (numpy.ndarray): Image with detected lines drawn.
         """
+
         if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:
             gray = cv2.cvtColor(input_image_matrix, cv2.COLOR_BGR2GRAY)
         else:
@@ -148,16 +150,50 @@ class HoughTransformController():
         candidates_indices, rhos, thetas = self.find_lines(edges, rho, theta, threshold)
         result = self.draw_lines(input_image_matrix, candidates_indices, rhos, thetas, color)
         
-        print(f"Detected {len(candidates_indices)} lines")
-        for i, (rho_idx, theta_idx) in enumerate(candidates_indices[:10]):
-            print(f"Line {i}: rho={rhos[rho_idx]}, theta={thetas[theta_idx]}")
-
         return result
 
 
 
-    def detect_circles(self,input_image_matrix):
-        print("detect circles")
+    def detect_circles(self, input_image_matrix, min_radius=10, max_radius=100, color=(0, 255, 0)):
+        """
+        Detect and draw circles in an image using the Hough Transform.
+
+        Args:
+            input_image_matrix (numpy.ndarray): Input image.
+            min_radius (int): Minimum radius of circles to detect.
+            max_radius (int): Maximum radius of circles to detect.
+            color (tuple): Color of the circles to draw (BGR format).
+
+        Returns:
+            result (numpy.ndarray): Image with detected circles drawn.
+        """
+        gray = cv2.cvtColor(input_image_matrix, cv2.COLOR_BGR2GRAY)
+        gray = cv2.medianBlur(gray, 5)  # Blur the image to reduce noise
+
+        # Detect circles using HoughCircles
+        circles = cv2.HoughCircles(
+            gray,
+            cv2.HOUGH_GRADIENT,
+            dp=1,
+            minDist=20,
+            param1=50,
+            param2=30,
+            minRadius=min_radius,
+            maxRadius=max_radius
+        )
+
+        result = input_image_matrix.copy()
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for circle in circles[0, :]:
+                center = (circle[0], circle[1])
+                radius = circle[2]
+                # Draw the outer circle
+                cv2.circle(result, center, radius, color, 2)
+                # Draw the center of the circle
+                cv2.circle(result, center, 2, (0, 0, 255), 3)
+
+        return result
 
     def detect_ellipses(self,input_image_matrix):
         print("detect ellipses")
