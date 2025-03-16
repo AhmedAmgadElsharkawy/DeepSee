@@ -142,7 +142,7 @@ class HoughTransformController():
         """
 
         if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:
-            gray = cv2.cvtColor(input_image_matrix, cv2.COLOR_BGR2GRAY)
+            gray = self.hough_transform_window.input_image_viewer.image_model.get_gray_image_matrix()
         else:
             gray = input_image_matrix.copy()  # Already grayscale, no conversion needed
         
@@ -153,7 +153,20 @@ class HoughTransformController():
         return result
 
 
+    def draw_circles(self, input_image_matrix, circles, color):
+        result = input_image_matrix.copy()
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for circle in circles[0, :]:
+                center = (circle[0], circle[1])
+                radius = circle[2]
+                # Draw the outer circle
+                cv2.circle(result, center, radius, color, 2)
+                # Draw the center of the circle
+                cv2.circle(result, center, 2, color, 3)
 
+        return result
+    
     def detect_circles(self, input_image_matrix, min_radius=10, max_radius=100, color=(0, 255, 0)):
         """
         Detect and draw circles in an image using the Hough Transform.
@@ -167,8 +180,12 @@ class HoughTransformController():
         Returns:
             result (numpy.ndarray): Image with detected circles drawn.
         """
-        gray = cv2.cvtColor(input_image_matrix, cv2.COLOR_BGR2GRAY)
-        gray = cv2.medianBlur(gray, 5)  # Blur the image to reduce noise
+        if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:
+            gray = self.hough_transform_window.input_image_viewer.image_model.get_gray_image_matrix()
+        else:
+            gray = input_image_matrix.copy()  # Already grayscale, no conversion needed
+        
+        edges = cv2.Canny(gray, 50, 150)
 
         # Detect circles using HoughCircles
         circles = cv2.HoughCircles(
@@ -182,16 +199,7 @@ class HoughTransformController():
             maxRadius=max_radius
         )
 
-        result = input_image_matrix.copy()
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            for circle in circles[0, :]:
-                center = (circle[0], circle[1])
-                radius = circle[2]
-                # Draw the outer circle
-                cv2.circle(result, center, radius, color, 2)
-                # Draw the center of the circle
-                cv2.circle(result, center, 2, (0, 0, 255), 3)
+        result = self.draw_circles(input_image_matrix, circles, color)
 
         return result
 
