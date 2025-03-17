@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QWidget,QHBoxLayout,QWidget, QLineEdit,QLabel
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget,QHBoxLayout,QWidget, QLineEdit,QLabel,QTextBrowser, QPlainTextEdit
+
 
 
 from view.window.basic_stacked_window import BasicStackedWindow
@@ -43,9 +45,32 @@ class ActiveContoursWindow(BasicStackedWindow):
         self.active_contours_detector_area.setReadOnly(True)  # Prevent user editing
         self.active_contours_detector_area.setText(f"{0.00:.2f} ")  # Default value
         self.active_contours_detector_chaincode_label = QLabel("Contour Chain Code:")
-        self.active_contours_detector_chaincode = QLineEdit()
-        self.active_contours_detector_chaincode.setReadOnly(True)  # Prevent user editing
-        self.active_contours_detector_chaincode.setText("00000000000000000000000000000000")  # Default value
+        self.active_contours_detector_chaincode = QLabel()
+        self.active_contours_detector_chaincode.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.active_contours_detector_chaincode.setWordWrap(True)
+        self.active_contours_detector_chaincode.setText("00000000000000000000000000000000")
+        self.active_contours_detector_chaincode.setStyleSheet("font-family: Courier; font-size: 12px;")
+
+        # self.active_contours_detector_chaincode = QLineEdit()
+        # self.active_contours_detector_chaincode.setReadOnly(True)  # Prevent user editing
+        # self.active_contours_detector_chaincode.setText("00000000000000000000000000000000")  # Default value
+
+
+        # self.active_contours_detector_chaincode_label = QLabel("Contour Chain Code:")
+        # self.active_contours_detector_chaincode = QTextBrowser()
+        # self.active_contours_detector_chaincode.setReadOnly(True)
+        # self.active_contours_detector_chaincode.setText("00000000000000000000000000000000")
+        # self.active_contours_detector_chaincode.setFixedHeight(20)  # Adjust height as needed
+
+
+        # self.active_contours_detector_chaincode_label = QLabel("Contour Chain Code:")
+        # self.active_contours_detector_chaincode = QPlainTextEdit()
+        # self.active_contours_detector_chaincode.setReadOnly(True)
+        # self.active_contours_detector_chaincode.setFixedHeight(25)
+        # self.active_contours_detector_chaincode.setFixedWidth(250)
+        # self.active_contours_detector_chaincode.setStyleSheet("font-family: Courier; font-size: 12px;")
+        # self.active_contours_detector_chaincode.setPlainText("00000000000000000000000000000000")
+
         # ///////////
         self.active_contours_inputs_container_layout.addWidget(self.active_contours_iterations_spin_box)
         self.active_contours_inputs_container_layout.addWidget(self.active_contours_radius_spin_box)

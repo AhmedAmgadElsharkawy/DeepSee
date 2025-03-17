@@ -170,8 +170,13 @@ class ActiveContoursController():
 
     def update_chain_code_display(self, chain_code):
         chain_text = "".join(str(code) for code in chain_code)
+        chain_text=self.format_chain_code(chain_text)
         print(chain_text)
         self.active_contours_window.active_contours_detector_chaincode.setText(f"{chain_text} ")
+        # self.active_contours_window.active_contours_detector_chaincode.setPlainText(f"{chain_text} ")
+
+    def format_chain_code(self,chain_code: str, line_width: int = 40) -> str:
+        return '\n'.join(chain_code[i:i+line_width] for i in range(0, len(chain_code), line_width))
 
 
 
