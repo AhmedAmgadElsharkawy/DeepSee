@@ -65,8 +65,10 @@ class EdgeDetectionController():
         lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
         upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
         variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
-        
+
         magnitude, angles = self.sobel(image)
+        image = self.non_maximum_suppression(magnitude, angles)
+
 
 
     def sobel(self, image):
@@ -135,5 +137,33 @@ class EdgeDetectionController():
             )
 
         return normalized
+    
+    def non_maximum_suppression(self, magnitude, angles):
+        H, W = magnitude.shape
+        suppressed = np.zeros((H, W), dtype=np.float32)
+
+        for i in range(1, H - 1):
+            for j in range(1, W - 1):
+                q = 255
+                r = 255
+                if (0 <= angles[i, j] < 22.5) or (157.5 <= angles[i, j] <= 180):
+                    q = magnitude[i, j + 1]
+                    r = magnitude[i, j - 1]
+                elif 22.5 <= angles[i, j] < 67.5:
+                    q = magnitude[i - 1, j + 1]
+                    r = magnitude[i + 1, j - 1]
+                elif 67.5 <= angles[i, j] < 112.5:
+                    q = magnitude[i - 1, j]
+                    r = magnitude[i + 1, j]
+                elif 112.5 <= angles[i, j] < 157.5:
+                    q = magnitude[i - 1, j - 1]
+                    r = magnitude[i + 1, j + 1]
+
+                if magnitude[i, j] >= q and magnitude[i, j] >= r:
+                    suppressed[i, j] = magnitude[i, j]
+                else:
+                    suppressed[i, j] = 0
+
+        return suppressed
         
     
