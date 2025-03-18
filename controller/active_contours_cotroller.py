@@ -45,59 +45,58 @@ class ActiveContoursController():
             current_angle += resolution
             curve.append((x, y))
         return curve
-    def points_distance(self,x1, y1, x2, y2):
-        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    def calculate_internal_energy(self,point, previous_point, next_point, alpha):
-        dx1 = point[0] - previous_point[0]
-        dy1 = point[1] - previous_point[1]
-        dx2 = next_point[0] - point[0]
-        dy2 = next_point[1] - point[1]
-        denominator = (dx1 ** 2 + dy1 ** 2) ** 1.5
 
-        # Handle division by zero
-        if denominator == 0:
-            return 0.0  # Return zero curvature if denominator is zero
+    def calculate_internal_energy(self,point, prev_point, next_point, alpha, beta, avg_distance):
+        # Elasticity with penalty
+        dx1 = point[0] - prev_point[0]
+        dy1 = point[1] - prev_point[1]
+        dist1 = np.hypot(dx1, dy1)
+        elasticity = alpha * ((dist1 - avg_distance) ** 2)
 
-        curvature = (dx1 * dy2 - dx2 * dy1) / denominator
-        return alpha * curvature
-    def calculate_external_energy(self,image, point, beta):
-        # Ensure the point is within the image bounds
-        if 0 <= point[1] < image.shape[0] and 0 <= point[0] < image.shape[1]:
-            return -beta * image[point[1], point[0]]
-        else:
-            return 0.0  # Return zero energy if the point is outside the image
+        # Curvature term
+        dx2 = next_point[0] - 2 * point[0] + prev_point[0]
+        dy2 = next_point[1] - 2 * point[1] + prev_point[1]
+        curvature = beta * (dx2 ** 2 + dy2 ** 2)
 
-    def calculate_gradients(self,point, prev_point, gamma):
-        dx = point[0] - prev_point[0]
-        dy = point[1] - prev_point[1]
-        return gamma * (dx ** 2 + dy ** 2)
-    def calculate_point_energy(self,image, point, prev_point, next_point, alpha, beta, gamma):
-        internal_energy = self.calculate_internal_energy(point, prev_point, next_point, alpha)
-        external_energy = self.calculate_external_energy(image, point, beta)
-        gradients = self.calculate_gradients(point, prev_point, gamma)
-        return internal_energy + external_energy + gradients
+        return elasticity + curvature
+    def calculate_external_energy(self,point, grad_x, grad_y, gamma):
+        x, y = point
+        if 0 <= y < grad_x.shape[0] and 0 <= x < grad_x.shape[1]:
+            gx = grad_x[y, x]
+            gy = grad_y[y, x]
+            return -gamma * (gx ** 2 + gy ** 2)
+        return 0.0
+
+
+    def calculate_total_energy(self,point, prev_point, next_point, alpha, beta, gamma, grad_x, grad_y,avg_distance):
+        internal = self.calculate_internal_energy(point, prev_point, next_point, alpha, beta,avg_distance)
+        external = self.calculate_external_energy(point, grad_x, grad_y, gamma)
+        return internal + external
 
     def snake_operation(self,image, curve, window_size, alpha, beta, gamma):
         window_index = (window_size - 1) // 2
         num_points = len(curve)
         new_curve = [None] * num_points
+        grad_y, grad_x = np.gradient(image.astype(float))
 
         for i in range(num_points):
             pt = curve[i]
             prev_pt = curve[(i - 1 + num_points) % num_points]
             next_pt = curve[(i + 1) % num_points]
             min_energy = float('inf')
-            new_pt = pt
+            best_pt = pt
+            avg_distance = self.calculate_average_distance(curve)
 
             for dx in range(-window_index, window_index + 1):
                 for dy in range(-window_index, window_index + 1):
-                    move_pt = (pt[0] + dx, pt[1] + dy)
-                    energy = self.calculate_point_energy(image, move_pt, prev_pt, next_pt, alpha, beta, gamma)
-                    if energy < min_energy:
-                        min_energy = energy
-                        new_pt = move_pt
+                    moved_pt = (pt[0] + dx, pt[1] + dy)
+                    if 0 <= moved_pt[0] < image.shape[1] and 0 <= moved_pt[1] < image.shape[0]:
+                        energy = self.calculate_total_energy( moved_pt, prev_pt, next_pt, alpha, beta, gamma,grad_x,grad_y,avg_distance)
+                        if energy < min_energy:
+                            min_energy = energy
+                            best_pt = moved_pt
 
-            new_curve[i] = new_pt
+            new_curve[i] = best_pt
 
         curve[:] = new_curve
         return curve
@@ -162,6 +161,14 @@ class ActiveContoursController():
             return 6
         else:
             return 7
+
+    def calculate_average_distance(self,curve):
+        distances = [
+            np.hypot(curve[(i + 1) % len(curve)][0] - curve[i][0],
+                     curve[(i + 1) % len(curve)][1] - curve[i][1])
+            for i in range(len(curve))
+        ]
+        return np.mean(distances)
 
 
     def update_perimeter_area(self, contour_perimeter, contour_area ):
