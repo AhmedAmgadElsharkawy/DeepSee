@@ -13,7 +13,7 @@ class EdgeDetectionController():
         # image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
         gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
         if type == "Sobel Detector":
-            result = self.sobel(gray_image)
+            result, _ = self.canny_handmaded(gray_image)
         elif type == "Roberts Detector":
             result = self.roberts(gray_image)
         elif type == "Prewitt Detector":
@@ -59,6 +59,15 @@ class EdgeDetectionController():
 
         edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
+    
+    def canny_handmaded(self, image):
+        kernel_size = self.edge_detection_window.canny_detector_kernel_spin_box.value()
+        lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
+        upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
+        variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
+        
+        magnitude, angles = self.sobel(image)
+
 
     def sobel(self, image):
         kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
@@ -81,16 +90,19 @@ class EdgeDetectionController():
         sobel_x = utils.convolution(image, sobel_kernel_x)
         sobel_y = utils.convolution(image, sobel_kernel_y)
 
+        phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
+        phase[phase < 0] += 180
+
         if direction == "Horizontal":
             sobel_x_normalized = self.normalize(sobel_x)
-            return sobel_x_normalized
+            return sobel_x_normalized, phase
         elif direction == "Vertical":
             sobel_y_normalized = self.normalize(sobel_y)
-            return sobel_y_normalized
+            return sobel_y_normalized, phase
         elif direction == "Combined":
             sobel_magnitude = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
             sobel_magnitude = self.normalize(sobel_magnitude)
-            return sobel_magnitude
+            return sobel_magnitude, phase
         
     def roberts(self, image):
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
