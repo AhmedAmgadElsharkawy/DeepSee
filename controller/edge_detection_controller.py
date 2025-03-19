@@ -13,13 +13,13 @@ class EdgeDetectionController():
         # image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
         gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
         if type == "Sobel Detector":
-            result, _ = self.canny_handmaded(gray_image)
+            result, _ = self.sobel(gray_image)
         elif type == "Roberts Detector":
             result = self.roberts(gray_image)
         elif type == "Prewitt Detector":
             result = self.prewitt(gray_image)
         else:
-            result = self.canny(gray_image)
+            result = self.canny_handmaded(gray_image)
         self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(result)
     
     def prewitt(self, image):
@@ -66,15 +66,17 @@ class EdgeDetectionController():
         upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
         variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
 
-        magnitude, angles = self.sobel(image)
-        image = self.non_maximum_suppression(magnitude, angles)
+        magnitude, angles = self.sobel(image, variance, kernel_size)
+        suppressed = self.non_maximum_suppression(magnitude, angles)
+        edges = self.hysteresis_thresholding(suppressed, lower_threshold, upper_threshold)
+        return edges
 
-
-
-    def sobel(self, image):
-        kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
-        direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
-        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
+    def sobel(self, image, variance = 1, kernel_size = None):
+        direction = "Combined"
+        if kernel_size == None:
+            kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
+            direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
+        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size, variance)
         if kernel_size == 3:
             sobel_kernel_x = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
             sobel_kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
@@ -89,8 +91,8 @@ class EdgeDetectionController():
                             [0, 0, 0, 0, 0],
                             [-1, -2, -3, -2, -1],
                             [-2, -3, -4, -3, -2]])
-        sobel_x = utils.convolution(image, sobel_kernel_x)
-        sobel_y = utils.convolution(image, sobel_kernel_y)
+        sobel_x = cv2.filter2D(image, cv2.CV_32F, sobel_kernel_x)
+        sobel_y = cv2.filter2D(image, cv2.CV_32F, sobel_kernel_y)
 
         phase = np.rad2deg(np.arctan2(sobel_y, sobel_x))
         phase[phase < 0] += 180
@@ -150,20 +152,41 @@ class EdgeDetectionController():
                     q = magnitude[i, j + 1]
                     r = magnitude[i, j - 1]
                 elif 22.5 <= angles[i, j] < 67.5:
-                    q = magnitude[i - 1, j + 1]
-                    r = magnitude[i + 1, j - 1]
+                    q = magnitude[i - 1, j - 1]
+                    r = magnitude[i + 1, j + 1]
                 elif 67.5 <= angles[i, j] < 112.5:
                     q = magnitude[i - 1, j]
                     r = magnitude[i + 1, j]
                 elif 112.5 <= angles[i, j] < 157.5:
-                    q = magnitude[i - 1, j - 1]
-                    r = magnitude[i + 1, j + 1]
+                    q = magnitude[i + 1, j - 1]
+                    r = magnitude[i - 1, j + 1]
 
                 if magnitude[i, j] >= q and magnitude[i, j] >= r:
                     suppressed[i, j] = magnitude[i, j]
                 else:
                     suppressed[i, j] = 0
-
+                    
         return suppressed
-        
-    
+
+    def hysteresis_thresholding(self, image, low_threshold, high_threshold):
+        rows, cols = image.shape
+        strong = 255
+        weak = 50
+
+        result = np.zeros((rows, cols), dtype=np.uint8)
+
+        strong_pixels = image >= high_threshold
+        weak_pixels = (image >= low_threshold) & (image < high_threshold)
+
+        result[strong_pixels] = strong
+        result[weak_pixels] = weak
+
+        for i in range(1, rows - 1):
+            for j in range(1, cols - 1):
+                if result[i, j] == weak:
+                    if np.any(result[i-1:i+2, j-1:j+2] == strong):
+                        result[i, j] = strong
+                    else:
+                        result[i, j] = 0
+
+        return result
