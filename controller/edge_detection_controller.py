@@ -15,7 +15,7 @@ class EdgeDetectionController():
         if type == "Sobel Detector":
             result, _ = self.sobel(gray_image)
         elif type == "Roberts Detector":
-            result = self.roberts(gray_image)
+            result = self.canny(gray_image)
         elif type == "Prewitt Detector":
             result = self.prewitt(gray_image)
         else:
