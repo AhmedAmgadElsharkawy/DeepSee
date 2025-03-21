@@ -1,5 +1,11 @@
 import numpy as np
 import cv2
+import os
+from itertools import product
+from collections import defaultdict
+from multiprocessing import Pool
+
+
 class HoughTransformController():
     def __init__(self,hough_transform_window):
         self.hough_transform_window = hough_transform_window
@@ -24,7 +30,7 @@ class HoughTransformController():
             case "Lines Detection":
                 output_image_matrix = self.detect_lines(input_image_matrix, theta = theta, threshold = threshold, color = color)
             case "Circles Detection":
-                output_image_matrix = self.detect_circles(input_image_matrix, min_radius = min_radius, max_radius = max_radius, threshold= threshold /100, color = color)
+                output_image_matrix = self.detect_circles(input_image_matrix, min_radius = min_radius, max_radius = max_radius, threshold= threshold , color = color)
             case "Ellipses Detection":
                 output_image_matrix = self.detect_ellipses(input_image_matrix)
             
@@ -70,7 +76,7 @@ class HoughTransformController():
         height, width = edges.shape
         max_rho = int(np.sqrt(height**2 + width**2))  # Maximum possible rho value
         rhos = np.arange(-max_rho, max_rho + 1, rho)  # Range of rho values
-        thetas = np.linspace(-np.pi/2, np.pi/2, num=theta)  # Range of theta values in radians
+        thetas = np.linspace(-np.pi/2, np.pi/2, int(180 / theta))  # Range of theta values in radians
 
         num_thetas = len(thetas)
 
@@ -151,92 +157,76 @@ class HoughTransformController():
         result = self.draw_lines(input_image_matrix, candidates_indices, rhos, thetas, color)
         
         return result
-
-
-    def draw_circles(self, image, circles, color=(0, 255, 0)):
-        """ Draw detected circles on the image. """
-        output = image.copy()
-        for circle in circles:
-            cv2.circle(output, (circle[0], circle[1]), circle[2], color, 2)
-        return output
     
-    def hough_circle_transform(self, image, edges, min_radius, max_radius, step_size=1):
-        """ Detect circles using Hough Transform. """
-        height, width = edges.shape
-
-        # Define radius range
-        radius_range = np.arange(min_radius, max_radius + 1, step_size)
+    
+    def detect_circles(self, image, min_radius, max_radius, threshold, color = (0,0,255)):
+        post_process=True
         
-        # Create Accumulator
-        accumulator = np.zeros((height, width, len(radius_range)), dtype=np.uint16)
-
-        # Generate angles (0 to 360 degrees)
-        theta = np.deg2rad(np.arange(0, 360, 1))
-        cos_values, sin_values = np.cos(theta), np.sin(theta)
-
-        # Find edge pixels
-        y_edges, x_edges = np.nonzero(edges)
-
-        for r_idx, r in enumerate(radius_range):
-            for i in range(len(theta)):
-                a = (x_edges - r * cos_values[i]).astype(int)
-                b = (y_edges - r * sin_values[i]).astype(int)
-
-                valid = (a >= 0) & (a < width) & (b >= 0) & (b < height)
-                accumulator[b[valid], a[valid], r_idx] += 1
-
-        return accumulator, radius_range
-
-    def find_circles(self, accumulator, radius_range, threshold=0.8):
-        """ Find circles by detecting peaks in the accumulator. """
-        circles = []
-        for r_idx, r in enumerate(radius_range):
-            max_value = np.max(accumulator[:, :, r_idx])
-            if max_value > 0:
-                threshold_value = threshold * max_value
-                y_idx, x_idx = np.nonzero(accumulator[:, :, r_idx] > threshold_value)
-
-                for x, y in zip(x_idx, y_idx):
-                    circles.append((x, y, r))
-        
-        return circles
-    def detect_circles(self, input_image_matrix, min_radius=10, max_radius=100, threshold = 0.9, color=(0, 255, 0)):
-        """
-        Detect and draw circles in an image using the Hough Transform.
-
-        Args:
-            input_image_matrix (numpy.ndarray): Input image.
-            min_radius (int): Minimum radius of circles to detect.
-            max_radius (int): Maximum radius of circles to detect.
-            color (tuple): Color of the circles to draw (BGR format).
-
-        Returns:
-            result (numpy.ndarray): Image with detected circles drawn.
-        """
-        if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:
-            gray = self.hough_transform_window.input_image_viewer.image_model.get_gray_image_matrix()
+        if len(image.shape) == 3 :
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
         else:
-            gray = input_image_matrix.copy()  # Already grayscale, no conversion needed
+            gray = image.copy()
         
+        gray = cv2.GaussianBlur(gray, (5,5), 1)
         edges = cv2.Canny(gray, 50, 150)
+        edge_points = np.column_stack(np.where(edges > 0))  # (y, x) coordinates
 
-        accumulator, radius_range = self.hough_circle_transform(input_image_matrix, edges, min_radius, max_radius)
-        circles = self.find_circles(accumulator, radius_range, threshold)
-        # # Detect circles using HoughCircles
-        # circles = cv2.HoughCircles(
-        #     gray,
-        #     cv2.HOUGH_GRADIENT,
-        #     dp=1,
-        #     minDist=20,
-        #     param1=50,
-        #     param2=30,
-        #     minRadius=min_radius,
-        #     maxRadius=max_radius
-        # )
-
-        result = self.draw_circles(input_image_matrix, circles, color)
-
-        return result
+        
+        # Image size
+        img_height, img_width = edges.shape
+        
+        # Define theta range
+        thetas = np.arange(0, 360, step=10)
+        
+        # Define radius range
+        rs = np.arange(min_radius, max_radius, step=1)
+        
+        cos_thetas = np.cos(np.radians(thetas))
+        sin_thetas = np.sin(np.radians(thetas))
+        # Compute candidate circles in a vectorized way
+        circle_candidates = [(r, (r * cos_thetas).astype(int), (r * sin_thetas).astype(int)) for r in rs]
+        
+        # Hough Accumulator
+        accumulator = defaultdict(int)
+        
+      
+        
+        # Vote for candidate circles
+        for y, x in edge_points:
+            for r, rcos_t, rsin_t in circle_candidates:
+                x_center = x - rcos_t
+                y_center = y - rsin_t
+                # Ensure valid indexing
+                valid_idx = (x_center >= 0) & (x_center < img_width) & (y_center >= 0) & (y_center < img_height)
+                for xc, yc in zip(x_center[valid_idx], y_center[valid_idx]):
+                    accumulator[(xc, yc, r)] += 1
+        
+        # Output image with detected circles
+        output_img = image.copy()
+        
+        # Extract best circles
+        out_circles = []
+        max_votes = max(accumulator.values()) if accumulator else 1  # Avoid division by zero
+        
+        for (x, y, r), votes in sorted(accumulator.items(), key=lambda i: -i[1]):
+            current_vote_percentage = votes / max_votes
+            if current_vote_percentage >= threshold:
+                out_circles.append((x, y, r, current_vote_percentage))
+        
+        # Post-processing to remove duplicate circles
+        if post_process:
+            pixel_threshold = 10  # Increased for better filtering
+            postprocessed_circles = []
+            for x, y, r, v in out_circles:
+                if all(np.linalg.norm(np.array([x, y]) - np.array([xc, yc])) > pixel_threshold for xc, yc, rc, v in postprocessed_circles):
+                    postprocessed_circles.append((x, y, r, v))
+            out_circles = postprocessed_circles
+        
+        # Draw detected circles
+        for x, y, r, _ in out_circles:
+            cv2.circle(output_img, (x, y), r, color, 2)
+    
+        return output_img
 
     def detect_ellipses(self,input_image_matrix):
         print("detect ellipses")
