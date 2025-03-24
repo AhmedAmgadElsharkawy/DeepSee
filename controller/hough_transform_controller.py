@@ -5,12 +5,26 @@ from itertools import product
 from collections import defaultdict
 from multiprocessing import Pool
 
+from skimage.color import rgb2gray
+
+
+import random
+from skimage.feature import canny
+import pandas as pd
+import time
 
 class HoughTransformController():
     def __init__(self,hough_transform_window):
         self.hough_transform_window = hough_transform_window
         self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
-    
+
+        self.major_bound = [100, 250]
+        self.minor_bound = [80, 250]
+        self.flattening_bound = 0.8
+
+        self.score_threshold = 7
+
+
     def apply_hough_transform(self):
         detected_objects_type = self.hough_transform_window.detected_objects_type_custom_combo_box.current_text()
         input_image_matrix = self.hough_transform_window.input_image_viewer.image_model.get_image_matrix()
@@ -246,11 +260,228 @@ class HoughTransformController():
                     postprocessed_circles.append((x, y, r, v))
             out_circles = postprocessed_circles  # Update the final list of circles
 
-        # Draw detected circles on the output image
+
         for x, y, r, _ in out_circles:
             cv2.circle(output_img, (x, y), r, color, 2)
 
-        return output_img  # Return the image with detected circles drawn
+        return output_img 
 
     def detect_ellipses(self,input_image_matrix):
-        print("detect ellipses")
+
+        if input_image_matrix.shape[-1] == 4:  
+            input_image_matrix = input_image_matrix[:, :, :3] 
+
+
+        if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:  
+            input_image_matrix = rgb2gray(input_image_matrix)  
+
+        random.seed((time.time()*100) % 50)
+        accumulator = []
+        
+        edge = self.canny_edge_detector(input_image_matrix)
+        pixels = np.array(np.where(edge == 255)).T
+        edge_pixels = [p for p in pixels]
+
+        max_iter = 100
+
+        if len(edge_pixels) > 100:
+            max_iter = len(edge_pixels) * 5
+
+
+        for count, i in enumerate(range(max_iter)):
+            p1, p2, p3 = self.randomly_pick_point(edge_pixels)
+            point_package = [p1, p2, p3]
+
+            center = self.find_center(point_package,edge)
+
+            if center is None or self.point_out_of_image(center,edge):
+                continue
+
+            semi_axisx, semi_axisy, angle = self.find_semi_axis(point_package, center)
+  
+
+            if (semi_axisx is None) and (semi_axisy is None):
+                continue
+
+            if not self.assert_diameter(semi_axisx, semi_axisy):
+                continue
+
+            similar_idx = self.is_similar(center[0], center[1], semi_axisx, semi_axisy, angle,accumulator)
+            if similar_idx == -1:
+                score = 1
+                accumulator.append([center[0], center[1], semi_axisx, semi_axisy, angle, score])
+            else:
+                accumulator[similar_idx][-1] += 1
+                w = accumulator[similar_idx][-1]
+                accumulator[similar_idx][0] = self.average_weight(accumulator[similar_idx][0], center[0], w)
+                accumulator[similar_idx][1] = self.average_weight(accumulator[similar_idx][1], center[1], w)
+                accumulator[similar_idx][2] = self.average_weight(accumulator[similar_idx][2], semi_axisx, w)
+                accumulator[similar_idx][3] = self.average_weight(accumulator[similar_idx][3], semi_axisy, w)
+                accumulator[similar_idx][4] = self.average_weight(accumulator[similar_idx][4], angle, w)
+
+        accumulator = np.array(accumulator)
+        df = pd.DataFrame(data=accumulator, columns=['x', 'y', 'axis1', 'axis2', 'angle', 'score'])
+        accumulator = df.sort_values(by=['score'], ascending=False)
+
+        best = np.squeeze(np.array(accumulator.iloc[0]))
+        p, q, a, b,angle = list(map(int, np.around(best[:5])))
+
+        print("score: ", best[-1])
+        print(p, q, a, b,angle)
+
+        if a < b:
+            a, b = b, a  
+
+        color = (0, 255, 0) 
+        thickness = 2
+        result_image = cv2.cvtColor(input_image_matrix, cv2.COLOR_GRAY2BGR) 
+        cv2.ellipse(result_image, (p, q), (a, b), angle, 0, 360, color, thickness)
+
+        return result_image  
+
+
+    def canny_edge_detector(self, input_image_matrix):
+        edged_image = canny(input_image_matrix, sigma=3.5, low_threshold=20, high_threshold=50)
+        edge = np.zeros(edged_image.shape, dtype=np.uint8)
+        edge[edged_image] = 255  
+        return edge
+    
+
+    def randomly_pick_point(self,edge_pixels):
+        ran = random.sample(edge_pixels, 3)
+        return (ran[0][1], ran[0][0]), (ran[1][1], ran[1][0]), (ran[2][1], ran[2][0])
+
+    def point_out_of_image(self, point,edge):
+        if point[0] < 0 or point[0] >= edge.shape[1] or point[1] < 0 or point[1] >= edge.shape[0]:
+            return True
+        else:
+            return False
+        
+
+    def find_center(self, pt,edge):
+        size = 7
+        m, c = 0, 0
+        m_arr = []
+        c_arr = []
+
+        for i in range(len(pt)):
+            xstart = pt[i][0] - size//2
+            xend = pt[i][0] + size//2 + 1
+            ystart = pt[i][1] - size//2
+            yend = pt[i][1] + size//2 + 1
+            crop = edge[ystart: yend, xstart: xend].T
+            proximal_point = np.array(np.where(crop == 255)).T
+            proximal_point[:, 0] += xstart
+            proximal_point[:, 1] += ystart
+
+            A = np.vstack([proximal_point[:, 0], np.ones(len(proximal_point[:, 0]))]).T
+            m, c = np.linalg.lstsq(A, proximal_point[:, 1], rcond=None)[0]
+            m_arr.append(m)
+            c_arr.append(c)
+
+        slope_arr = []
+        intercept_arr = []
+        for i, j in zip([0, 1], [1, 2]):
+            coef_matrix = np.array([[m_arr[i], -1], [m_arr[j], -1]])
+            dependent_variable = np.array([-c_arr[i], -c_arr[j]])
+            det = np.linalg.det(coef_matrix)
+            if abs(det) < 1e-10: 
+                return None  
+            t12 = np.linalg.solve(coef_matrix, dependent_variable)
+            m1 = ((pt[i][0] + pt[j][0])/2, (pt[i][1] + pt[j][1])/2)
+            slope = (m1[1] - t12[1]) / (m1[0] - t12[0])
+            intercept = (m1[0]*t12[1] - t12[0]*m1[1]) / (m1[0] - t12[0])
+            slope_arr.append(slope)
+            intercept_arr.append(intercept)
+
+        coef_matrix = np.array([[slope_arr[0], -1], [slope_arr[1], -1]])
+        dependent_variable = np.array([-intercept_arr[0], -intercept_arr[1]])
+        center = np.linalg.solve(coef_matrix, dependent_variable)
+        return center
+
+
+    def find_semi_axis(self, pt, center):
+        npt = []
+        for p in pt:
+            npt.append((p[0] - center[0], p[1] - center[1]))
+        x1 = npt[0][0]
+        y1 = npt[0][1]
+        x2 = npt[1][0]
+        y2 = npt[1][1]
+        x3 = npt[2][0]
+        y3 = npt[2][1]
+        coef_matrix = np.array([[x1**2, 2*x1*y1, y1**2], [x2**2, 2*x2*y2, y2**2], [x3**2, 2*x3*y3, y3**2]])
+        dependent_variable = np.array([1,1,1])
+        det = np.linalg.det(coef_matrix)
+
+        if abs(det) < 1e-10:  
+            return None, None, None
+
+        A, B, C = np.linalg.solve(coef_matrix, dependent_variable)
+
+        if self.assert_valid_ellipse(A, B, C):
+            angle = self.calculate_rotation_angle_v2(A, B, C)
+
+            AXIS_MAT = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
+            AXIS_MAT_ANS = np.array([A, C])
+            X , Y = np.linalg.solve(AXIS_MAT, AXIS_MAT_ANS)
+            major = 1/np.sqrt(max(X,Y))
+            minor = 1/np.sqrt(min(X,Y))
+
+            return major, minor, angle
+        else:
+            return None, None, None
+        
+    def assert_valid_ellipse(self, a, b, c):
+        if a*c - b**2 > 0:
+            return True
+        else:
+            return False
+        
+    def calculate_rotation_angle_v2(self, a, b, c):
+        if a == c:
+            angle = 0
+        else:
+            angle = 0.5*np.arctan((2*b)/(a-c))
+
+        if a > c:
+            if b < 0:
+                angle = angle-(-0.5*np.pi)
+            elif b > 0:
+                angle = angle-(0.5*np.pi)
+
+        print(angle,a, b, c)
+        return angle
+    
+
+
+    def assert_diameter(self, semi_axis_x, semi_axis_y):
+        if semi_axis_x > semi_axis_y:
+            major, minor = semi_axis_x, semi_axis_y
+        else:
+            major, minor = semi_axis_y, semi_axis_x
+        if (self.major_bound[0] < 2*major < self.major_bound[1]) and (self.minor_bound[0] < 2*minor < self.minor_bound[1]):
+            flattening = (major - minor) / major
+            if flattening < self.flattening_bound:
+                return True
+        return True
+    
+
+
+    def is_similar(self, p, q, axis1, axis2, angle,accumulator):
+        similar_idx = -1
+        if accumulator is not None:
+            for idx, e in enumerate(accumulator):
+                area_dist = np.abs((np.pi*e[2]*e[3] - np.pi * axis1 * axis2))
+                center_dist = np.sqrt((e[0] - p)**2 + (e[1] - q)**2)
+                angle_dist = (abs(e[4] - angle))
+                laxis_dist = abs(max(axis1,axis2)-max(e[2],e[3]))
+                saxis_dist = abs(min(axis1,axis2)-min(e[2],e[3]))
+                if (laxis_dist < 5) and (center_dist < 5) and ( angle_dist < 0.1745) and(saxis_dist < 10):
+                    return idx
+        return similar_idx
+    
+
+
+    def average_weight(self, old, now, score):
+        return (old * score + now) / (score+1)
