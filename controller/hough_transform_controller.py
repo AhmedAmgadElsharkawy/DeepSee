@@ -267,7 +267,7 @@ class HoughTransformController():
         return output_img 
 
     def detect_ellipses(self,input_image_matrix):
-
+        original = input_image_matrix.copy()
         ellipse_canny_sigma = self.hough_transform_window.ellipses_detection_canny_sigma_spin_box.value()
         ellipse_canny_low_threshold = self.hough_transform_window.ellipses_detection_canny_low_threshold_spin_box.value()
         ellipse_canny_high_threshold = self.hough_transform_window.ellipses_detection_canny_high_threshold_spin_box.value()
@@ -295,8 +295,9 @@ class HoughTransformController():
         #     print(len(edge_pixels))
         #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
         #     return edge_bgr
+        print("len(edge_pixels) = ",len(edge_pixels))
 
-        max_iter = max(500,len(edge_pixels) * 5)
+        max_iter = 5000
 
         for count, i in enumerate(range(max_iter)):
             p1, p2, p3 = self.randomly_pick_point(edge_pixels)
@@ -342,8 +343,10 @@ class HoughTransformController():
 
         color = self.hex_to_bgr(self.hough_transform_window.choosen_color_hex)
         thickness = 2
-        result_image = cv2.cvtColor(input_image_matrix, cv2.COLOR_GRAY2BGR) 
-        cv2.ellipse(result_image, (p, q), (a, b), angle, 0, 360, color, thickness)
+        result_image = original
+        if len(result_image.shape) == 2:
+            result_image = cv2.cvtColor(input_image_matrix, cv2.COLOR_GRAY2BGR) 
+        cv2.ellipse(result_image, (p, q), (a, b), angle * 180 / np.pi, 0, 360, color, thickness)
 
         return result_image  
 
@@ -404,6 +407,9 @@ class HoughTransformController():
 
         coef_matrix = np.array([[slope_arr[0], -1], [slope_arr[1], -1]])
         dependent_variable = np.array([-intercept_arr[0], -intercept_arr[1]])
+        det = np.linalg.det(coef_matrix)
+        if abs(det) < 1e-10: 
+            return None  
         center = np.linalg.solve(coef_matrix, dependent_variable)
         return center
 
@@ -428,10 +434,14 @@ class HoughTransformController():
         A, B, C = np.linalg.solve(coef_matrix, dependent_variable)
 
         if self.assert_valid_ellipse(A, B, C):
-            angle = self.calculate_rotation_angle_v2(A, B, C)
+            angle = self.calculate_ellipse_rotation_angle(A, B, C)
 
             AXIS_MAT = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
             AXIS_MAT_ANS = np.array([A, C])
+            det = np.linalg.det(AXIS_MAT)
+
+            if abs(det) < 1e-10:  
+                return None, None, None
             X , Y = np.linalg.solve(AXIS_MAT, AXIS_MAT_ANS)
             major = 1/np.sqrt(min(X,Y))
             minor = 1/np.sqrt(max(X,Y))
@@ -446,7 +456,7 @@ class HoughTransformController():
         else:
             return False
         
-    def calculate_rotation_angle_v2(self, a, b, c):
+    def calculate_ellipse_rotation_angle(self, a, b, c):
         if a == c:
             angle = 0
         else:
