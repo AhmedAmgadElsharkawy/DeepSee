@@ -265,6 +265,7 @@ class HoughTransformController():
             cv2.circle(output_img, (x, y), r, color, 2)
 
         return output_img 
+    
 
     def detect_ellipses(self,input_image_matrix):
         original = input_image_matrix.copy()
@@ -283,7 +284,6 @@ class HoughTransformController():
         if input_image_matrix.dtype == np.float64:
             input_image_matrix = (input_image_matrix * 255).astype(np.uint8)
 
-        random.seed((time.time()*100) % 50)
         accumulator = []
         
         edge = self.canny_edge_detector(input_image_matrix, sigma = ellipse_canny_sigma, low_threshold = ellipse_canny_low_threshold, high_threshold = ellipse_canny_high_threshold)
@@ -295,38 +295,35 @@ class HoughTransformController():
         #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
         #     return edge_bgr
 
-        max_iter = 5000
+        max_iter = max(5000,2*len(edge_pixels))
 
         for count, i in enumerate(range(max_iter)):
-            p1, p2, p3 = self.randomly_pick_point(edge_pixels)
+            p1, p2, p3 = self.randomly_pick_ellipse_point(edge_pixels)
             point_package = [p1, p2, p3]
 
-            center = self.find_center(point_package,edge)
+            center = self.find_ellipse_center(point_package,edge)
 
-            if center is None or self.point_out_of_image(center,edge):
+            if center is None or self.valid_image_point(center,edge):
                 continue
 
-            semi_axisx, semi_axisy, angle = self.find_semi_axis(point_package, center)
-  
+            major_axis, minor_axis, angle = self.find_ellipse_axes(point_package, center)
 
-            if (semi_axisx is None) and (semi_axisy is None):
+            if (major_axis is None) and (minor_axis is None):
                 continue
 
-            # if not self.assert_diameter(semi_axisx, semi_axisy):
-            #     continue
 
-            similar_idx = self.is_similar(center[0], center[1], semi_axisx, semi_axisy, angle,accumulator)
+            similar_idx = self.similar_ellipse(center[0], center[1], major_axis, minor_axis, angle,accumulator)
             if similar_idx == -1:
                 score = 1
-                accumulator.append([center[0], center[1], semi_axisx, semi_axisy, angle, score])
+                accumulator.append([center[0], center[1], major_axis, minor_axis, angle, score])
             else:
                 accumulator[similar_idx][-1] += 1
-                w = accumulator[similar_idx][-1]
-                accumulator[similar_idx][0] = self.average_weight(accumulator[similar_idx][0], center[0], w)
-                accumulator[similar_idx][1] = self.average_weight(accumulator[similar_idx][1], center[1], w)
-                accumulator[similar_idx][2] = self.average_weight(accumulator[similar_idx][2], semi_axisx, w)
-                accumulator[similar_idx][3] = self.average_weight(accumulator[similar_idx][3], semi_axisy, w)
-                accumulator[similar_idx][4] = self.average_weight(accumulator[similar_idx][4], angle, w)
+                weight = accumulator[similar_idx][-1]
+                accumulator[similar_idx][0] = self.average_weight(accumulator[similar_idx][0], center[0], weight)
+                accumulator[similar_idx][1] = self.average_weight(accumulator[similar_idx][1], center[1], weight)
+                accumulator[similar_idx][2] = self.average_weight(accumulator[similar_idx][2], major_axis, weight)
+                accumulator[similar_idx][3] = self.average_weight(accumulator[similar_idx][3], minor_axis, weight)
+                accumulator[similar_idx][4] = self.average_weight(accumulator[similar_idx][4], angle, weight)
 
         accumulator = np.array(accumulator)
         df = pd.DataFrame(data=accumulator, columns=['x', 'y', 'axis1', 'axis2', 'angle', 'score'])
@@ -334,8 +331,8 @@ class HoughTransformController():
         
 
         best = np.squeeze(np.array(accumulator.iloc[0]))
-        p, q, a, b = map(int, np.around(best[:4]))  # Round and convert first 4 values
-        angle = best[4]  # Keep angle as it is
+        p, q, a, b = map(int, np.around(best[:4])) 
+        angle = best[4]
 
         color = self.hex_to_bgr(self.hough_transform_window.choosen_color_hex)
         thickness = 2
@@ -354,18 +351,18 @@ class HoughTransformController():
         return edge
     
 
-    def randomly_pick_point(self,edge_pixels):
+    def randomly_pick_ellipse_point(self,edge_pixels):
         ran = random.sample(edge_pixels, 3)
         return (ran[0][1], ran[0][0]), (ran[1][1], ran[1][0]), (ran[2][1], ran[2][0])
 
-    def point_out_of_image(self, point,edge):
+    def valid_image_point(self, point,edge):
         if point[0] < 0 or point[0] >= edge.shape[1] or point[1] < 0 or point[1] >= edge.shape[0]:
             return True
         else:
             return False
         
 
-    def find_center(self, pt,edge):
+    def find_ellipse_center(self, pt,edge):
         size = 7
         m, c = 0, 0
         m_arr = []
@@ -398,7 +395,7 @@ class HoughTransformController():
             m1 = ((pt[i][0] + pt[j][0])/2, (pt[i][1] + pt[j][1])/2)
             denominator = m1[0] - t12[0]
 
-            if abs(denominator) < 1e-10:  # Prevent division by zero
+            if abs(denominator) < 1e-10:
                 return None  
             slope = (m1[1] - t12[1]) / denominator
             intercept = (m1[0]*t12[1] - t12[0]*m1[1]) / denominator
@@ -414,7 +411,7 @@ class HoughTransformController():
         return center
 
 
-    def find_semi_axis(self, pt, center):
+    def find_ellipse_axes(self, pt, center):
         npt = []
         for p in pt:
             npt.append((p[0] - center[0], p[1] - center[1]))
@@ -433,7 +430,7 @@ class HoughTransformController():
 
         A, B, C = np.linalg.solve(coef_matrix, dependent_variable)
 
-        if self.assert_valid_ellipse(A, B, C):
+        if self.valid_ellipse(A, B, C):
             angle = self.calculate_ellipse_rotation_angle(A, B, C)
 
             AXIS_MAT = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
@@ -454,7 +451,7 @@ class HoughTransformController():
         else:
             return None, None, None
         
-    def assert_valid_ellipse(self, a, b, c):
+    def valid_ellipse(self, a, b, c):
         if a*c - b**2 > 0:
             return True
         else:
@@ -474,14 +471,11 @@ class HoughTransformController():
 
         return angle
     
-    
 
-
-    def is_similar(self, p, q, axis1, axis2, angle,accumulator):
+    def similar_ellipse(self, p, q, axis1, axis2, angle,accumulator):
         similar_idx = -1
         if accumulator is not None:
             for idx, e in enumerate(accumulator):
-                area_dist = np.abs((np.pi*e[2]*e[3] - np.pi * axis1 * axis2))
                 center_dist = np.sqrt((e[0] - p)**2 + (e[1] - q)**2)
                 angle_dist = (abs(e[4] - angle))
                 laxis_dist = abs(max(axis1,axis2)-max(e[2],e[3]))
@@ -490,7 +484,6 @@ class HoughTransformController():
                     return idx
         return similar_idx
     
-
 
     def average_weight(self, old, now, score):
         return (old * score + now) / (score+1)
