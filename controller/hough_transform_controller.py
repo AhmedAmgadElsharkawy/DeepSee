@@ -18,11 +18,11 @@ class HoughTransformController():
         self.hough_transform_window = hough_transform_window
         self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
 
-        self.major_bound = [100, 250]
-        self.minor_bound = [80, 250]
-        self.flattening_bound = 0.8
+        # self.major_bound = [100, 250]
+        # self.minor_bound = [80, 250]
+        # self.flattening_bound = 0.8
 
-        self.score_threshold = 7
+        # self.score_threshold = 7
 
 
     def apply_hough_transform(self):
@@ -268,6 +268,10 @@ class HoughTransformController():
 
     def detect_ellipses(self,input_image_matrix):
 
+        ellipse_canny_sigma = self.hough_transform_window.ellipses_detection_canny_sigma_spin_box.value()
+        ellipse_canny_low_threshold = self.hough_transform_window.ellipses_detection_canny_low_threshold_spin_box.value()
+        ellipse_canny_high_threshold = self.hough_transform_window.ellipses_detection_canny_high_threshold_spin_box.value()
+
         if input_image_matrix.shape[-1] == 4:  
             input_image_matrix = input_image_matrix[:, :, :3] 
 
@@ -278,15 +282,11 @@ class HoughTransformController():
         random.seed((time.time()*100) % 50)
         accumulator = []
         
-        edge = self.canny_edge_detector(input_image_matrix)
+        edge = self.canny_edge_detector(input_image_matrix, sigma = ellipse_canny_sigma, low_threshold = ellipse_canny_low_threshold, high_threshold = ellipse_canny_high_threshold)
         pixels = np.array(np.where(edge == 255)).T
         edge_pixels = [p for p in pixels]
 
-        max_iter = 100
-
-        if len(edge_pixels) > 100:
-            max_iter = len(edge_pixels) * 5
-
+        max_iter = max(500,len(edge_pixels) * 5)
 
         for count, i in enumerate(range(max_iter)):
             p1, p2, p3 = self.randomly_pick_point(edge_pixels)
@@ -303,8 +303,8 @@ class HoughTransformController():
             if (semi_axisx is None) and (semi_axisy is None):
                 continue
 
-            if not self.assert_diameter(semi_axisx, semi_axisy):
-                continue
+            # if not self.assert_diameter(semi_axisx, semi_axisy):
+            #     continue
 
             similar_idx = self.is_similar(center[0], center[1], semi_axisx, semi_axisy, angle,accumulator)
             if similar_idx == -1:
@@ -329,10 +329,7 @@ class HoughTransformController():
         print("score: ", best[-1])
         print(p, q, a, b,angle)
 
-        if a < b:
-            a, b = b, a  
-
-        color = (0, 255, 0) 
+        color = self.hex_to_bgr(self.hough_transform_window.choosen_color_hex)
         thickness = 2
         result_image = cv2.cvtColor(input_image_matrix, cv2.COLOR_GRAY2BGR) 
         cv2.ellipse(result_image, (p, q), (a, b), angle, 0, 360, color, thickness)
@@ -340,8 +337,8 @@ class HoughTransformController():
         return result_image  
 
 
-    def canny_edge_detector(self, input_image_matrix):
-        edged_image = canny(input_image_matrix, sigma=3.5, low_threshold=20, high_threshold=50)
+    def canny_edge_detector(self, input_image_matrix,sigma,low_threshold,high_threshold):
+        edged_image = canny(input_image_matrix, sigma = sigma, low_threshold = low_threshold, high_threshold = high_threshold)
         edge = np.zeros(edged_image.shape, dtype=np.uint8)
         edge[edged_image] = 255  
         return edge
@@ -425,8 +422,8 @@ class HoughTransformController():
             AXIS_MAT = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
             AXIS_MAT_ANS = np.array([A, C])
             X , Y = np.linalg.solve(AXIS_MAT, AXIS_MAT_ANS)
-            major = 1/np.sqrt(max(X,Y))
-            minor = 1/np.sqrt(min(X,Y))
+            major = 1/np.sqrt(min(X,Y))
+            minor = 1/np.sqrt(max(X,Y))
 
             return major, minor, angle
         else:
@@ -455,16 +452,16 @@ class HoughTransformController():
     
 
 
-    def assert_diameter(self, semi_axis_x, semi_axis_y):
-        if semi_axis_x > semi_axis_y:
-            major, minor = semi_axis_x, semi_axis_y
-        else:
-            major, minor = semi_axis_y, semi_axis_x
-        if (self.major_bound[0] < 2*major < self.major_bound[1]) and (self.minor_bound[0] < 2*minor < self.minor_bound[1]):
-            flattening = (major - minor) / major
-            if flattening < self.flattening_bound:
-                return True
-        return True
+    # def assert_diameter(self, semi_axis_x, semi_axis_y):
+    #     if semi_axis_x > semi_axis_y:
+    #         major, minor = semi_axis_x, semi_axis_y
+    #     else:
+    #         major, minor = semi_axis_y, semi_axis_x
+    #     if (self.major_bound[0] < 2*major < self.major_bound[1]) and (self.minor_bound[0] < 2*minor < self.minor_bound[1]):
+    #         flattening = (major - minor) / major
+    #         if flattening < self.flattening_bound:
+    #             return True
+    #     return True
     
 
 
