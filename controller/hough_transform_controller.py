@@ -291,11 +291,9 @@ class HoughTransformController():
         edge_pixels = [p for p in pixels]
 
         # if len(edge_pixels):
-        #     print("Not Enough edge pixels")
         #     print(len(edge_pixels))
         #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
         #     return edge_bgr
-        print("len(edge_pixels) = ",len(edge_pixels))
 
         max_iter = 5000
 
@@ -336,10 +334,8 @@ class HoughTransformController():
         
 
         best = np.squeeze(np.array(accumulator.iloc[0]))
-        p, q, a, b,angle = list(map(int, np.around(best[:5])))
-
-        print("score: ", best[-1])
-        print(p, q, a, b,angle)
+        p, q, a, b = map(int, np.around(best[:4]))  # Round and convert first 4 values
+        angle = best[4]  # Keep angle as it is
 
         color = self.hex_to_bgr(self.hough_transform_window.choosen_color_hex)
         thickness = 2
@@ -400,8 +396,12 @@ class HoughTransformController():
                 return None  
             t12 = np.linalg.solve(coef_matrix, dependent_variable)
             m1 = ((pt[i][0] + pt[j][0])/2, (pt[i][1] + pt[j][1])/2)
-            slope = (m1[1] - t12[1]) / (m1[0] - t12[0])
-            intercept = (m1[0]*t12[1] - t12[0]*m1[1]) / (m1[0] - t12[0])
+            denominator = m1[0] - t12[0]
+
+            if abs(denominator) < 1e-10:  # Prevent division by zero
+                return None  
+            slope = (m1[1] - t12[1]) / denominator
+            intercept = (m1[0]*t12[1] - t12[0]*m1[1]) / denominator
             slope_arr.append(slope)
             intercept_arr.append(intercept)
 
@@ -443,6 +443,10 @@ class HoughTransformController():
             if abs(det) < 1e-10:  
                 return None, None, None
             X , Y = np.linalg.solve(AXIS_MAT, AXIS_MAT_ANS)
+            min_val = min(X, Y)
+
+            if min_val <= 0:  
+                return None, None, None
             major = 1/np.sqrt(min(X,Y))
             minor = 1/np.sqrt(max(X,Y))
 
@@ -468,21 +472,8 @@ class HoughTransformController():
             elif b > 0:
                 angle = angle-(0.5*np.pi)
 
-        print(angle,a, b, c)
         return angle
     
-
-
-    # def assert_diameter(self, semi_axis_x, semi_axis_y):
-    #     if semi_axis_x > semi_axis_y:
-    #         major, minor = semi_axis_x, semi_axis_y
-    #     else:
-    #         major, minor = semi_axis_y, semi_axis_x
-    #     if (self.major_bound[0] < 2*major < self.major_bound[1]) and (self.minor_bound[0] < 2*minor < self.minor_bound[1]):
-    #         flattening = (major - minor) / major
-    #         if flattening < self.flattening_bound:
-    #             return True
-    #     return True
     
 
 
