@@ -279,12 +279,22 @@ class HoughTransformController():
         if len(input_image_matrix.shape) == 3 and input_image_matrix.shape[2] == 3:  
             input_image_matrix = rgb2gray(input_image_matrix)  
 
+
+        if input_image_matrix.dtype == np.float64:
+            input_image_matrix = (input_image_matrix * 255).astype(np.uint8)
+
         random.seed((time.time()*100) % 50)
         accumulator = []
         
         edge = self.canny_edge_detector(input_image_matrix, sigma = ellipse_canny_sigma, low_threshold = ellipse_canny_low_threshold, high_threshold = ellipse_canny_high_threshold)
         pixels = np.array(np.where(edge == 255)).T
         edge_pixels = [p for p in pixels]
+
+        # if len(edge_pixels):
+        #     print("Not Enough edge pixels")
+        #     print(len(edge_pixels))
+        #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
+        #     return edge_bgr
 
         max_iter = max(500,len(edge_pixels) * 5)
 
@@ -322,6 +332,7 @@ class HoughTransformController():
         accumulator = np.array(accumulator)
         df = pd.DataFrame(data=accumulator, columns=['x', 'y', 'axis1', 'axis2', 'angle', 'score'])
         accumulator = df.sort_values(by=['score'], ascending=False)
+        
 
         best = np.squeeze(np.array(accumulator.iloc[0]))
         p, q, a, b,angle = list(map(int, np.around(best[:5])))
