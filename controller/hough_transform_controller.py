@@ -1,18 +1,28 @@
 import numpy as np
 import cv2
+import os
+from itertools import product
 from collections import defaultdict
+from multiprocessing import Pool
 
 from skimage.color import rgb2gray
+
 
 import random
 from skimage.feature import canny
 import pandas as pd
+import time
 
 class HoughTransformController():
     def __init__(self,hough_transform_window):
         self.hough_transform_window = hough_transform_window
         self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
 
+        # self.major_bound = [100, 250]
+        # self.minor_bound = [80, 250]
+        # self.flattening_bound = 0.8
+
+        # self.score_threshold = 7
 
 
     def apply_hough_transform(self):
@@ -262,6 +272,7 @@ class HoughTransformController():
         ellipse_canny_sigma = self.hough_transform_window.ellipses_detection_canny_sigma_spin_box.value()
         ellipse_canny_low_threshold = self.hough_transform_window.ellipses_detection_canny_low_threshold_spin_box.value()
         ellipse_canny_high_threshold = self.hough_transform_window.ellipses_detection_canny_high_threshold_spin_box.value()
+        number_of_detected_ellipses = self.hough_transform_window.number_of_detected_ellipses_spin_box.value()
 
         if input_image_matrix.shape[-1] == 4:  
             input_image_matrix = input_image_matrix[:, :, :3] 
@@ -279,10 +290,6 @@ class HoughTransformController():
         edge = self.canny_edge_detector(input_image_matrix, sigma = ellipse_canny_sigma, low_threshold = ellipse_canny_low_threshold, high_threshold = ellipse_canny_high_threshold)
         pixels = np.array(np.where(edge == 255)).T
         edge_pixels = [p for p in pixels]
-
-        if(len(edge_pixels) < 3):
-            print("Not Enough Edge Pixels")
-            return None
 
         # if len(edge_pixels):
         #     print(len(edge_pixels))
@@ -324,18 +331,50 @@ class HoughTransformController():
         accumulator = df.sort_values(by=['score'], ascending=False)
         
 
-        best = np.squeeze(np.array(accumulator.iloc[0]))
-        p, q, a, b = map(int, np.around(best[:4])) 
-        angle = best[4]
+        accumulator = np.array(accumulator)
+        df = pd.DataFrame(data=accumulator, columns=['x', 'y', 'axis1', 'axis2', 'angle', 'score'])
+        accumulator = df.sort_values(by=['score'], ascending=False)
+
+        top_ellipses = accumulator.iloc[:min(number_of_detected_ellipses,len(accumulator))].to_numpy()
 
         color = self.hex_to_bgr(self.hough_transform_window.choosen_color_hex)
         thickness = 2
         result_image = original
         if len(result_image.shape) == 2:
             result_image = cv2.cvtColor(result_image, cv2.COLOR_GRAY2BGR) 
-        cv2.ellipse(result_image, (p, q), (a, b), angle * 180 / np.pi, 0, 360, color, thickness)
 
-        return result_image  
+        # base_ellipse = top_ellipses[0]  
+        # base_center = (int(base_ellipse[0]), int(base_ellipse[1]))
+        # base_major = int(base_ellipse[2])
+        # base_minor = int(base_ellipse[3])
+        # base_angle = base_ellipse[4] * 180 / np.pi  
+
+        for i, ellipse in enumerate(top_ellipses):
+            p, q, a, b = map(int, np.around(ellipse[:4])) 
+            angle = ellipse[4] * 180 / np.pi  
+            score = ellipse[5] 
+            cv2.ellipse(result_image, (p, q), (a, b), angle, 0, 360, color, thickness)
+
+            # print(f"Ellipse {i}:")
+            # print(f"  Center: ({p}, {q})")
+            # print(f"  Major Axis: {a}")
+            # print(f"  Minor Axis: {b}")
+            # print(f"  Angle (degrees): {angle:.2f}")
+            # print(f"  Score: {score:.2f}")  
+
+            # if i > 0: 
+            #     diff_center = np.sqrt((p - base_center[0])**2 + (q - base_center[1])**2)  
+            #     diff_major = a - base_major
+            #     diff_minor = b - base_minor
+            #     diff_angle = angle - base_angle
+
+                # print(f"  Center Difference: {diff_center:.2f}")
+                # print(f"  Major Axis Difference: {diff_major}")
+                # print(f"  Minor Axis Difference: {diff_minor}")
+                # print(f"  Angle Difference (degrees): {diff_angle:.2f}")
+
+
+        return result_image
 
 
     def canny_edge_detector(self, input_image_matrix,sigma,low_threshold,high_threshold):
@@ -472,7 +511,7 @@ class HoughTransformController():
                 angle_difference = (abs(ellipse[4] - angle))
                 major_axis_difference = abs(max(axis1,axis2)-max(ellipse[2],ellipse[3]))
                 minor_axis_difference = abs(min(axis1,axis2)-min(ellipse[2],ellipse[3]))
-                if (major_axis_difference < 5) and (center_difference < 5) and ( angle_difference < 0.1745) and(minor_axis_difference < 10):
+                if (major_axis_difference < 10) and (center_difference < 10) and ( angle_difference < 0.1745) and(minor_axis_difference < 10):
                     return index
         return similar_index
     

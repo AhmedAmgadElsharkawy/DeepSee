@@ -62,10 +62,12 @@ class HoughTransformWindow(BasicStackedWindow):
         self.ellipses_detection_inputs_container.setVisible(False)
         self.ellipses_detection_canny_low_threshold_spin_box = CustomSpinBox(label="Low Threshold",range_start=0,range_end=500,initial_value=20,step_value=1,double_value=True,decimals=5)
         self.ellipses_detection_canny_high_threshold_spin_box = CustomSpinBox(label="high Threshold",range_start=0,range_end=500,initial_value=50,step_value=1,double_value=True,decimals=5)
+        self.number_of_detected_ellipses_spin_box = CustomSpinBox(label="Detected Ellipses",range_start=1,range_end=100,initial_value=1,step_value=1)
         self.ellipses_detection_canny_sigma_spin_box = CustomSpinBox(label="Sigma",range_start=0,range_end=10,initial_value=3.5,step_value=0.1,double_value=True,decimals=2)
         self.ellipses_detection_inputs_container_layout.addWidget(self.ellipses_detection_canny_low_threshold_spin_box)
         self.ellipses_detection_inputs_container_layout.addWidget(self.ellipses_detection_canny_high_threshold_spin_box)
         self.ellipses_detection_inputs_container_layout.addWidget(self.ellipses_detection_canny_sigma_spin_box)
+        self.ellipses_detection_inputs_container_layout.addWidget(self.number_of_detected_ellipses_spin_box)
 
 
         self.choosen_color_hex = "#FF0000"
