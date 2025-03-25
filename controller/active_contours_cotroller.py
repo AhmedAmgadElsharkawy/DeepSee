@@ -120,7 +120,8 @@ class ActiveContoursController():
                 cv2.line(output_image, snake_points[i], snake_points[0], (255, 0, 0), 2)
 
             # Area calculation (Shoelace formula)
-            area += (snake_points[j][0] + snake_points[i][0]) * (snake_points[j][1] - snake_points[i][1])
+            area += (snake_points[i][0] * snake_points[j][1]) - (snake_points[j][0] * snake_points[i][1]);
+
 
             # Perimeter calculation
             next_i = (i + 1) % len(snake_points)
