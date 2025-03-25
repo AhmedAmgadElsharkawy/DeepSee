@@ -295,7 +295,7 @@ class HoughTransformController():
         #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
         #     return edge_bgr
 
-        max_iter = max(5000,2*len(edge_pixels))
+        max_iter = max(5000,len(edge_pixels))
 
         for count, i in enumerate(range(max_iter)):
             p1, p2, p3 = self.randomly_pick_ellipse_point(edge_pixels)
@@ -338,7 +338,7 @@ class HoughTransformController():
         thickness = 2
         result_image = original
         if len(result_image.shape) == 2:
-            result_image = cv2.cvtColor(input_image_matrix, cv2.COLOR_GRAY2BGR) 
+            result_image = cv2.cvtColor(result_image, cv2.COLOR_GRAY2BGR) 
         cv2.ellipse(result_image, (p, q), (a, b), angle * 180 / np.pi, 0, 360, color, thickness)
 
         return result_image  
@@ -365,8 +365,8 @@ class HoughTransformController():
     def find_ellipse_center(self, pt,edge):
         size = 7
         m, c = 0, 0
-        m_arr = []
-        c_arr = []
+        tangents_slopes_array = []
+        tangents_intercepts_array = []
 
         for i in range(len(pt)):
             xstart = pt[i][0] - size//2
@@ -380,74 +380,76 @@ class HoughTransformController():
 
             A = np.vstack([proximal_point[:, 0], np.ones(len(proximal_point[:, 0]))]).T
             m, c = np.linalg.lstsq(A, proximal_point[:, 1], rcond=None)[0]
-            m_arr.append(m)
-            c_arr.append(c)
-
-        slope_arr = []
-        intercept_arr = []
+            tangents_slopes_array.append(m)
+            tangents_intercepts_array.append(c)
+        slopes = []
+        intercepts = []
         for i, j in zip([0, 1], [1, 2]):
-            coef_matrix = np.array([[m_arr[i], -1], [m_arr[j], -1]])
-            dependent_variable = np.array([-c_arr[i], -c_arr[j]])
-            det = np.linalg.det(coef_matrix)
+            coefficients_matrix = np.array([[tangents_slopes_array[i], -1], [tangents_slopes_array[j], -1]])
+            intercepts_vector = np.array([-tangents_intercepts_array[i], -tangents_intercepts_array[j]])
+            det = np.linalg.det(coefficients_matrix)
             if abs(det) < 1e-10: 
                 return None  
-            t12 = np.linalg.solve(coef_matrix, dependent_variable)
-            m1 = ((pt[i][0] + pt[j][0])/2, (pt[i][1] + pt[j][1])/2)
-            denominator = m1[0] - t12[0]
+            tangents_intersection = np.linalg.solve(coefficients_matrix, intercepts_vector)
+            middle_point = ((pt[i][0] + pt[j][0])/2, (pt[i][1] + pt[j][1])/2)
+            denominator = middle_point[0] - tangents_intersection[0]
 
             if abs(denominator) < 1e-10:
                 return None  
-            slope = (m1[1] - t12[1]) / denominator
-            intercept = (m1[0]*t12[1] - t12[0]*m1[1]) / denominator
-            slope_arr.append(slope)
-            intercept_arr.append(intercept)
+            slope = (middle_point[1] - tangents_intersection[1]) / denominator
+            intercept = (middle_point[0]*tangents_intersection[1] - tangents_intersection[0]*middle_point[1]) / denominator
+            slopes.append(slope)
+            intercepts.append(intercept)
 
-        coef_matrix = np.array([[slope_arr[0], -1], [slope_arr[1], -1]])
-        dependent_variable = np.array([-intercept_arr[0], -intercept_arr[1]])
-        det = np.linalg.det(coef_matrix)
+        coefficients_matrix = np.array([[slopes[0], -1], [slopes[1], -1]])
+        intercepts_vector = np.array([-intercepts[0], -intercepts[1]])
+        det = np.linalg.det(coefficients_matrix)
         if abs(det) < 1e-10: 
             return None  
-        center = np.linalg.solve(coef_matrix, dependent_variable)
+        center = np.linalg.solve(coefficients_matrix, intercepts_vector)
         return center
 
 
-    def find_ellipse_axes(self, pt, center):
-        npt = []
-        for p in pt:
-            npt.append((p[0] - center[0], p[1] - center[1]))
-        x1 = npt[0][0]
-        y1 = npt[0][1]
-        x2 = npt[1][0]
-        y2 = npt[1][1]
-        x3 = npt[2][0]
-        y3 = npt[2][1]
-        coef_matrix = np.array([[x1**2, 2*x1*y1, y1**2], [x2**2, 2*x2*y2, y2**2], [x3**2, 2*x3*y3, y3**2]])
-        dependent_variable = np.array([1,1,1])
-        det = np.linalg.det(coef_matrix)
+    def find_ellipse_axes(self, points_package, center):
+        offsets = []
+        for point in points_package:
+            offsets.append((point[0] - center[0], point[1] - center[1]))
+        x1 = offsets[0][0]
+        y1 = offsets[0][1]
+        x2 = offsets[1][0]
+        y2 = offsets[1][1]
+        x3 = offsets[2][0]
+        y3 = offsets[2][1]
+        # general eq: A(x-center_x)^2 + B(x-center_x)(y-center_y)+C(y-center_y)^2 = 1
+        coefficients_matrix = np.array([[x1**2, 2*x1*y1, y1**2], [x2**2, 2*x2*y2, y2**2], [x3**2, 2*x3*y3, y3**2]])
+        constants_vector = np.array([1,1,1])
+        det = np.linalg.det(coefficients_matrix)
 
         if abs(det) < 1e-10:  
             return None, None, None
 
-        A, B, C = np.linalg.solve(coef_matrix, dependent_variable)
+        A, B, C = np.linalg.solve(coefficients_matrix, constants_vector)
 
         if self.valid_ellipse(A, B, C):
             angle = self.calculate_ellipse_rotation_angle(A, B, C)
 
-            AXIS_MAT = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
-            AXIS_MAT_ANS = np.array([A, C])
-            det = np.linalg.det(AXIS_MAT)
+            # using axes transformation and align the ellipse with the x-axis -> X = 1 / a²,  Y = 1 / b², X sin²θ + Y cos²θ = A, X cos²θ + Y sin²θ = C
+
+            coefficients_matrix = np.array([[np.sin(angle) ** 2, np.cos(angle) ** 2], [np.cos(angle) ** 2, np.sin(angle) ** 2]])
+            constants_matrix = np.array([A, C])
+            det = np.linalg.det(coefficients_matrix)
 
             if abs(det) < 1e-10:  
                 return None, None, None
-            X , Y = np.linalg.solve(AXIS_MAT, AXIS_MAT_ANS)
+            X , Y = np.linalg.solve(coefficients_matrix, constants_matrix)
             min_val = min(X, Y)
 
             if min_val <= 0:  
                 return None, None, None
-            major = 1/np.sqrt(min(X,Y))
-            minor = 1/np.sqrt(max(X,Y))
+            major_axis = 1/np.sqrt(min(X,Y))
+            minor_axis = 1/np.sqrt(max(X,Y))
 
-            return major, minor, angle
+            return major_axis, minor_axis, angle
         else:
             return None, None, None
         
@@ -458,32 +460,23 @@ class HoughTransformController():
             return False
         
     def calculate_ellipse_rotation_angle(self, a, b, c):
-        if a == c:
-            angle = 0
-        else:
-            angle = 0.5*np.arctan((2*b)/(a-c))
-
-        if a > c:
-            if b < 0:
-                angle = angle-(-0.5*np.pi)
-            elif b > 0:
-                angle = angle-(0.5*np.pi)
+        angle = 0.5*np.arctan2(2*b,a-c) - np.pi/2
 
         return angle
     
 
     def similar_ellipse(self, p, q, axis1, axis2, angle,accumulator):
-        similar_idx = -1
+        similar_index = -1
         if accumulator is not None:
-            for idx, e in enumerate(accumulator):
-                center_dist = np.sqrt((e[0] - p)**2 + (e[1] - q)**2)
-                angle_dist = (abs(e[4] - angle))
-                laxis_dist = abs(max(axis1,axis2)-max(e[2],e[3]))
-                saxis_dist = abs(min(axis1,axis2)-min(e[2],e[3]))
-                if (laxis_dist < 5) and (center_dist < 5) and ( angle_dist < 0.1745) and(saxis_dist < 10):
-                    return idx
-        return similar_idx
+            for index, ellipse in enumerate(accumulator):
+                center_difference = np.sqrt((ellipse[0] - p)**2 + (ellipse[1] - q)**2)
+                angle_difference = (abs(ellipse[4] - angle))
+                major_axis_difference = abs(max(axis1,axis2)-max(ellipse[2],ellipse[3]))
+                minor_axis_difference = abs(min(axis1,axis2)-min(ellipse[2],ellipse[3]))
+                if (major_axis_difference < 5) and (center_difference < 5) and ( angle_difference < 0.1745) and(minor_axis_difference < 10):
+                    return index
+        return similar_index
     
 
-    def average_weight(self, old, now, score):
-        return (old * score + now) / (score+1)
+    def average_weight(self, old_value, new_value, score):
+        return (old_value * score + new_value) / (score+1)
