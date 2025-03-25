@@ -1,28 +1,18 @@
 import numpy as np
 import cv2
-import os
-from itertools import product
 from collections import defaultdict
-from multiprocessing import Pool
 
 from skimage.color import rgb2gray
-
 
 import random
 from skimage.feature import canny
 import pandas as pd
-import time
 
 class HoughTransformController():
     def __init__(self,hough_transform_window):
         self.hough_transform_window = hough_transform_window
         self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
 
-        # self.major_bound = [100, 250]
-        # self.minor_bound = [80, 250]
-        # self.flattening_bound = 0.8
-
-        # self.score_threshold = 7
 
 
     def apply_hough_transform(self):
@@ -290,6 +280,10 @@ class HoughTransformController():
         pixels = np.array(np.where(edge == 255)).T
         edge_pixels = [p for p in pixels]
 
+        if(len(edge_pixels) < 3):
+            print("Not Enough Edge Pixels")
+            return None
+
         # if len(edge_pixels):
         #     print(len(edge_pixels))
         #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
@@ -460,9 +454,14 @@ class HoughTransformController():
             return False
         
     def calculate_ellipse_rotation_angle(self, a, b, c):
-        angle = 0.5*np.arctan2(2*b,a-c) - np.pi/2
-
-        return angle
+        angle = 0.5 * np.arctan2(2 * b, a - c) - np.pi / 2
+        # Normalize the angle to the range [-90, 90]
+        angle = np.rad2deg(angle) 
+        if angle < -90:
+            angle += 180
+        elif angle > 90:
+            angle -= 180
+        return np.deg2rad(angle)
     
 
     def similar_ellipse(self, p, q, axis1, axis2, angle,accumulator):

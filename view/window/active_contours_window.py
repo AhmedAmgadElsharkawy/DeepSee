@@ -20,7 +20,7 @@ class ActiveContoursWindow(BasicStackedWindow):
         if ActiveContoursWindow.__instance != None:
             return
         
-        super().__init__(main_window, header_text="Edge Detection")
+        super().__init__(main_window, header_text="Active Contours")
         ActiveContoursWindow.__instance = self
 
 

@@ -21,7 +21,7 @@ class HoughTransformWindow(BasicStackedWindow):
         if HoughTransformWindow.__instance != None:
             return
         
-        super().__init__(main_window, header_text="Edge Detection")
+        super().__init__(main_window, header_text="Hough Transform")
         HoughTransformWindow.__instance = self
 
         self.detected_objects_type_custom_combo_box = CustomComboBox(label= "Objects Type",combo_box_items_list=["Lines Detection","Circles Detection","Ellipses Detection"])
