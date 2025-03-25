@@ -1,28 +1,16 @@
 import numpy as np
 import cv2
-import os
-from itertools import product
 from collections import defaultdict
-from multiprocessing import Pool
-
 from skimage.color import rgb2gray
-
-
 import random
 from skimage.feature import canny
 import pandas as pd
-import time
 
 class HoughTransformController():
     def __init__(self,hough_transform_window):
         self.hough_transform_window = hough_transform_window
         self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
 
-        # self.major_bound = [100, 250]
-        # self.minor_bound = [80, 250]
-        # self.flattening_bound = 0.8
-
-        # self.score_threshold = 7
 
 
     def apply_hough_transform(self):
@@ -290,6 +278,10 @@ class HoughTransformController():
         edge = self.canny_edge_detector(input_image_matrix, sigma = ellipse_canny_sigma, low_threshold = ellipse_canny_low_threshold, high_threshold = ellipse_canny_high_threshold)
         pixels = np.array(np.where(edge == 255)).T
         edge_pixels = [p for p in pixels]
+
+        if(len(edge_pixels) < 3):
+            print("Not Enough Edge Pixels")
+            return None
 
         # if len(edge_pixels):
         #     print(len(edge_pixels))
