@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QFileDialog
 from view.widget.image_viewer import ImageViewer
 
 class InteractiveImageViewer(ImageViewer):
-    def __init__(self):
-        super().__init__(type = "input")
+    def __init__(self,custom_placeholder = None):
+        super().__init__(type = "input",custom_placeholder = custom_placeholder)
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event):

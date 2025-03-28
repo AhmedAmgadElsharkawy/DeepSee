@@ -9,7 +9,7 @@ import cv2
 from model.image_model import ImageModel
 
 class ImageViewer(pg.ImageView):
-    def __init__(self, type="output"):
+    def __init__(self, type="output",custom_placeholder = None):
         super().__init__()
         self.image_model = ImageModel()
         self.ui.histogram.hide()
@@ -30,8 +30,10 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setObjectName("temp_label")
 
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
-
-        if type == "input":
+        
+        if custom_placeholder:
+            self.temp_label_placeholder_text = custom_placeholder
+        elif type == "input":
             self.temp_label_placeholder_text = "Double click, or drop image here\n\nAllowed Files: PNG, JPG, JPEG BMP files"
         else:
             self.temp_label_placeholder_text = "Processed image will appear here"
