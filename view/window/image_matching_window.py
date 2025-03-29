@@ -42,11 +42,11 @@ class ImageMatchingWindow(BasicStackedWindow):
         self.image_viewers_container_layout.addWidget(self.input_images_viewers_container)
 
 
-        self.input_template_image_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the image here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
-        self.input_images_viewers_container_layout.addWidget(self.input_template_image_viewer)
+        self.input_image_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the image here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
+        self.input_images_viewers_container_layout.addWidget(self.input_image_viewer)
 
-        self.input_template_image_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the template here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
-        self.input_images_viewers_container_layout.addWidget(self.input_template_image_viewer)
+        self.input_template_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the template here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
+        self.input_images_viewers_container_layout.addWidget(self.input_template_viewer)
 
         self.output_image_viewer = ImageViewer(custom_placeholder = "Matching result will appear here")
         self.image_viewers_container_layout.addWidget(self.output_image_viewer)
