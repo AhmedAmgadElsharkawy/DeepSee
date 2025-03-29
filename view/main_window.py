@@ -11,6 +11,7 @@ from view.window.hybrid_image_window import HybridImageWindow
 from view.window.hough_transform_window import HoughTransformWindow
 from view.window.active_contours_window import ActiveContoursWindow
 from view.window.image_matching_window import ImageMatchingWindow
+from view.window.corner_detection_window import CornerDetectionWindow
 
 class MainWindow(QMainWindow):
     __instance = None
@@ -50,7 +51,8 @@ class MainWindow(QMainWindow):
             ("Hybrid Image", "assets/icons/hybrid_image.png"),
             ("Hough Transform","assets/icons/hough_transform.png"),
             ("Active Contours","assets/icons/active_contours.png"),
-            ("Image Matching","assets/icons/image_matching.png")
+            ("Image Matching","assets/icons/image_matching.png"),
+            ("Corner Detection","assets/icons/corner_detection.png")
         ]
 
         font = QFont("Inter",11)
@@ -72,6 +74,7 @@ class MainWindow(QMainWindow):
         self.hough_transform_window = HoughTransformWindow(self)
         self.active_contours_window = ActiveContoursWindow(self)
         self.image_matching_window = ImageMatchingWindow(self)
+        self.corner_detection_window = CornerDetectionWindow(self)
         
 
         self.stackedWidget = QStackedWidget()
@@ -84,6 +87,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.hough_transform_window)
         self.stackedWidget.addWidget(self.active_contours_window)
         self.stackedWidget.addWidget(self.image_matching_window)
+        self.stackedWidget.addWidget(self.corner_detection_window)
 
         self.list_widget.setFixedWidth(250)
         self.main_widget_layout.addWidget(self.list_widget)
