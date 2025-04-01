@@ -7,15 +7,15 @@ class SiftDescriptorsController():
         self.sift_descriptors_window.apply_button.clicked.connect(self.apply_sift)
 
     def apply_sift(self):
-        input_image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
+        input_image = self.sift_descriptors_window.detect_keypoints_input_image_viewer.image_model.get_image_matrix()
         print(input_image.shape)
-        image=self.sift_descriptors_window.input_image_viewer.image_model.get_gray_image_matrix()
+        image=self.sift_descriptors_window.detect_keypoints_input_image_viewer.image_model.get_gray_image_matrix()
         print(image.shape)
 
         gaussian_pyramid=self.generate_gaussian_pyramid(image)
         dog_pyramid=self.compute_dog_pyramid(gaussian_pyramid)
         keypoints=self.detect_keypoints(dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
-        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
+        self.sift_descriptors_window.detect_keypoints_output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
 
         print("sift")
     def gaussian_blur(self,image,sigma):
