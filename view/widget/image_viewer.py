@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QLabel, QFileDialog, QMenu, QAction
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont,QMovie
 from PyQt5.QtCore import Qt
 
 import pyqtgraph as pg
@@ -39,6 +39,24 @@ class ImageViewer(pg.ImageView):
             self.temp_label_placeholder_text = "Processed image will appear here"
 
         self.temp_label.setText(self.temp_label_placeholder_text)
+
+
+        self.loading_label = QLabel(self)
+        self.loading_label.setAlignment(Qt.AlignCenter)
+        self.loading_label.setGeometry(0, 0, self.width(), self.height())
+        self.loading_label.setObjectName("loading_label")
+
+        self.movie = QMovie("assets/icons/loading.gif")
+        self.loading_label.setMovie(self.movie)
+
+
+    def show_loading_effect(self):
+        self.temp_label.hide()
+        self.loading_label.show()
+        self.movie.start()
+
+    def hide_loading_effect(self):
+        self.loading_label.hide()
 
     def contextMenuEvent(self, event):
         if self.image_model.image_matrix is None:
@@ -135,8 +153,10 @@ class ImageViewer(pg.ImageView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.temp_label.setGeometry(0, 0, self.width(), self.height())
+        self.loading_label.setGeometry(0, 0, self.width(), self.height())
 
     def display_image_matrix(self, image_matrix):
+        self.temp_label.hide()
         self.temp_label.hide()
         matrix_to_display = None
         if not self.image_model.is_grayscale(image_matrix):

@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 class SiftDescriptorsController():
     def __init__(self,sift_descriptors_window):
         self.sift_descriptors_window = sift_descriptors_window
