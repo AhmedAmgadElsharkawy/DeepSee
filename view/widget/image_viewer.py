@@ -157,7 +157,7 @@ class ImageViewer(pg.ImageView):
 
     def display_image_matrix(self, image_matrix):
         self.temp_label.hide()
-        self.temp_label.hide()
+        self.loading_label.hide()
         matrix_to_display = None
         if not self.image_model.is_grayscale(image_matrix):
             matrix_to_display = cv2.cvtColor(image_matrix, cv2.COLOR_BGR2RGB)
