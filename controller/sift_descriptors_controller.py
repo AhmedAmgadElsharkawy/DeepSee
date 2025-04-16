@@ -7,9 +7,7 @@ class SiftDescriptorsController():
 
     def apply_sift(self):
         input_image = self.sift_descriptors_window.detect_keypoints_input_image_viewer.image_model.get_image_matrix()
-        print(input_image.shape)
         image=self.sift_descriptors_window.detect_keypoints_input_image_viewer.image_model.get_gray_image_matrix()
-        print(image.shape)
 
         gaussian_pyramid=self.generate_gaussian_pyramid(image)
         dog_pyramid=self.compute_dog_pyramid(gaussian_pyramid)
