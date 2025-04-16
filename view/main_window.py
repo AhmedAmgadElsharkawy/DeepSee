@@ -428,7 +428,6 @@ class MainWindow(QMainWindow):
             #list_widget::item:selected {
                 color: #FFFFFF; 
                 font-weight: bold;
-                background-color: #4B5668;
                 border-left: 4px solid #2D60FF;
             }
 
@@ -485,11 +484,11 @@ class MainWindow(QMainWindow):
             }
                            
             #spin_box {
-                border: 1px solid #343C6A;
+                border: 1px solid #4B5668;
                 padding: 3px;
                 font-size: 12px;
                 color: #FFFFFF;
-                background-color: #273142;
+                background-color: #1B2431;
                 selection-background-color: #4B5668;
             }
                            
@@ -497,13 +496,13 @@ class MainWindow(QMainWindow):
             #spin_box::up-button {
                 subcontrol-position: top right;
                 width: 16px; /* Adjust width */
-                background: #273142;
+                background: #1B2431;
             }
 
             #spin_box::down-button {
                 subcontrol-position: bottom right;
                 width: 16px;
-                background: #273142;
+                background: #1B2431;
 
             }
 
@@ -528,21 +527,21 @@ class MainWindow(QMainWindow):
             }
                            
             QComboBox#combo_box {
-                border: 1px solid #343C6A;
+                border: 1px solid #4B5668;
                 padding: 5px;
                 color: #FFFFFF;
-                background-color: #273142;
+                background-color: #1B2431;
                 selection-background-color: #FFFFFF;
             }
             QComboBox#combo_box QAbstractItemView {
-                background-color: #273142;
+                background-color: #1B2431;
                 color: #FFFFFF;
                 selection-background-color: #4B5668;
                 selection-color: #FFFFFF;
             }
                            
             QComboBox#combo_box::drop-down {
-                background-color: #273142; 
+                background-color: #1B2431; 
                 width: 20px; 
             }
 
@@ -565,11 +564,11 @@ class MainWindow(QMainWindow):
                 }
             
             #choose_color_button{
-                border: 1px solid #273142;
+                border: 1px solid #4B5668;
                 padding: 3px 10px;
                 margin:0px;
                 color: #FFFFFF;
-                background-color: #273142;
+                background-color: #1B2431;
                 border-radius:4px;      
             }
                            
