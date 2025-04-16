@@ -20,7 +20,6 @@ class ImageViewer(pg.ImageView):
 
 
         self.getView().setMenuEnabled(False)
-        self.getView().setBackgroundColor(QColor("white"))
 
         self.save_image_button = None
 
@@ -48,6 +47,9 @@ class ImageViewer(pg.ImageView):
 
         self.movie = QMovie("assets/icons/loading.gif")
         self.loading_label.setMovie(self.movie)
+
+        self.light_mode()
+        self.main_window.mode_toggle_signal.connect(self.toggle_mode)
 
 
     def show_loading_effect(self):
@@ -244,4 +246,18 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setText(self.temp_label_placeholder_text)  
         self.temp_label.show()  
         self.clear()
+
+
+    def toggle_mode(self,is_dark_mode):
+        if is_dark_mode:
+            self.dark_mode()
+        else:
+            self.light_mode()
+        
+
+    def dark_mode(self):
+        self.getView().setBackgroundColor(QColor("#273142"))
+
+    def light_mode(self):
+        self.getView().setBackgroundColor(QColor("white"))
 
