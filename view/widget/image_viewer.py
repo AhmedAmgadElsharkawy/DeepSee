@@ -165,14 +165,14 @@ class ImageViewer(pg.ImageView):
         self.main_window.transformations_window.transformed_image_pdf_graph.clear()
 
     def move_to_first_viewer(self):
-        self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.hybrid_image_widnow.first_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
+        self.main_window.hybrid_image_window.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_window.first_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_window.hybrid_image_viewer.reset()
 
     def move_to_second_viewer(self):
-        self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
+        self.main_window.hybrid_image_window.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_window.second_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_window.hybrid_image_viewer.reset()
 
     def move_to_hough_transform_viewer(self):
         self.main_window.hough_transform_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)

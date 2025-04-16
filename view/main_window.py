@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         MainWindow.__instance = self
 
         self.is_dark_mode = False
+        self.setWindowIcon(QIcon("assets/icons/deepsee.png"))
 
         self.setWindowTitle('DeepSee')
 
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
         self.thresholding_window = ThresholdingWindow(self)
         self.edge_detection_window = EdgeDetectionsWindow(self)
         self.transformations_window = TransformationsWindow(self)
-        self.hybrid_image_widnow = HybridImageWindow(self)
+        self.hybrid_image_window = HybridImageWindow(self)
         self.hough_transform_window = HoughTransformWindow(self)
         self.active_contours_window = ActiveContoursWindow(self)
         self.image_matching_window = ImageMatchingWindow(self)
@@ -102,7 +103,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.thresholding_window)
         self.stackedWidget.addWidget(self.edge_detection_window)
         self.stackedWidget.addWidget(self.transformations_window)
-        self.stackedWidget.addWidget(self.hybrid_image_widnow)
+        self.stackedWidget.addWidget(self.hybrid_image_window)
         self.stackedWidget.addWidget(self.hough_transform_window)
         self.stackedWidget.addWidget(self.active_contours_window)
         self.stackedWidget.addWidget(self.image_matching_window)
@@ -121,8 +122,9 @@ class MainWindow(QMainWindow):
         self.dark_mode_toggle_button_container = QWidget()
         self.dark_mode_toggle_button_container.setObjectName("dark_mode_toggle_button_container")
         self.dark_mode_toggle_button_container_layout = QHBoxLayout(self.dark_mode_toggle_button_container)
+        self.dark_mode_toggle_button_container_layout.setContentsMargins(20,10,20,10)
         self.side_bar_container_layout.addWidget(self.dark_mode_toggle_button_container)
-        self.mode_toggle_button_label = QLabel("Drak Mode")
+        self.mode_toggle_button_label = QLabel("Change The Theme")
         mode_toggle_button_label_font = QFont("Inter",11)
         self.mode_toggle_button_label.setFont(mode_toggle_button_label_font)
         self.mode_toggle_button_label.setObjectName("mode_toggle_button_label")
@@ -234,7 +236,7 @@ class MainWindow(QMainWindow):
 
             QPushButton#mode_toggle_button:hover{
                 padding: 8px 8px;
-                border: 1px solid #B1B1B1;
+                border: 2px solid #B1B1B1;
                 border-radius: 8px;
                 background-color: #B1B1B1;
             }
@@ -451,7 +453,7 @@ class MainWindow(QMainWindow):
 
             QPushButton#mode_toggle_button:hover{
                 padding: 8px 8px;
-                border: 1px solid #2D60FF;
+                border: 2px solid #2D60FF;
                 border-radius: 8px;
                 background-color: #273142;
             }
@@ -495,7 +497,7 @@ class MainWindow(QMainWindow):
             #spin_box::up-button {
                 subcontrol-position: top right;
                 width: 16px; /* Adjust width */
-                background: #273142; /* Background color */
+                background: #273142;
             }
 
             #spin_box::down-button {
