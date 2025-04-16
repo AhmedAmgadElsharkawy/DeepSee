@@ -22,7 +22,7 @@ class SegmentationWindow(BasicStackedWindow):
         SegmentationWindow.__instance = self
 
         self.segmentation_algorithm_custom_combo_box = CustomComboBox(label= "Segmentation Algorithm",combo_box_items_list=["k-means","Mean Shift","Agglomerative Segmentation","Region Growing"])
-        self.segmentation_algorithm_custom_combo_box.currentIndexChanged.connect(self.on_edge_detector_type_change)
+        self.segmentation_algorithm_custom_combo_box.currentIndexChanged.connect(self.on_segmentation_algorithm_change)
         self.inputs_container_layout.addWidget(self.segmentation_algorithm_custom_combo_box)
 
 
@@ -68,7 +68,7 @@ class SegmentationWindow(BasicStackedWindow):
 
         self.edge_detection_controller = SegmentationController(self)
         
-    def on_edge_detector_type_change(self):
+    def on_segmentation_algorithm_change(self):
         self.hide_all_inputs()
 
         selected_detector = self.segmentation_algorithm_custom_combo_box.current_text()

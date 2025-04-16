@@ -14,6 +14,7 @@ from view.window.image_matching_window import ImageMatchingWindow
 from view.window.corner_detection_window import CornerDetectionWindow
 from view.window.sift_descriptors_window import SiftDescriptorsWindow
 from view.window.segmentation_window import SegmentationWindow
+from view.window.face_detection_and_recognition_window import FaceDetectionAndRecognitionWindow
 
 class MainWindow(QMainWindow):
     __instance = None
@@ -56,7 +57,8 @@ class MainWindow(QMainWindow):
             ("Image Matching","assets/icons/image_matching.png"),
             ("Corner Detection","assets/icons/corner_detection.png"),
             ("SIFT Descriptors","assets/icons/sift_descriptors.png"),
-            ("Segmentation","assets/icons/segmentation.png")
+            ("Segmentation","assets/icons/segmentation.png"),
+            ("Face Detection & Recognition","assets/icons/face_detection_and_recognition.png")
         ]
 
         font = QFont("Inter",11)
@@ -81,6 +83,7 @@ class MainWindow(QMainWindow):
         self.corner_detection_window = CornerDetectionWindow(self)
         self.sift_descriptors_window = SiftDescriptorsWindow(self)
         self.segmentation_window = SegmentationWindow(self)
+        self.Face_detection_and_recognition_window = FaceDetectionAndRecognitionWindow(self)
         
 
         self.stackedWidget = QStackedWidget()
@@ -96,10 +99,11 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.corner_detection_window)
         self.stackedWidget.addWidget(self.sift_descriptors_window)
         self.stackedWidget.addWidget(self.segmentation_window)
+        self.stackedWidget.addWidget(self.Face_detection_and_recognition_window)
         
         
 
-        self.list_widget.setFixedWidth(250)
+        self.list_widget.setFixedWidth(330)
         self.main_widget_layout.addWidget(self.list_widget)
         self.main_widget_layout.addWidget(self.stackedWidget)
 
