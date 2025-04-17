@@ -75,24 +75,24 @@ class CornerDetectionController():
         corners = np.argwhere(R > threshold * R.max())
         return self.draw_corners(image, corners)
     
-    def lambda_corner_detector(self, image, max_corners=10, min_distance=5, quality_level=0.01, ksize=3) -> list:
+    def lambda_corner_detector(self, image, max_corners=10, min_distance=5, quality_level=0.01) -> list:
         # Convert image to grayscale
         gray = self.gray_image(image)
 
         # Compute image gradients
-        Ix = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=ksize)
-        Iy = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=ksize)
+        Ix = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+        Iy = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
 
         Ixx = Ix * Ix
         Iyy = Iy * Iy
         Ixy = Ix * Iy
 
         # Sum over window
-        window_size = 3
-        kernel = np.ones((window_size, window_size), dtype=np.float32)
-        Sx2 = cv2.filter2D(Ixx, -1, kernel)
-        Sy2 = cv2.filter2D(Iyy, -1, kernel)
-        Sxy = cv2.filter2D(Ixy, -1, kernel)
+        window_size = 5
+    
+        Sx2 = cv2.GaussianBlur(Ixx, (window_size, window_size), 1.5)
+        Sy2 = cv2.GaussianBlur(Iyy, (window_size, window_size), 1.5)
+        Sxy = cv2.GaussianBlur(Ixy, (window_size, window_size), 1.5)
 
         # Compute minimum eigenvalue (lambda minus) response map
         h, w = gray.shape
@@ -106,7 +106,7 @@ class CornerDetectionController():
                 lambda_min[y, x] = eigvals[0]
 
         # Thresholding based on quality level
-        min_val, max_val = np.min(lambda_min), np.max(lambda_min)
+        max_val = np.max(lambda_min)
         threshold = quality_level * max_val
 
         # Get corner candidates
@@ -117,8 +117,9 @@ class CornerDetectionController():
         for y, x in corner_candidates:
             local_patch = lambda_min[max(0, y-1):y+2, max(0, x-1):x+2]
             if lambda_min[y, x] == np.max(local_patch):
-                corners.append((x, y))  # note: OpenCV uses (x, y)
-
+                corners.append((x, y))  
+                
+       
         # Select strongest corners up to max_corners, enforcing min_distance
         corners = sorted(corners, key=lambda pt: -lambda_min[pt[1], pt[0]])
         final_corners = []
@@ -127,7 +128,7 @@ class CornerDetectionController():
                 final_corners.append(pt)
                 if len(final_corners) >= max_corners:
                     break
-
+        
         return self.draw_corners(image, final_corners)
 
               
