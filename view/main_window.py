@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
             
             if i == index:
                 if self.is_dark_mode:
-                    icon = self.change_icon_color(icon_path,original_color="black",new_color= "#FFFFFF")
+                    icon = self.change_icon_color(icon_path,original_color="black",new_color= "#4379EE")
                 else:
                     icon = self.change_icon_color(icon_path,original_color="black",new_color= "#2D60FF")
             else:
@@ -209,9 +209,9 @@ class MainWindow(QMainWindow):
             }
 
             #list_widget::item:selected {
-                color: #2D60FF; 
+                color: #4379EE; 
                 font-weight: bold;
-                border-left: 4px solid #2D60FF;
+                border-left: 4px solid #4379EE;
             }
 
             #list_widget::item:hover:!selected {
@@ -246,14 +246,14 @@ class MainWindow(QMainWindow):
                 font-weight: bold;
                 padding: 8px 25px;
                 border-radius: 8px;
-                background-color: #2D60FF;
+                background-color: #4379EE;
                 color: #FFFFFF;
             }
 
             QPushButton#apply_button:hover {
                 background-color: #FFFFFF;
-                border: 1px solid #2D60FF;
-                color:#2D60FF;
+                border: 1px solid #4379EE;
+                color:#4379EE;
             }
 
             QPushButton#apply_button:pressed {
@@ -272,7 +272,7 @@ class MainWindow(QMainWindow):
                 padding: 3px;
                 font-size: 12px;
                 background-color: #f5f7fa;
-                selection-background-color: #0078D7;
+                selection-background-color: #4379EE;
             }
                            
 
@@ -357,7 +357,7 @@ class MainWindow(QMainWindow):
             }
                            
         #choose_color_button:hover {
-            background-color: #2D60FF; 
+            background-color: #4379EE; 
             color: #FFFFFF;
             border-color: none; 
         }              
@@ -370,13 +370,13 @@ class MainWindow(QMainWindow):
         }
 
         QScrollBar::handle:vertical {
-            background: #2D60FF;
+            background: #4379EE;
             min-height: 20px;
             border-radius: 4px;
         }
 
         QScrollBar::handle:vertical:hover {
-            background: #2D60FF;
+            background: #4379EE;
         }
 
         QScrollBar::add-line:vertical,
@@ -406,7 +406,11 @@ class MainWindow(QMainWindow):
         return """
             #main_widget {
                 background-color: #1B2431;
-            }      
+            }     
+            QColorDialog {
+                background-color: #273142;
+                color: white;
+            } 
             #list_widget {
                 background-color: #273142;
                 color: #B1B1B1; 
@@ -426,9 +430,9 @@ class MainWindow(QMainWindow):
             }
 
             #list_widget::item:selected {
-                color: #FFFFFF; 
+                color: #4379EE; 
                 font-weight: bold;
-                border-left: 4px solid #2D60FF;
+                border-left: 4px solid #4379EE;
             }
 
             #list_widget::item:hover:!selected {
@@ -447,12 +451,12 @@ class MainWindow(QMainWindow):
             QPushButton#mode_toggle_button{
                 padding: 8px 8px;
                 border-radius: 8px;
-                background-color: #2D60FF;
+                background-color: #4379EE;
             }
 
             QPushButton#mode_toggle_button:hover{
                 padding: 8px 8px;
-                border: 2px solid #2D60FF;
+                border: 2px solid #4379EE;
                 border-radius: 8px;
                 background-color: #273142;
             }
@@ -462,13 +466,13 @@ class MainWindow(QMainWindow):
                 font-weight: bold;
                 padding: 8px 25px;
                 border-radius: 8px;
-                background-color: #2D60FF;
+                background-color: #4379EE;
                 color: #FFFFFF;
             }
 
             QPushButton#apply_button:hover {
                 background-color: #1B2431;
-                border: 1px solid #2D60FF;
+                border: 1px solid #4379EE;
                 color:#FFFFFF;
             }
 
@@ -573,9 +577,9 @@ class MainWindow(QMainWindow):
             }
                            
             #choose_color_button:hover {
-                background-color: #2D60FF; 
+                background-color: #4379EE; 
                 color: #FFFFFF;
-                border-color: #2D60FF; 
+                border-color: #4379EE; 
             }              
 
             QScrollBar:vertical {
@@ -586,13 +590,13 @@ class MainWindow(QMainWindow):
             }
 
             QScrollBar::handle:vertical {
-                background: #2D60FF;
+                background: #4379EE;
                 min-height: 20px;
                 border-radius: 4px;
             }
 
             QScrollBar::handle:vertical:hover {
-                background: #2D60FF;
+                background: #4379EE;
             }
 
             QScrollBar::add-line:vertical,
