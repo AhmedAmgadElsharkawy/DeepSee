@@ -54,9 +54,6 @@ class CornerDetectionController():
          # Convert image to grayscale if it is colored (3-channel)
         gray = self.gray_image(image)
             
-        # Harris corner detection
-        # harris_corners = cv2.cornerHarris(gray, blockSize=block_size, ksize=ksize, k=k)
-        # harris_corners = cv2.dilate(harris_corners, None)
         
         Ix = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=ksize)
         Iy = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=ksize)
@@ -78,37 +75,64 @@ class CornerDetectionController():
         corners = np.argwhere(R > threshold * R.max())
         return self.draw_corners(image, corners)
     
-    def lambda_corner_detector(self,image,max_corners:int = 10,min_distance:int = 5,quality_level:float = 0.01, ksize:int = 3)->list:
-        # Convert image to grayscale if it is colored (3-channel)
+    def lambda_corner_detector(self, image, max_corners=10, min_distance=5, quality_level=0.01, ksize=3) -> list:
+        # Convert image to grayscale
         gray = self.gray_image(image)
 
-
-        # Lambda corner detection
-        # corners = cv2.goodFeaturesToTrack(gray, maxCorners=max_corners, qualityLevel=quality_level, minDistance=min_distance, blockSize=3, useHarrisDetector=True, k=0.04)
+        # Compute image gradients
         Ix = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=ksize)
         Iy = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=ksize)
-        
+
         Ixx = Ix * Ix
         Iyy = Iy * Iy
         Ixy = Ix * Iy
-        
-        
-        Sxx = cv2.GaussianBlur(Ixx, (3, 3), 1)
-        Syy = cv2.GaussianBlur(Iyy, (3, 3), 1)
-        Sxy = cv2.GaussianBlur(Ixy, (3, 3), 1)
-        
-        lambda_min = []
-        h,w = gray.shape
+
+        # Sum over window
+        window_size = 3
+        kernel = np.ones((window_size, window_size), dtype=np.float32)
+        Sx2 = cv2.filter2D(Ixx, -1, kernel)
+        Sy2 = cv2.filter2D(Iyy, -1, kernel)
+        Sxy = cv2.filter2D(Ixy, -1, kernel)
+
+        # Compute minimum eigenvalue (lambda minus) response map
+        h, w = gray.shape
+        lambda_min = np.zeros((h, w), dtype=np.float32)
+
         for y in range(h):
             for x in range(w):
-                M = np.array([[Sxx[y, x], Sxy[y, x]], [Sxy[y, x], Syy[y, x]]])
-                eigvals = np.linalg.eigvalsh(M)  # Sorted eigenvalues
-                if min(eigvals) > quality_level * max(Sxx.max(), Syy.max()):
-                    lambda_min.append((x,y))
+                M = np.array([[Sx2[y, x], Sxy[y, x]],
+                            [Sxy[y, x], Sy2[y, x]]])
+                eigvals = np.linalg.eigvalsh(M)  # sorted: [lambda_min, lambda_max]
+                lambda_min[y, x] = eigvals[0]
 
-        return self.draw_corners(image, lambda_min)
-    
-    def harris_and_lambda(self,image,block_size:int = 2,ksize:int = 3,k:float = 0.04,threshold:float = 0.01,max_corners:int = 10,min_distance:int = 5,quality_level:float = 0.01)->list:
+        # Thresholding based on quality level
+        min_val, max_val = np.min(lambda_min), np.max(lambda_min)
+        threshold = quality_level * max_val
+
+        # Get corner candidates
+        corner_candidates = np.argwhere(lambda_min > threshold)
+
+        #  Apply non-maximum suppression 
+        corners = []
+        for y, x in corner_candidates:
+            local_patch = lambda_min[max(0, y-1):y+2, max(0, x-1):x+2]
+            if lambda_min[y, x] == np.max(local_patch):
+                corners.append((x, y))  # note: OpenCV uses (x, y)
+
+        # Select strongest corners up to max_corners, enforcing min_distance
+        corners = sorted(corners, key=lambda pt: -lambda_min[pt[1], pt[0]])
+        final_corners = []
+        for pt in corners:
+            if all(np.hypot(pt[0] - fc[0], pt[1] - fc[1]) >= min_distance for fc in final_corners):
+                final_corners.append(pt)
+                if len(final_corners) >= max_corners:
+                    break
+
+        return self.draw_corners(image, final_corners)
+
+              
+    def harris_and_lambda(self,image,block_size:int = 2,ksize:int = 3,k:float = 0.04,threshold:float = 0.01
+                          ,max_corners:int = 10,min_distance:int = 5,quality_level:float = 0.01)->list:
         # Convert image to grayscale if it is colored (3-channel)
         gray = self.gray_image(image)
 
@@ -129,12 +153,3 @@ class CornerDetectionController():
         all_corners = np.concatenate((harris_corners_list, lambda_corners), axis=0)
         return self.draw_corners(image, all_corners)
 
-
-    
-    def detect_corners(self, image, type):
-        if type == "Harris Detector":
-            return self.harris_corner_detector(image)
-        elif type == "Lambda Detector":
-            return self.lambda_corner_detector(image)
-        else:
-            return self.harris_and_lambda(image)
