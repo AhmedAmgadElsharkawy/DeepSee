@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         super().__init__() 
         MainWindow.__instance = self
 
-        self.is_dark_mode = False
+        self.is_dark_mode = True
         self.setWindowIcon(QIcon("assets/icons/deepsee.png"))
 
         self.setWindowTitle('DeepSee')
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         self.list_widget.setCurrentRow(0)
         self.stackedWidget.setCurrentIndex(0)
 
-        self.setStyleSheet(self.light_mode_stylesheet())
+        self.apply_theme()
 
 
 
@@ -175,15 +175,18 @@ class MainWindow(QMainWindow):
     def toggle_theme(self):
         self.is_dark_mode = not self.is_dark_mode
 
+        self.apply_theme()
+
+        self.mode_toggle_signal.emit(self.is_dark_mode)
+        self.on_sidebar_item_select(self.list_widget.currentRow())
+
+    def apply_theme(self):
         if self.is_dark_mode:
             self.setStyleSheet(self.dark_mode_stylesheet())
             self.mode_toggle_button.setIcon(QIcon("assets/icons/moon.png"))
         else:
             self.setStyleSheet(self.light_mode_stylesheet())
             self.mode_toggle_button.setIcon(QIcon("assets/icons/sun.png"))
-
-        self.mode_toggle_signal.emit(self.is_dark_mode)
-        self.on_sidebar_item_select(self.list_widget.currentRow())
 
     def light_mode_stylesheet(self):
         return """
