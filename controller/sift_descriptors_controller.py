@@ -21,14 +21,25 @@ class SiftDescriptorsController():
         sigma, num_intervals, assumed_blur, image_border_width=1.6, 3, 0.5, 5
         gray_image = gray_image.astype('float32')
         
-        base_image = self.generateBaseImage(gray_image, sigma, assumed_blur)
-        num_octaves = self.computeNumberOfOctaves(base_image.shape)
-        gaussian_kernels = self.generateGaussianKernels(sigma, num_intervals)
+        base_image = self.generate_base_image(gray_image, sigma, assumed_blur)
+        num_octaves = self.compute_number_of_octaves(base_image.shape)
+        gaussian_kernels = self.generate_gaussian_kernels(sigma, num_intervals)
         gaussian_images = self.generateGaussianImages(base_image, num_octaves, gaussian_kernels)
         dog_images = self.generateDoGImages(gaussian_images)
         keypoints = self.findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width)
         keypoints = self.removeDuplicateKeypoints(keypoints)
         keypoints = self.convertKeypointsToInputImageSize(keypoints)
+
+        for kp in keypoints:
+            print(f"pt: {kp.pt}, size: {kp.size}, angle: {kp.angle}, octave: {kp.octave}")
+
+            output_image = cv2.drawKeypoints(
+            image, keypoints, None,
+            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
+            color=(0, 255, 0)  # Green circles
+        )
+            
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
