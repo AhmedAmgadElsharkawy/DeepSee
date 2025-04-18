@@ -20,7 +20,6 @@ class SiftDescriptorsWindow(BasicStackedWindow):
         super().__init__(main_window, header_text="SIFT Descriptors")
         SiftDescriptorsWindow.__instance = self
 
-
         self.detect_keypoints_inputs_container = QWidget()
         self.detect_keypoints_inputs_container_layout = QHBoxLayout(self.detect_keypoints_inputs_container)
         self.detect_keypoints_inputs_container_layout.setContentsMargins(0,0,0,0)
@@ -32,7 +31,6 @@ class SiftDescriptorsWindow(BasicStackedWindow):
         self.detect_keypoints_inputs_container_layout.addWidget(self.detect_keypoints_assumed_blur_spin_box)
         self.detect_keypoints_inputs_container_layout.addWidget(self.detect_keypoints_intervals_number_spin_box)
         
-
         self.sift_controller = SiftDescriptorsController(self)
         
         
