@@ -77,14 +77,30 @@ class TransformationsWindow(BasicStackedWindow):
         # self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_pdf_graph)
         self.transformed_image_graphs_container_layout.addWidget(self.transformed_image_cdf_graph)
 
+        self.transformations_controller = TransformationsController(self)
+
+        self.main_window.mode_toggle_signal.connect(self.toggle_mode)
+        self.toggle_mode(self.main_window.is_dark_mode)
+
+
+    def toggle_mode(self,is_dark_mode):
+        background_color = None
+        axes_color = None
+
+        if is_dark_mode:
+            background_color = "#273142"
+            axes_color = "#4B5668"
+        else:
+            background_color = "#FFFFFF"
+            axes_color = "#718EBF"
+        
+
         for graph in [self.orignal_image_histogram_graph, self.orignal_image_pdf_graph, self.orignal_image_cdf_graph,self.transformed_image_cdf_graph,self.transformed_image_histogram_graph,self.transformed_image_pdf_graph]:
             graph.showGrid(x=True, y=True)
-            graph.setBackground("#FFFFFF")
-            graph.getAxis("left").setPen("#718EBF")
-            graph.getAxis("bottom").setPen("#718EBF")
+            graph.setBackground(background_color)
+            graph.getAxis("left").setPen(axes_color)
+            graph.getAxis("bottom").setPen(axes_color)
             graph.getPlotItem().titleLabel.item.setFont(QFont("Arial"))
-
-        self.transformations_controller = TransformationsController(self)
 
 
 

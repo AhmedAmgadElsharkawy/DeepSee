@@ -47,7 +47,9 @@ class ActiveContoursWindow(BasicStackedWindow):
         self.active_contours_detector_perimeter_container_layout = QHBoxLayout(self.active_contours_detector_perimeter_container)
         self.active_contours_detector_perimeter_container_layout.setContentsMargins(0,0,0,0)
         self.active_contours_detector_perimeter_label = QLabel("Contour Perimeter:")
+        self.active_contours_detector_perimeter_label.setObjectName("active_contours_detector_perimeter_label")
         self.active_contours_detector_perimeter = QLineEdit()
+        self.active_contours_detector_perimeter.setObjectName("active_contours_detector_perimeter")
         self.active_contours_detector_perimeter.setReadOnly(True)  # Prevent user editing
         self.active_contours_detector_perimeter.setText(f"{0.00:.2f} ")  # Default value
         self.active_contours_detector_perimeter_container_layout.addWidget(self.active_contours_detector_perimeter_label)
@@ -59,7 +61,9 @@ class ActiveContoursWindow(BasicStackedWindow):
         self.active_contours_detector_area_container_layout.setContentsMargins(0,0,0,0)
 
         self.active_contours_detector_area_label = QLabel("Contour Area:")
+        self.active_contours_detector_area_label.setObjectName("active_contours_detector_area_label")
         self.active_contours_detector_area = QLineEdit()
+        self.active_contours_detector_area.setObjectName("active_contours_detector_area")
         self.active_contours_detector_area.setReadOnly(True)  # Prevent user editing
         self.active_contours_detector_area.setText(f"{0.00:.2f} ")  # Default value
         self.active_contours_detector_area_container_layout.addWidget(self.active_contours_detector_area_label)
@@ -73,11 +77,12 @@ class ActiveContoursWindow(BasicStackedWindow):
 
 
         self.active_contours_detector_chaincode_label = QLabel("Contour Chain Code:")
+        self.active_contours_detector_chaincode_label.setObjectName("active_contours_detector_chaincode_label")
         self.active_contours_detector_chaincode = QLabel()
         self.active_contours_detector_chaincode.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.active_contours_detector_chaincode.setWordWrap(True)
         self.active_contours_detector_chaincode.setText("00000000000000000000000000000000")
-        self.active_contours_detector_chaincode.setStyleSheet("font-family: Courier; font-size: 12px;")
+        self.active_contours_detector_chaincode.setObjectName("active_contours_detector_chaincode")
         self.active_contours_detector_chaincode_container_layout.addWidget(self.active_contours_detector_chaincode_label)
         self.active_contours_detector_chaincode_container_layout.addWidget(self.active_contours_detector_chaincode)
 
