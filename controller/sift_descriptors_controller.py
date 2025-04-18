@@ -10,15 +10,32 @@ class SiftDescriptorsController():
         self.sift_descriptors_window.apply_button.clicked.connect(self.apply_sift)
 
     def apply_sift(self):
+        output_image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
         image=self.sift_descriptors_window.input_image_viewer.image_model.get_gray_image_matrix()
 
         gaussian_pyramid=self.generate_gaussian_pyramid(image)
-        dog_pyramid=self.generateDoGImages(gaussian_pyramid)
+        dog_pyramid=self.compute_dog_pyramid(gaussian_pyramid)
         keypoints=self.detect_keypoints(dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
         refined_keypoints = self.localize_keypoints(keypoints, dog_pyramid)
         oriented_keypoints = self.assign_orientations(gaussian_pyramid, refined_keypoints)
-        descriptors = self.compute_descriptors(gaussian_pyramid, oriented_keypoints)
-        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
+        # descriptors = self.compute_descriptors(gaussian_pyramid, oriented_keypoints)
+
+        for (o, i, x, y, _, orientation) in oriented_keypoints:
+            if o != 0:
+                continue
+            scale = 2 ** o
+            x_draw = int(x * scale)
+            y_draw = int(y * scale)
+
+            angle_rad = np.deg2rad(orientation)
+            length = 5
+            x2 = int(x_draw + length * np.cos(angle_rad))
+            y2 = int(y_draw - length * np.sin(angle_rad))  # minus for image y-axis
+
+            cv2.circle(output_image, (x_draw, y_draw), 2, (0, 255, 0), -1)
+            cv2.arrowedLine(output_image, (x_draw, y_draw), (x2, y2), (255, 0, 0), 1, tipLength=0.3)
+
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
 
         print("sift")
     def gaussian_blur(self,image,sigma):
@@ -26,7 +43,7 @@ class SiftDescriptorsController():
         image=filters.gaussian_filter(image, kernel_size=3, sigma=sigma)
         return image
 
-    def generate_gaussian_pyramid(self,image, num_octaves=4, num_scales=5, sigma=1.6):
+    def generate_gaussian_pyramid(self,image, num_octaves=8, num_scales=5, sigma=1.6):
         """Generates a Gaussian pyramid with different levels of blur."""
         k = 2 ** (1.0 / (num_scales - 1))  # Scale multiplier
         pyramid = []
@@ -89,7 +106,7 @@ class SiftDescriptorsController():
 
         return keypoints
     
-    def localize_keypoints(self, keypoints, dog_pyramid, contrast_threshold=0.03):
+    def localize_keypoints(self, keypoints, dog_pyramid, contrast_threshold=0.3):
         """Filters out low-contrast keypoints."""
         refined_keypoints = []
 
