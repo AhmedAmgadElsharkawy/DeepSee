@@ -788,23 +788,31 @@ class MainWindow(QMainWindow):
 
 
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.initial_pos = event.pos()
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if hasattr(self, 'initial_pos') and self.initial_pos is not None:
-            delta = event.pos() - self.initial_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-        super().mouseMoveEvent(event)
-
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.initial_pos = None
         super().mouseReleaseEvent(event)
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if not self.isMaximized():
+                self.initial_pos = event.pos()
+            else:
+                self.initial_pos = None
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if hasattr(self, 'initial_pos') and self.initial_pos is not None and not self.isMaximized():
+            delta = event.pos() - self.initial_pos
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+        super().mouseMoveEvent(event)
+
     def changeEvent(self, event):
         if event.type() == QEvent.WindowStateChange:
-            self.title_bar.window_state_changed(self.windowState())
+            if self.windowState() & Qt.WindowMaximized:
+                self.title_bar.normal_button.setVisible(True)
+                self.title_bar.max_button.setVisible(False)
+            else:
+                self.title_bar.normal_button.setVisible(False)
+                self.title_bar.max_button.setVisible(True)
         super().changeEvent(event)
