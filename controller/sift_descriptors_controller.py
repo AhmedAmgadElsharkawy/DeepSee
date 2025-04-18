@@ -22,6 +22,17 @@ class SiftDescriptorsController():
         image_border_width=5
         gray_image = gray_image.astype('float32')
         
+        keypoints, descriptors = self.get_sift_keypoints_and_descriptors(gray_image,sigma,assumed_blur,num_intervals,image_border_width)
+
+        output_image = cv2.drawKeypoints(
+            image, keypoints, None,
+            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
+            color=(0, 255, 0)  # Green circles
+        )
+            
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
+    
+    def get_sift_keypoints_and_descriptors(self,gray_image,sigma,assumed_blur,num_intervals,image_border_width = 5):
         base_image = self.generate_base_image(gray_image, sigma, assumed_blur)
         num_octaves = self.compute_number_of_octaves(base_image.shape)
         gaussian_kernels = self.generate_gaussian_kernels(sigma, num_intervals)
@@ -33,13 +44,8 @@ class SiftDescriptorsController():
 
         descriptors = self.generateDescriptors(keypoints, gaussian_images)
 
-        output_image = cv2.drawKeypoints(
-            image, keypoints, None,
-            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
-            color=(0, 255, 0)  # Green circles
-        )
-            
-        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
+        return keypoints, descriptors
+
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
