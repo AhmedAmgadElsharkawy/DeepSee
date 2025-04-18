@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem,QVBoxLayout,QLabel,QPushButton,QToolButton
 from PyQt5.QtGui import QIcon, QFont, QColor, QPixmap
-from PyQt5.QtCore import Qt,pyqtSignal, QEvent, QSize
+from PyQt5.QtCore import Qt,pyqtSignal, QEvent, QSize, QPoint
 
 from view.window.noise_window import NoiseWindow
 from view.window.filters_window import FiltersWindow
@@ -42,9 +42,9 @@ class CustomTitleBar(QWidget):
         title_bar_layout.addWidget(self.title)
 
         self.icon = QLabel()
-        self.icon.setFixedSize(24, 24)  # Adjust size as needed
+        self.icon.setFixedSize(24, 24) 
         self.icon.setScaledContents(True)
-        self.icon.setPixmap(QPixmap("assets/icons/deepsee.png"))  # <- replace with actual path
+        self.icon.setPixmap(QPixmap("assets/icons/deepsee.png")) 
 
         title_bar_layout.addWidget(self.icon)
         title_bar_layout.addWidget(self.title)
@@ -137,13 +137,28 @@ class CustomTitleBar(QWidget):
         """)
 
 
-    def window_state_changed(self, state):
-        if state == Qt.WindowMaximized:
-            self.normal_button.setVisible(True)
-            self.max_button.setVisible(False)
-        else:
-            self.normal_button.setVisible(False)
-            self.max_button.setVisible(True)
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            if self.window().isMaximized():
+                self.window().showNormal()
+                new_pos = event.globalPos() - QPoint(self.width()//2, self.height()//2)
+                self.window().move(new_pos)
+                self._dragging = True
+                self._drag_position = event.globalPos() - self.window().frameGeometry().topLeft()
+            else:
+                self._dragging = True
+                self._drag_position = event.globalPos() - self.window().frameGeometry().topLeft()
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self._dragging:
+            self.window().move(event.globalPos() - self._drag_position)
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._dragging = False
+        event.accept()
+
 
 
 
@@ -165,9 +180,6 @@ class MainWindow(QMainWindow):
         MainWindow.__instance = self
 
         self.is_dark_mode = True
-        # self.setWindowIcon(QIcon("assets/icons/deepsee.png"))
-
-        # self.setWindowTitle('DeepSee')
 
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -289,13 +301,17 @@ class MainWindow(QMainWindow):
         self.list_widget.setCurrentRow(0)
         self.stackedWidget.setCurrentIndex(0)
 
+        self._margin = 8
+        self._resizing = False
+        self._resize_dir = None
+        self.initial_pos = None
+
         self.apply_theme()
 
 
 
 
     def change_icon_color(self,icon_path,original_color,new_color):
-        # note the image must have only one solid color to mask it in a right way
         pixmap = QPixmap(icon_path)
         mask = pixmap.createMaskFromColor(QColor(original_color), Qt.MaskOutColor)
         pixmap.fill((QColor(new_color)))
@@ -787,32 +803,118 @@ class MainWindow(QMainWindow):
         """
 
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.WindowStateChange:
+            self._window_state_changed(self.windowState())
+        super().changeEvent(event)
+        event.accept()
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.initial_pos = None
-        super().mouseReleaseEvent(event)
+    def _window_state_changed(self, state):
+        # This method will now handle window state changes
+        if state == Qt.WindowState.WindowMaximized:
+            self.title_bar.normal_button.setVisible(True)
+            self.title_bar.max_button.setVisible(False)
+        else:
+            self.title_bar.normal_button.setVisible(False)
+            self.title_bar.max_button.setVisible(True)
+
+    def _get_resize_direction(self, pos):
+        rect = self.rect()
+        x, y, w, h = pos.x(), pos.y(), rect.width(), rect.height()
+        margin = self._margin
+
+        directions = {
+            "left": x <= margin,
+            "right": x >= w - margin,
+            "top": y <= margin,
+            "bottom": y >= h - margin,
+        }
+
+        if directions["left"] and directions["top"]:
+            return "top_left"
+        if directions["right"] and directions["top"]:
+            return "top_right"
+        if directions["left"] and directions["bottom"]:
+            return "bottom_left"
+        if directions["right"] and directions["bottom"]:
+            return "bottom_right"
+        if directions["left"]:
+            return "left"
+        if directions["right"]:
+            return "right"
+        if directions["top"]:
+            return "top"
+        if directions["bottom"]:
+            return "bottom"
+        return None
+
+
+    def _get_cursor_shape(self, direction):
+        return {
+            "left": Qt.CursorShape.SizeHorCursor,
+            "right": Qt.CursorShape.SizeHorCursor,
+            "top": Qt.CursorShape.SizeVerCursor,
+            "bottom": Qt.CursorShape.SizeVerCursor,
+            "top_left": Qt.CursorShape.SizeFDiagCursor,
+            "top_right": Qt.CursorShape.SizeBDiagCursor,
+            "bottom_left": Qt.CursorShape.SizeBDiagCursor,
+            "bottom_right": Qt.CursorShape.SizeFDiagCursor,
+        }.get(direction, Qt.CursorShape.ArrowCursor)
+
+
+    def _resize_window(self, pos):
+        if self.initial_pos is None:
+            return
+        diff = pos - self.initial_pos  
+        geo = self.geometry()  
+
+        if self._resize_dir == "left":
+            geo.setLeft(geo.left() + diff.x())
+        elif self._resize_dir == "right":
+            geo.setRight(geo.right() + diff.x())
+        elif self._resize_dir == "top":
+            geo.setTop(geo.top() + diff.y())
+        elif self._resize_dir == "bottom":
+            geo.setBottom(geo.bottom() + diff.y())
+        elif self._resize_dir == "top_left":
+            geo.setTopLeft(geo.topLeft() + diff)
+        elif self._resize_dir == "top_right":
+            geo.setTopRight(geo.topRight() + diff)
+        elif self._resize_dir == "bottom_left":
+            geo.setBottomLeft(geo.bottomLeft() + diff)
+        elif self._resize_dir == "bottom_right":
+            geo.setBottomRight(geo.bottomRight() + diff)
+
+        self.setGeometry(geo)
+        self.initial_pos = pos  
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            if not self.isMaximized():
-                self.initial_pos = event.pos()
-            else:
-                self.initial_pos = None
+        if event.button() == Qt.MouseButton.LeftButton:
+            direction = self._get_resize_direction(event.pos())
+            if direction:
+                self._resizing = True
+                self._resize_dir = direction
+                self.initial_pos = event.pos()  
         super().mousePressEvent(event)
+        event.accept()
 
     def mouseMoveEvent(self, event):
-        if hasattr(self, 'initial_pos') and self.initial_pos is not None and not self.isMaximized():
-            delta = event.pos() - self.initial_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-        super().mouseMoveEvent(event)
+        if self._resizing and self._resize_dir:
+            self._resize_window(event.pos())  
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.WindowStateChange:
-            if self.windowState() & Qt.WindowMaximized:
-                self.title_bar.normal_button.setVisible(True)
-                self.title_bar.max_button.setVisible(False)
-            else:
-                self.title_bar.normal_button.setVisible(False)
-                self.title_bar.max_button.setVisible(True)
-        super().changeEvent(event)
+        # direction = self._get_resize_direction(event.pos())
+        # if direction:
+        #     self.setCursor(self._get_cursor_shape(direction)) 
+        # else:
+        #     self.setCursor(Qt.CursorShape.ArrowCursor)
+
+        super().mouseMoveEvent(event)
+        event.accept()
+
+
+    def mouseReleaseEvent(self, event):
+        self._resizing = False
+        self._resize_dir = None
+        self.initial_pos = None
+        super().mouseReleaseEvent(event)
+        event.accept()
