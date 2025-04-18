@@ -20,7 +20,6 @@ class ImageViewer(pg.ImageView):
 
 
         self.getView().setMenuEnabled(False)
-        self.getView().setBackgroundColor(QColor("white"))
 
         self.save_image_button = None
 
@@ -48,6 +47,9 @@ class ImageViewer(pg.ImageView):
 
         self.movie = QMovie("assets/icons/loading.gif")
         self.loading_label.setMovie(self.movie)
+
+        self.choose_mode(self.main_window.is_dark_mode)
+        self.main_window.mode_toggle_signal.connect(self.choose_mode)
 
 
     def show_loading_effect(self):
@@ -78,6 +80,9 @@ class ImageViewer(pg.ImageView):
         hough_action = QAction("Hough Transform", self)
         active_contours_action = QAction("Active Contours", self)
         corner_detection_action = QAction("Corner Detection", self)
+        sift_descriptors_action = QAction("Sift Descriptors")
+        segmentation_action = QAction("Segmentation",self)
+        face_detection_and_recognition_action = QAction("Face Detection & Recognition")
 
         hybrid_image_first_viewer_action = QAction("First Image", self)
         hybrid_image_second_viewer_action = QAction("Second Image", self)
@@ -97,6 +102,9 @@ class ImageViewer(pg.ImageView):
         move_menu.addAction(hough_action)
         move_menu.addAction(active_contours_action)
         move_menu.addAction(corner_detection_action)
+        move_menu.addAction(sift_descriptors_action)
+        move_menu.addAction(segmentation_action)
+        move_menu.addAction(face_detection_and_recognition_action)
 
         hybrid_menu = move_menu.addMenu("Hybrid Image")
         hybrid_menu.addAction(hybrid_image_first_viewer_action)
@@ -105,11 +113,6 @@ class ImageViewer(pg.ImageView):
         image_matching_menu = move_menu.addMenu("Image Matching")
         image_matching_menu.addAction(image_matching_input_image_viewer_action)
         image_matching_menu.addAction(image_matching_input_template_viewer_action)
-
-        sift_descriptors_menu = move_menu.addMenu("SIFT Descriptors")
-        sift_descriptors_menu.addAction(sift_descriptors_detect_keypoints_action)
-        sift_descriptors_menu.addAction(sift_descriptors_matching_features_input_image_viewer_action)
-        sift_descriptors_menu.addAction(sift_descriptors_matching_features_input_template_viewer_action)
 
 
         noise_action.triggered.connect(self.move_to_noise)
@@ -124,9 +127,10 @@ class ImageViewer(pg.ImageView):
         corner_detection_action.triggered.connect(self.move_to_corner_detection_viewer)
         image_matching_input_image_viewer_action.triggered.connect(self.move_to_image_matching_window_image_viewer)
         image_matching_input_template_viewer_action.triggered.connect(self.move_to_image_matching_window_template_viewer)
-        sift_descriptors_detect_keypoints_action.triggered.connect(self.move_to_sift_descriptors_window_detect_keypoints_image_viewer)
-        sift_descriptors_matching_features_input_image_viewer_action.triggered.connect(self.move_to_sift_descriptors_window_matching_features_image_viewer)
-        sift_descriptors_matching_features_input_template_viewer_action.triggered.connect(self.move_to_sift_descriptors_window_matching_features_template_viewer)
+        sift_descriptors_detect_keypoints_action.triggered.connect(self.move_to_sift_descriptors_window)
+        segmentation_action.triggered.connect(self.move_to_segmentation)
+        face_detection_and_recognition_action.triggered.connect(self.move_to_face_detection_and_recognition)
+        sift_descriptors_action.triggered.connect(self.move_to_sift_descriptors_window)
 
         menu.exec_(event.globalPos())
 
@@ -157,14 +161,14 @@ class ImageViewer(pg.ImageView):
         self.main_window.transformations_window.transformed_image_pdf_graph.clear()
 
     def move_to_first_viewer(self):
-        self.main_window.hybrid_image_widnow.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.hybrid_image_widnow.first_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
+        self.main_window.hybrid_image_window.first_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_window.first_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_window.hybrid_image_viewer.reset()
 
     def move_to_second_viewer(self):
-        self.main_window.hybrid_image_widnow.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.hybrid_image_widnow.second_filtered_image_viewer.reset()
-        self.main_window.hybrid_image_widnow.hybrid_image_viewer.reset()
+        self.main_window.hybrid_image_window.second_original_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.hybrid_image_window.second_filtered_image_viewer.reset()
+        self.main_window.hybrid_image_window.hybrid_image_viewer.reset()
 
     def move_to_hough_transform_viewer(self):
         self.main_window.hough_transform_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
@@ -186,18 +190,18 @@ class ImageViewer(pg.ImageView):
         self.main_window.corner_detection_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.corner_detection_window.output_image_viewer.reset()
         
-    def move_to_sift_descriptors_window_detect_keypoints_image_viewer(self):
-        self.main_window.sift_descriptors_window.detect_keypoints_input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.sift_descriptors_window.detect_keypoints_output_image_viewer.reset()
-
-    def move_to_sift_descriptors_window_matching_features_image_viewer(self):
-        self.main_window.sift_descriptors_window.matching_features_input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.sift_descriptors_window.matching_output_image_viewer.reset()
-
-    def move_to_sift_descriptors_window_matching_features_template_viewer(self):
-        self.main_window.sift_descriptors_window.mathcing_features_input_template_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
-        self.main_window.sift_descriptors_window.matching_output_image_viewer.reset()
-
+    def move_to_sift_descriptors_window(self):
+        self.main_window.sift_descriptors_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.sift_descriptors_window.output_image_viewer.reset()
+    
+    def move_to_segmentation(self):
+        self.main_window.segmentation_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.segmentation_window.output_image_viewer.reset()
+    
+    def move_to_face_detection_and_recognition(self):
+        self.main_window.Face_detection_and_recognition_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+        self.main_window.Face_detection_and_recognition_window.output_image_viewer.reset()
+    
 
 
     def resizeEvent(self, event):
@@ -230,4 +234,18 @@ class ImageViewer(pg.ImageView):
         self.temp_label.setText(self.temp_label_placeholder_text)  
         self.temp_label.show()  
         self.clear()
+
+
+    def choose_mode(self,is_dark_mode):
+        if is_dark_mode:
+            self.dark_mode()
+        else:
+            self.light_mode()
+        
+
+    def dark_mode(self):
+        self.getView().setBackgroundColor(QColor("#273142"))
+
+    def light_mode(self):
+        self.getView().setBackgroundColor(QColor("white"))
 
