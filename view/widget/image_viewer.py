@@ -48,8 +48,8 @@ class ImageViewer(pg.ImageView):
         self.movie = QMovie("assets/icons/loading.gif")
         self.loading_label.setMovie(self.movie)
 
-        self.light_mode()
-        self.main_window.mode_toggle_signal.connect(self.toggle_mode)
+        self.choose_mode(self.main_window.is_dark_mode)
+        self.main_window.mode_toggle_signal.connect(self.choose_mode)
 
 
     def show_loading_effect(self):
@@ -236,7 +236,7 @@ class ImageViewer(pg.ImageView):
         self.clear()
 
 
-    def toggle_mode(self,is_dark_mode):
+    def choose_mode(self,is_dark_mode):
         if is_dark_mode:
             self.dark_mode()
         else:

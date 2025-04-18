@@ -33,22 +33,8 @@ class SiftDescriptorsWindow(BasicStackedWindow):
         self.detect_keypoints_inputs_container_layout.addWidget(self.detect_keypoints_intervals_number_spin_box)
         
 
-        self.detect_keypoints_image_viewers_container = QWidget()
-        self.detect_keypoints_image_viewers_container_layout = QHBoxLayout(self.detect_keypoints_image_viewers_container)
-        self.detect_keypoints_image_viewers_container_layout.setContentsMargins(0, 0, 0, 0)
-        self.detect_keypoints_image_viewers_container_layout.setSpacing(10)
-
-        
-        self.main_widget_layout.addWidget(self.detect_keypoints_image_viewers_container)
-
         self.sift_controller = SiftDescriptorsController(self)
         
-
-    def hide_all_inputs(self):
-        self.detect_keypoints_image_viewers_container.setVisible(False)
-        self.match_features_image_viewers_container.setVisible(False)
-        self.detect_keypoints_inputs_container.setVisible(False)
-        self.match_features_inputs_container.setVisible(False)
         
 
     
