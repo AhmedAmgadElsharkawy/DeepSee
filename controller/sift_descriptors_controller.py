@@ -32,8 +32,8 @@ class SiftDescriptorsController():
             x2 = int(x_draw + length * np.cos(angle_rad))
             y2 = int(y_draw - length * np.sin(angle_rad))  # minus for image y-axis
 
-            cv2.circle(output_image, (x_draw, y_draw), 2, (0, 255, 0), -1)
-            cv2.arrowedLine(output_image, (x_draw, y_draw), (x2, y2), (255, 0, 0), 1, tipLength=0.3)
+            cv2.circle(output_image, (x_draw, y_draw), 1, (0, 255, 0), -1)
+            # cv2.arrowedLine(output_image, (x_draw, y_draw), (x2, y2), (255, 0, 0), 1, tipLength=0.3)
 
         self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
 
