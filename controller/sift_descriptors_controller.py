@@ -23,6 +23,8 @@ class SiftDescriptorsController():
         
         base_image = self.generateBaseImage(gray_image, sigma, assumed_blur)
         num_octaves = self.computeNumberOfOctaves(base_image.shape)
+        gaussian_kernels = self.generateGaussianKernels(sigma, num_intervals)
+        gaussian_images = self.generateGaussianImages(base_image, num_octaves, gaussian_kernels)
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
@@ -36,7 +38,37 @@ class SiftDescriptorsController():
         image=filters.gaussian_filter(image, kernel_size=3, sigma=sigma)
         return image
     
-    def computeNumberOfOctaves(self, image_shape):
+    def compute_number_of_octaves(self, image_shape):
         """Compute number of octaves in image pyramid as function of base image shape (OpenCV default)
         """
         return int(round(log(min(image_shape)) / log(2) - 1))
+    
+    def generate_gaussian_kernels(self, sigma, num_intervals):
+        """Generate list of gaussian kernels at which to blur the input image. Default values of sigma, intervals, and octaves follow section 3 of Lowe's paper.
+        """
+        num_images_per_octave = num_intervals + 3
+        k = 2 ** (1. / num_intervals)
+        gaussian_kernels = zeros(num_images_per_octave)  # scale of gaussian blur necessary to go from one blur scale to the next within an octave
+        gaussian_kernels[0] = sigma
+
+        for image_index in range(1, num_images_per_octave):
+            sigma_previous = (k ** (image_index - 1)) * sigma
+            sigma_total = k * sigma_previous
+            gaussian_kernels[image_index] = sqrt(sigma_total ** 2 - sigma_previous ** 2)
+        return gaussian_kernels
+
+    def generate_gaussian_images(self, image, num_octaves, gaussian_kernels):
+        """Generate scale-space pyramid of Gaussian images
+        """
+        gaussian_images = []
+
+        for octave_index in range(num_octaves):
+            gaussian_images_in_octave = []
+            gaussian_images_in_octave.append(image)  # first image in octave already has the correct blur
+            for gaussian_kernel in gaussian_kernels[1:]:
+                image = GaussianBlur(image, (0, 0), sigmaX=gaussian_kernel, sigmaY=gaussian_kernel)
+                gaussian_images_in_octave.append(image)
+            gaussian_images.append(gaussian_images_in_octave)
+            octave_base = gaussian_images_in_octave[-3]
+            image = resize(octave_base, (int(octave_base.shape[1] / 2), int(octave_base.shape[0] / 2)), interpolation=INTER_NEAREST)
+        return gaussian_images
