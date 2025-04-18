@@ -71,9 +71,9 @@ class CornerDetectionWindow(BasicStackedWindow):
         self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_kernel_size_spin_box)
         self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_k_factor_spin_box)
         self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_threshold_spin_box)
-        self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_max_corners_spin_box)
-        self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_min_distance_spin_box)
-        self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_quality_level_spin_box)
+        # self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_max_corners_spin_box)
+        # self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_min_distance_spin_box)
+        # self.harris_lambda_detector_inputs_container_layout.addWidget(self.harris_lambda_detector_quality_level_spin_box)
 
 
         self.edge_detection_controller = CornerDetectionController(self)

@@ -97,38 +97,30 @@ class CornerDetectionController():
         # Compute minimum eigenvalue (lambda minus) response map
         h, w = gray.shape
         lambda_min = np.zeros((h, w), dtype=np.float32)
-
+                              
         for y in range(h):
-            for x in range(w):
-                M = np.array([[Sx2[y, x], Sxy[y, x]],
-                            [Sxy[y, x], Sy2[y, x]]])
-                eigvals = np.linalg.eigvalsh(M)  # sorted: [lambda_min, lambda_max]
-                lambda_min[y, x] = eigvals[0]
-
-        # Thresholding based on quality level
-        max_val = np.max(lambda_min)
-        threshold = quality_level * max_val
-
-        # Get corner candidates
-        corner_candidates = np.argwhere(lambda_min > threshold)
-
-        #  Apply non-maximum suppression 
-        corners = []
-        for y, x in corner_candidates:
-            local_patch = lambda_min[max(0, y-1):y+2, max(0, x-1):x+2]
-            if lambda_min[y, x] == np.max(local_patch):
-                corners.append((x, y))  
-                
+                    for x in range(w):
+                        M = np.array([[Sx2[y, x], Sxy[y, x]],
+                                    [Sxy[y, x], Sy2[y, x]]])
+                        eigvals = np.linalg.eigvalsh(M)  # sorted: [lambda_min, lambda_max]
+                        lambda_min[y, x] = eigvals[0]
        
-        # Select strongest corners up to max_corners, enforcing min_distance
-        corners = sorted(corners, key=lambda pt: -lambda_min[pt[1], pt[0]])
+
+        # Thresholding and NMS
+        threshold = quality_level * lambda_min.max()
+        kernel = np.ones((3, 3), np.uint8)
+        dilated = cv2.dilate(lambda_min, kernel)
+        corners = np.column_stack(np.where((lambda_min == dilated) & (lambda_min > threshold)))
+
+        # Sort by strength and apply min_distance
+        corners = sorted(corners, key=lambda pt: -lambda_min[pt[0], pt[1]])
         final_corners = []
         for pt in corners:
-            if all(np.hypot(pt[0] - fc[0], pt[1] - fc[1]) >= min_distance for fc in final_corners):
+            if all(np.linalg.norm(pt - fc) >= min_distance for fc in final_corners):
                 final_corners.append(pt)
                 if len(final_corners) >= max_corners:
                     break
-        
+
         return self.draw_corners(image, final_corners)
 
               
@@ -145,7 +137,7 @@ class CornerDetectionController():
         harris_corners_list = np.argwhere(harris_corners > threshold * harris_corners.max())
 
         # Lambda corner detection
-        lambda_corners = cv2.goodFeaturesToTrack(gray, maxCorners=max_corners, qualityLevel=quality_level, minDistance=min_distance)
+        lambda_corners = cv2.cornerMinEigenVal(gray, blockSize=block_size, ksize=ksize)
         lambda_corners = np.int0(lambda_corners)
         
         harris_corners_list = np.array(harris_corners_list).reshape(-1, 2)
