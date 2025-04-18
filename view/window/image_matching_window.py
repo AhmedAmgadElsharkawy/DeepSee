@@ -1,4 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout,QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout,QVBoxLayout,QLabel
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
+
+
 from view.window.basic_stacked_window import BasicStackedWindow
 from view.widget.custom_combo_box import CustomComboBox
 from view.widget.interactive_image_viewer import InteractiveImageViewer
@@ -78,5 +82,24 @@ class ImageMatchingWindow(BasicStackedWindow):
         self.template_detect_keypoints_inputs_container_layout.addWidget(self.template_detect_keypoints_intervals_number_spin_box)
 
         self.image_matching_controller = ImageMatchingController(self)
+
+        self.time_elapsed_container =  QWidget()
+        self.time_elapsed_container_layout = QHBoxLayout(self.time_elapsed_container)
+        self.time_elapsed_container_layout.setContentsMargins(0,0,0,0)
+        self.time_elapsed_title = QLabel("Time Elapsed:")
+        # font = QFont("Inter", 11)
+        # font.setWeight(QFont.Medium)
+        self.time_elapsed_value = QLabel("-- Seconds")
+        # self.time_elapsed_value.setFont(font)
+        # self.time_elapsed_title.setFont(font)
+        self.time_elapsed_title.setObjectName("time_elapsed_title")
+        self.time_elapsed_value.setObjectName("time_elapsed_value")
+        self.time_elapsed_container_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.time_elapsed_container_layout.addWidget(self.time_elapsed_title)
+        self.time_elapsed_container_layout.addWidget(self.time_elapsed_value)
+        self.main_widget_layout.addWidget(self.time_elapsed_container)
+        self.time_elapsed_container_layout.setSpacing(20)
+        
+        
 
 

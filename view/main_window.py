@@ -479,7 +479,7 @@ class MainWindow(QMainWindow):
                 background: #A1A1A1;
             }
                            
-            QLabel#spin_box_label , QLabel#combo_box_label, #choose_color_label{
+            QLabel#spin_box_label , QLabel#combo_box_label, #choose_color_label , #time_elapsed_value, #time_elapsed_title{
                 color: #343C6A;
             }
                            
@@ -707,7 +707,7 @@ class MainWindow(QMainWindow):
                 background: #B0B0B0;
             }
                            
-            QLabel#spin_box_label , QLabel#combo_box_label, #choose_color_label{
+            QLabel#spin_box_label , QLabel#combo_box_label, #choose_color_label, QLabel#time_elapsed_value, QLabel#time_elapsed_title{
                 color: #FFFFFF;
             }
                            

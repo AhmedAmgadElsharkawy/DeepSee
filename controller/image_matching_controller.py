@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import time
+
 from controller.sift_descriptors_controller import SiftDescriptorsController
 
 class ImageMatchingController():
@@ -11,6 +13,8 @@ class ImageMatchingController():
 
 
     def apply_image_matching(self):
+        start_time = time.time()
+
         img_sigma = self.image_matching_window.img_detect_keypoints_sigma_spin_box.value()
         img_num_intervals = self.image_matching_window.img_detect_keypoints_intervals_number_spin_box.value()
         img_assumed_blur = self.image_matching_window.img_detect_keypoints_assumed_blur_spin_box.value()
@@ -40,6 +44,11 @@ class ImageMatchingController():
 
         if matches is None:
             return
+        
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+
+        self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
         
         img_with_matches = cv2.drawMatches(img, kp1, tempelate, kp2, matches[:100], None, flags=2)
 
