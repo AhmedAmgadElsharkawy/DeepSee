@@ -89,7 +89,7 @@ class SiftDescriptorsController():
             dog_images.append(dog_images_in_octave)
         return dog_images
     
-    def findScaleSpaceExtrema(self, gaussian_images, dog_images, num_intervals=3, sigma=1.6, image_border_width=1, contrast_threshold=0.04):
+    def find_scale_space_extrema(self, gaussian_images, dog_images, num_intervals=3, sigma=1.6, image_border_width=1, contrast_threshold=0.04):
         """Find pixel positions of all scale-space extrema in the image pyramid
         """
         threshold = floor(0.5 * contrast_threshold / num_intervals * 255)  # from OpenCV implementation
@@ -110,7 +110,7 @@ class SiftDescriptorsController():
                                     keypoints.append(keypoint_with_orientation)
         return keypoints
 
-    def isPixelAnExtremum(self, first_subimage, second_subimage, third_subimage, threshold):
+    def is_pixel_an_extremum(self, first_subimage, second_subimage, third_subimage, threshold):
         """Return True if the center element of the 3x3x3 input array is strictly greater than or less than all its neighbors, False otherwise
         """
         center_pixel_value = second_subimage[1, 1]
@@ -131,7 +131,7 @@ class SiftDescriptorsController():
                     center_pixel_value <= second_subimage[1, 2]
         return False
 
-    def localizeExtremumViaQuadraticFit(self, i, j, image_index, octave_index, num_intervals, dog_images_in_octave, sigma, contrast_threshold, image_border_width, eigenvalue_ratio=10, num_attempts_until_convergence=5):
+    def localize_extremum_via_quadratic_fit(self, i, j, image_index, octave_index, num_intervals, dog_images_in_octave, sigma, contrast_threshold, image_border_width, eigenvalue_ratio=10, num_attempts_until_convergence=5):
         """Iteratively refine pixel positions of scale-space extrema via quadratic fit around each extremum's neighbors
         """
         extremum_is_outside_image = False
@@ -173,7 +173,7 @@ class SiftDescriptorsController():
                 return keypoint, image_index
         return None
 
-    def computeGradientAtCenterPixel(self, pixel_array):
+    def compute_gradient_at_centerpixel(self, pixel_array):
         """Approximate gradient at center pixel [1, 1, 1] of 3x3x3 array using central difference formula of order O(h^2), where h is the step size
         """
         # With step size h, the central difference formula of order O(h^2) for f'(x) is (f(x + h) - f(x - h)) / (2 * h)
@@ -184,7 +184,7 @@ class SiftDescriptorsController():
         ds = 0.5 * (pixel_array[2, 1, 1] - pixel_array[0, 1, 1])
         return array([dx, dy, ds])
 
-    def computeHessianAtCenterPixel(self, pixel_array):
+    def compute_hessian_at_center_pixel(self, pixel_array):
         """Approximate Hessian at center pixel [1, 1, 1] of 3x3x3 array using central difference formula of order O(h^2), where h is the step size
         """
         # With step size h, the central difference formula of order O(h^2) for f''(x) is (f(x + h) - 2 * f(x) + f(x - h)) / (h ^ 2)
@@ -203,7 +203,7 @@ class SiftDescriptorsController():
                     [dxy, dyy, dys],
                     [dxs, dys, dss]])
     
-    def computeKeypointsWithOrientations(self, keypoint, octave_index, gaussian_image, radius_factor=3, num_bins=36, peak_ratio=0.8, scale_factor=1.5):
+    def compute_keypoints_with_orientations(self, keypoint, octave_index, gaussian_image, radius_factor=3, num_bins=36, peak_ratio=0.8, scale_factor=1.5):
         """Compute orientations for each keypoint
         """
         keypoints_with_orientations = []
@@ -248,7 +248,7 @@ class SiftDescriptorsController():
                 keypoints_with_orientations.append(new_keypoint)
         return keypoints_with_orientations
 
-    def removeDuplicateKeypoints(self, keypoints):
+    def remove_duplicate_keypoints(self, keypoints):
         """Sort keypoints and remove duplicate keypoints
         """
         if len(keypoints) < 2:
@@ -266,7 +266,7 @@ class SiftDescriptorsController():
                 unique_keypoints.append(next_keypoint)
         return unique_keypoints
     
-    def compareKeypoints(self, keypoint1, keypoint2):
+    def compare_keypoints(self, keypoint1, keypoint2):
         """Return True if keypoint1 is less than keypoint2
         """
         if keypoint1.pt[0] != keypoint2.pt[0]:
@@ -283,7 +283,7 @@ class SiftDescriptorsController():
             return keypoint2.octave - keypoint1.octave
         return keypoint2.class_id - keypoint1.class_id
     
-    def convertKeypointsToInputImageSize(self, keypoints):
+    def convert_keypoints_to_input_image_size(self, keypoints):
         """Convert keypoint point, size, and octave to input image size
         """
         converted_keypoints = []
