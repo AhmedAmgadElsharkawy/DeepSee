@@ -25,6 +25,7 @@ class SiftDescriptorsController():
         num_octaves = self.computeNumberOfOctaves(base_image.shape)
         gaussian_kernels = self.generateGaussianKernels(sigma, num_intervals)
         gaussian_images = self.generateGaussianImages(base_image, num_octaves, gaussian_kernels)
+        dog_images = self.generateDoGImages(gaussian_images)
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
@@ -72,3 +73,15 @@ class SiftDescriptorsController():
             octave_base = gaussian_images_in_octave[-3]
             image = resize(octave_base, (int(octave_base.shape[1] / 2), int(octave_base.shape[0] / 2)), interpolation=INTER_NEAREST)
         return gaussian_images
+    
+    def generate_DoG_images(self, gaussian_images):
+        """Generate Difference-of-Gaussians image pyramid
+        """
+        dog_images = []
+
+        for gaussian_images_in_octave in gaussian_images:
+            dog_images_in_octave = []
+            for first_image, second_image in zip(gaussian_images_in_octave, gaussian_images_in_octave[1:]):
+                dog_images_in_octave.append(subtract(second_image, first_image))  # ordinary subtraction will not work because the images are unsigned integers
+            dog_images.append(dog_images_in_octave)
+        return dog_images
