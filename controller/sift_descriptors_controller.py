@@ -15,8 +15,9 @@ class SiftDescriptorsController():
         gaussian_pyramid=self.generate_gaussian_pyramid(image)
         dog_pyramid=self.generateDoGImages(gaussian_pyramid)
         print(dog_pyramid)
-        keypoints=self.findScaleSpaceExtrema(gaussian_pyramid, dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
-        print("KeyPoints: ", keypoints)
+        keypoints=self.detect_keypoints(dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
+        refined_keypoints = self.localize_keypoints(keypoints, dog_pyramid)
+        print("KeyPoints: ", refined_keypoints)
         self.sift_descriptors_window.detect_keypoints_output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
 
         print("sift")
@@ -87,3 +88,14 @@ class SiftDescriptorsController():
                             keypoints.append((o, i, x, y))
 
         return keypoints
+    
+    def localize_keypoints(self, keypoints, dog_pyramid, contrast_threshold=0.03):
+        """Filters out low-contrast keypoints."""
+        refined_keypoints = []
+
+        for (o, i, x, y) in keypoints:
+            pixel_value = dog_pyramid[o][i][y, x]
+            if abs(pixel_value) > contrast_threshold:
+                refined_keypoints.append((o, i, x, y))
+
+        return refined_keypoints
