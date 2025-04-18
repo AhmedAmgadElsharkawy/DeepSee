@@ -28,6 +28,7 @@ class SiftDescriptorsController():
         dog_images = self.generateDoGImages(gaussian_images)
         keypoints = self.findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width)
         keypoints = self.removeDuplicateKeypoints(keypoints)
+        keypoints = self.convertKeypointsToInputImageSize(keypoints)
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
@@ -281,3 +282,14 @@ class SiftDescriptorsController():
         if keypoint1.octave != keypoint2.octave:
             return keypoint2.octave - keypoint1.octave
         return keypoint2.class_id - keypoint1.class_id
+    
+    def convertKeypointsToInputImageSize(self, keypoints):
+        """Convert keypoint point, size, and octave to input image size
+        """
+        converted_keypoints = []
+        for keypoint in keypoints:
+            keypoint.pt = tuple(0.5 * array(keypoint.pt))
+            keypoint.size *= 0.5
+            keypoint.octave = (keypoint.octave & ~255) | ((keypoint.octave - 1) & 255)
+            converted_keypoints.append(keypoint)
+        return converted_keypoints
