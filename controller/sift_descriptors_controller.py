@@ -1,12 +1,10 @@
 import cv2
-import numpy as np
 from math import floor
 from cv2 import KeyPoint
-from numpy import all, any, array, arctan2, cos, sin, exp, dot, log, logical_and, roll, sqrt, stack, trace, unravel_index, pi, deg2rad, rad2deg, where, zeros, floor, full, nan, isnan, round, float32
-from numpy.linalg import det, lstsq, norm
+from numpy import all, array, arctan2, exp, dot, log, logical_and, roll, sqrt, stack, trace, rad2deg, where, zeros, floor, round, float32
+from numpy.linalg import det, lstsq
 from cv2 import resize, GaussianBlur, subtract, KeyPoint, INTER_LINEAR, INTER_NEAREST
 from functools import cmp_to_key
-import logging
 
 
 class SiftDescriptorsController():
@@ -18,17 +16,17 @@ class SiftDescriptorsController():
         image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
 
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        sigma, num_intervals, assumed_blur, image_border_width=1.6, 3, 0.5, 5
+        sigma, num_intervals, assumed_blur, image_border_width=1.6, 5, 0.5, 5
         gray_image = gray_image.astype('float32')
         
         base_image = self.generate_base_image(gray_image, sigma, assumed_blur)
         num_octaves = self.compute_number_of_octaves(base_image.shape)
         gaussian_kernels = self.generate_gaussian_kernels(sigma, num_intervals)
-        gaussian_images = self.generateGaussianImages(base_image, num_octaves, gaussian_kernels)
-        dog_images = self.generateDoGImages(gaussian_images)
-        keypoints = self.findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width)
-        keypoints = self.removeDuplicateKeypoints(keypoints)
-        keypoints = self.convertKeypointsToInputImageSize(keypoints)
+        gaussian_images = self.generate_gaussian_images(base_image, num_octaves, gaussian_kernels)
+        dog_images = self.generate_DoG_images(gaussian_images)
+        keypoints = self.find_scale_space_extrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width)
+        keypoints = self.remove_duplicate_keypoints(keypoints)
+        keypoints = self.convert_keypoints_to_input_image_size(keypoints)
 
         for kp in keypoints:
             print(f"pt: {kp.pt}, size: {kp.size}, angle: {kp.angle}, octave: {kp.octave}")
@@ -46,12 +44,7 @@ class SiftDescriptorsController():
         """
         image = resize(image, (0, 0), fx=2, fy=2, interpolation=INTER_LINEAR)
         sigma_diff = sqrt(max((sigma ** 2) - ((2 * assumed_blur) ** 2), 0.01))
-        return self.gaussian_blur(image, sigma)  # the image blur is now sigma instead of assumed_blur
-
-    def gaussian_blur(self,image,sigma):
-        filters = self.sift_descriptors_window.main_window.filters_window.filters_controller
-        image=filters.gaussian_filter(image, kernel_size=3, sigma=sigma)
-        return image
+        return GaussianBlur(image, (0, 0), sigmaX=sigma_diff, sigmaY=sigma_diff)  # the image blur is now sigma instead of assumed_blur
     
     def compute_number_of_octaves(self, image_shape):
         """Compute number of octaves in image pyramid as function of base image shape (OpenCV default)
@@ -112,11 +105,11 @@ class SiftDescriptorsController():
                 print(first_image.shape, second_image.shape, third_image.shape)
                 for i in range(image_border_width, first_image.shape[0] - image_border_width):
                     for j in range(image_border_width, first_image.shape[1] - image_border_width):
-                        if self.isPixelAnExtremum(first_image[i-1:i+2, j-1:j+2], second_image[i-1:i+2, j-1:j+2], third_image[i-1:i+2, j-1:j+2], threshold):
-                            localization_result = self.localizeExtremumViaQuadraticFit(i, j, image_index + 1, octave_index, num_intervals, dog_images_in_octave, sigma, contrast_threshold, image_border_width)
+                        if self.is_pixel_an_extremum(first_image[i-1:i+2, j-1:j+2], second_image[i-1:i+2, j-1:j+2], third_image[i-1:i+2, j-1:j+2], threshold):
+                            localization_result = self.localize_extremum_via_quadratic_fit(i, j, image_index + 1, octave_index, num_intervals, dog_images_in_octave, sigma, contrast_threshold, image_border_width)
                             if localization_result is not None:
                                 keypoint, localized_image_index = localization_result
-                                keypoints_with_orientations = self.computeKeypointsWithOrientations(keypoint, octave_index, gaussian_images[octave_index][localized_image_index])
+                                keypoints_with_orientations = self.compute_keypoints_with_orientations(keypoint, octave_index, gaussian_images[octave_index][localized_image_index])
                                 for keypoint_with_orientation in keypoints_with_orientations:
                                     keypoints.append(keypoint_with_orientation)
         return keypoints
@@ -153,8 +146,8 @@ class SiftDescriptorsController():
             pixel_cube = stack([first_image[i-1:i+2, j-1:j+2],
                                 second_image[i-1:i+2, j-1:j+2],
                                 third_image[i-1:i+2, j-1:j+2]]).astype('float32') / 255.
-            gradient = self.computeGradientAtCenterPixel(pixel_cube)
-            hessian = self.computeHessianAtCenterPixel(pixel_cube)
+            gradient = self.compute_gradient_at_centerpixel(pixel_cube)
+            hessian = self.compute_hessian_at_center_pixel(pixel_cube)
             extremum_update = -lstsq(hessian, gradient, rcond=None)[0]
             if abs(extremum_update[0]) < 0.5 and abs(extremum_update[1]) < 0.5 and abs(extremum_update[2]) < 0.5:
                 break
@@ -265,7 +258,7 @@ class SiftDescriptorsController():
         if len(keypoints) < 2:
             return keypoints
 
-        keypoints.sort(key=cmp_to_key(self.compareKeypoints))
+        keypoints.sort(key=cmp_to_key(self.compare_keypoints))
         unique_keypoints = [keypoints[0]]
 
         for next_keypoint in keypoints[1:]:
