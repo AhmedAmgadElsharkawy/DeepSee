@@ -17,6 +17,7 @@ class SiftDescriptorsController():
         keypoints=self.detect_keypoints(dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
         refined_keypoints = self.localize_keypoints(keypoints, dog_pyramid)
         oriented_keypoints = self.assign_orientations(gaussian_pyramid, refined_keypoints)
+        descriptors = self.compute_descriptors(gaussian_pyramid, oriented_keypoints)
         self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
 
         print("sift")
@@ -118,3 +119,40 @@ class SiftDescriptorsController():
             oriented_keypoints.append((o, i, x, y, magnitude, orientation))
 
         return oriented_keypoints
+
+    def compute_descriptors(self, gaussian_pyramid, keypoints, window_size=16):
+        """Computes SIFT descriptors around keypoints."""
+        descriptors = []
+
+        for (o, i, x, y, _, orientation) in keypoints:
+            image = gaussian_pyramid[o][i]
+            descriptor = []
+
+            half_w = window_size // 2
+            if y - half_w < 0 or y + half_w >= image.shape[0] or x - half_w < 0 or x + half_w >= image.shape[1]:
+                continue
+
+            region = image[y - half_w:y + half_w, x - half_w:x + half_w]
+
+            for sub_y in range(0, window_size, 4):
+                for sub_x in range(0, window_size, 4):
+                    patch = region[sub_y:sub_y + 4, sub_x:sub_x + 4]
+
+                    hist = np.zeros(8)
+                    for i2 in range(patch.shape[0]):
+                        for j2 in range(patch.shape[1]):
+                            dy = patch[i2-1, j2] - patch[i2+1, j2] if 0 < i2 < patch.shape[0]-1 else 0
+                            dx = patch[i2, j2+1] - patch[i2, j2-1] if 0 < j2 < patch.shape[1]-1 else 0
+                            mag = np.sqrt(dx**2 + dy**2)
+                            angle = (np.arctan2(dy, dx) * 180 / np.pi) % 360
+                            bin_idx = int(angle // 45) % 8
+                            hist[bin_idx] += mag
+
+                    descriptor.extend(hist)
+
+            # Normalize and append
+            descriptor = np.array(descriptor)
+            descriptor = descriptor / (np.linalg.norm(descriptor) + 1e-7)
+            descriptors.append(descriptor)
+
+        return descriptors
