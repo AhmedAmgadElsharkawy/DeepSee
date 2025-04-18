@@ -27,6 +27,7 @@ class SiftDescriptorsController():
         gaussian_images = self.generateGaussianImages(base_image, num_octaves, gaussian_kernels)
         dog_images = self.generateDoGImages(gaussian_images)
         keypoints = self.findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width)
+        keypoints = self.removeDuplicateKeypoints(keypoints)
 
     def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
@@ -245,3 +246,38 @@ class SiftDescriptorsController():
                 new_keypoint = KeyPoint(*keypoint.pt, keypoint.size, orientation, keypoint.response, keypoint.octave)
                 keypoints_with_orientations.append(new_keypoint)
         return keypoints_with_orientations
+
+    def removeDuplicateKeypoints(self, keypoints):
+        """Sort keypoints and remove duplicate keypoints
+        """
+        if len(keypoints) < 2:
+            return keypoints
+
+        keypoints.sort(key=cmp_to_key(self.compareKeypoints))
+        unique_keypoints = [keypoints[0]]
+
+        for next_keypoint in keypoints[1:]:
+            last_unique_keypoint = unique_keypoints[-1]
+            if last_unique_keypoint.pt[0] != next_keypoint.pt[0] or \
+            last_unique_keypoint.pt[1] != next_keypoint.pt[1] or \
+            last_unique_keypoint.size != next_keypoint.size or \
+            last_unique_keypoint.angle != next_keypoint.angle:
+                unique_keypoints.append(next_keypoint)
+        return unique_keypoints
+    
+    def compareKeypoints(self, keypoint1, keypoint2):
+        """Return True if keypoint1 is less than keypoint2
+        """
+        if keypoint1.pt[0] != keypoint2.pt[0]:
+            return keypoint1.pt[0] - keypoint2.pt[0]
+        if keypoint1.pt[1] != keypoint2.pt[1]:
+            return keypoint1.pt[1] - keypoint2.pt[1]
+        if keypoint1.size != keypoint2.size:
+            return keypoint2.size - keypoint1.size
+        if keypoint1.angle != keypoint2.angle:
+            return keypoint1.angle - keypoint2.angle
+        if keypoint1.response != keypoint2.response:
+            return keypoint2.response - keypoint1.response
+        if keypoint1.octave != keypoint2.octave:
+            return keypoint2.octave - keypoint1.octave
+        return keypoint2.class_id - keypoint1.class_id
