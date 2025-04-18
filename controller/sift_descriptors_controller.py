@@ -22,8 +22,9 @@ class SiftDescriptorsController():
         gray_image = gray_image.astype('float32')
         
         base_image = self.generateBaseImage(gray_image, sigma, assumed_blur)
+        num_octaves = self.computeNumberOfOctaves(base_image.shape)
 
-    def generateBaseImage(self, image, sigma, assumed_blur):
+    def generate_base_image(self, image, sigma, assumed_blur):
         """Generate base image from input image by upsampling by 2 in both directions and blurring
         """
         image = resize(image, (0, 0), fx=2, fy=2, interpolation=INTER_LINEAR)
@@ -34,3 +35,8 @@ class SiftDescriptorsController():
         filters = self.sift_descriptors_window.main_window.filters_window.filters_controller
         image=filters.gaussian_filter(image, kernel_size=3, sigma=sigma)
         return image
+    
+    def computeNumberOfOctaves(self, image_shape):
+        """Compute number of octaves in image pyramid as function of base image shape (OpenCV default)
+        """
+        return int(round(log(min(image_shape)) / log(2) - 1))
