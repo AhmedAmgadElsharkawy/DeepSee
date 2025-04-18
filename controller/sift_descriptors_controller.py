@@ -14,11 +14,10 @@ class SiftDescriptorsController():
 
         gaussian_pyramid=self.generate_gaussian_pyramid(image)
         dog_pyramid=self.generateDoGImages(gaussian_pyramid)
-        print(dog_pyramid)
         keypoints=self.detect_keypoints(dog_pyramid) #keypoint information (octave, scale, and coordinates) to the keypoints list.
         refined_keypoints = self.localize_keypoints(keypoints, dog_pyramid)
-        print("KeyPoints: ", refined_keypoints)
-        self.sift_descriptors_window.detect_keypoints_output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
+        oriented_keypoints = self.assign_orientations(gaussian_pyramid, refined_keypoints)
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(dog_pyramid[0][1])
 
         print("sift")
     def gaussian_blur(self,image,sigma):
@@ -99,3 +98,23 @@ class SiftDescriptorsController():
                 refined_keypoints.append((o, i, x, y))
 
         return refined_keypoints
+    
+    def assign_orientations(self, gaussian_pyramid, keypoints):
+        """Assigns orientations to keypoints using gradient histograms."""
+        oriented_keypoints = []
+
+        for (o, i, x, y) in keypoints:
+            image = gaussian_pyramid[o][i]
+            if y < 1 or y >= image.shape[0] - 1 or x < 1 or x >= image.shape[1] - 1:
+                continue
+
+            # Compute gradients
+            dx = image[y, x+1] - image[y, x-1]
+            dy = image[y-1, x] - image[y+1, x]
+
+            magnitude = np.sqrt(dx**2 + dy**2)
+            orientation = (np.arctan2(dy, dx) * 180 / np.pi) % 360
+
+            oriented_keypoints.append((o, i, x, y, magnitude, orientation))
+
+        return oriented_keypoints
