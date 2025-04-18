@@ -249,9 +249,9 @@ class MainWindow(QMainWindow):
         self.hybrid_image_window = HybridImageWindow(self)
         self.hough_transform_window = HoughTransformWindow(self)
         self.active_contours_window = ActiveContoursWindow(self)
+        self.sift_descriptors_window = SiftDescriptorsWindow(self)
         self.image_matching_window = ImageMatchingWindow(self)
         self.corner_detection_window = CornerDetectionWindow(self)
-        self.sift_descriptors_window = SiftDescriptorsWindow(self)
         self.segmentation_window = SegmentationWindow(self)
         self.Face_detection_and_recognition_window = FaceDetectionAndRecognitionWindow(self)
         

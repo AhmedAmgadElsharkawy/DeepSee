@@ -8,9 +8,10 @@ from functools import cmp_to_key
 
 
 class SiftDescriptorsController():
-    def __init__(self,sift_descriptors_window):
+    def __init__(self,sift_descriptors_window = None):
         self.sift_descriptors_window = sift_descriptors_window
-        self.sift_descriptors_window.apply_button.clicked.connect(self.apply_sift)
+        if self.sift_descriptors_window:
+            self.sift_descriptors_window.apply_button.clicked.connect(self.apply_sift)
 
     def apply_sift(self):
         image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
