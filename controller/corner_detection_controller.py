@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 class CornerDetectionController():
-    def __init__(self,corner_detection_window):
+    def __init__(self,corner_detection_window = None):
         self.corner_detection_window = corner_detection_window
-        self.corner_detection_window.apply_button.clicked.connect(self.apply_corner_detection)
+        if self.corner_detection_window:
+            self.corner_detection_window.apply_button.clicked.connect(self.apply_corner_detection)
 
     def apply_corner_detection(self):
         image=self.corner_detection_window.input_image_viewer.image_model.get_image_matrix()

@@ -3,9 +3,10 @@ import numpy as np
 from controller.sift_descriptors_controller import SiftDescriptorsController
 
 class ImageMatchingController():
-    def __init__(self,image_matching_window):
+    def __init__(self,image_matching_window = None):
         self.image_matching_window = image_matching_window
-        self.image_matching_window.apply_button.clicked.connect(self.apply_image_matching)
+        if self.image_matching_window:
+            self.image_matching_window.apply_button.clicked.connect(self.apply_image_matching)
         self.sift_descriptors_controller = SiftDescriptorsController()
 
 

@@ -1,7 +1,8 @@
 class FaceDetectionController():
-    def __init__(self,Face_detection_and_recognition_window):
+    def __init__(self,Face_detection_and_recognition_window = None):
         self.Face_detection_and_recognition_window = Face_detection_and_recognition_window
-        self.Face_detection_and_recognition_window.apply_button.clicked.connect(self.apply_face_detection)
+        if self.Face_detection_and_recognition_window:
+            self.Face_detection_and_recognition_window.apply_button.clicked.connect(self.apply_face_detection)
 
 
     def apply_face_detection(self):

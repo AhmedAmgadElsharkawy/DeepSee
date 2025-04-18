@@ -90,8 +90,6 @@ class ImageViewer(pg.ImageView):
         image_matching_input_image_viewer_action = QAction("Matching Features Image", self)
         image_matching_input_template_viewer_action = QAction("Matching Features Template", self)
 
-        sift_descriptors_matching_features_input_image_viewer_action = QAction("Matching Features Image", self)
-        sift_descriptors_matching_features_input_template_viewer_action = QAction("Matching Features Template", self)
         sift_descriptors_detect_keypoints_action = QAction("Detect Keypoints", self)
 
         move_menu.addAction(noise_action)

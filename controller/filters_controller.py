@@ -2,9 +2,10 @@ import numpy as np
 import utils.utils as utils
 
 class FiltersController():
-    def __init__(self,filters_window):
+    def __init__(self,filters_window = None):
         self.filters_window = filters_window
-        self.filters_window.apply_button.clicked.connect(self.apply_filter)
+        if self.filters_window:
+            self.filters_window.apply_button.clicked.connect(self.apply_filter)
 
     def apply_filter(self):
         try:

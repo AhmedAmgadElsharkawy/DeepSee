@@ -7,9 +7,10 @@ from skimage.feature import canny
 import pandas as pd
 
 class HoughTransformController():
-    def __init__(self,hough_transform_window):
+    def __init__(self,hough_transform_window = None):
         self.hough_transform_window = hough_transform_window
-        self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
+        if self.hough_transform_window:
+            self.hough_transform_window.apply_button.clicked.connect(self.apply_hough_transform)
 
 
 

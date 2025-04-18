@@ -3,9 +3,10 @@ import numpy as np
 import skimage.exposure as exposure
 import utils.utils as utils
 class EdgeDetectionController():
-    def __init__(self,edge_detection_window):
+    def __init__(self,edge_detection_window = None):
         self.edge_detection_window = edge_detection_window
-        self.edge_detection_window.apply_button.clicked.connect(self.apply_edge_detection)
+        if self.edge_detection_window:
+            self.edge_detection_window.apply_button.clicked.connect(self.apply_edge_detection)
 
     def apply_edge_detection(self):
         type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()

@@ -3,9 +3,10 @@ import math
 import cv2
 
 class ActiveContoursController():
-    def __init__(self,active_contours_window):
+    def __init__(self,active_contours_window = None):
         self.active_contours_window = active_contours_window
-        self.active_contours_window.apply_button.clicked.connect(self.apply_active_contour)
+        if self.active_contours_window:
+            self.active_contours_window.apply_button.clicked.connect(self.apply_active_contour)
 
 
     def apply_active_contour(self):

@@ -3,9 +3,10 @@ import cv2
 import pyqtgraph as pg
 
 class TransformationsController():
-    def __init__(self, transformations_window):
+    def __init__(self, transformations_window = None):
         self.transformations_window = transformations_window
-        self.transformations_window.apply_button.clicked.connect(self.apply_transformation)
+        if self.transformations_window:
+            self.transformations_window.apply_button.clicked.connect(self.apply_transformation)
 
     def apply_transformation(self):
 

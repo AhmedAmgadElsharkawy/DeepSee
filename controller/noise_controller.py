@@ -1,8 +1,9 @@
 import numpy as np
 class NoiseController():
-    def __init__(self,noise_window):
+    def __init__(self,noise_window = None):
         self.noise_window = noise_window
-        self.noise_window.apply_button.clicked.connect(self.apply_noise)
+        if self.noise_window:
+            self.noise_window.apply_button.clicked.connect(self.apply_noise)
 
     def apply_noise(self):
         type = self.noise_window.noise_type_custom_combo_box.current_text()

@@ -1,9 +1,10 @@
 import numpy as np
 import utils.utils as utils
 class ThresholdingController():
-    def __init__(self,thresholding_window):
+    def __init__(self,thresholding_window = None):
         self.thresholding_window = thresholding_window
-        self.thresholding_window.apply_button.clicked.connect(self.apply_thresholding)
+        if self.thresholding_window: 
+            self.thresholding_window.apply_button.clicked.connect(self.apply_thresholding)
 
 
     def apply_thresholding(self):
