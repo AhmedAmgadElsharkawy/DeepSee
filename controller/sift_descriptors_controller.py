@@ -1,8 +1,8 @@
 import cv2
 from math import floor
 from cv2 import KeyPoint
-from numpy import all, array, arctan2, exp, dot, log, logical_and, roll, sqrt, stack, trace, rad2deg, where, zeros, floor, round, float32
-from numpy.linalg import det, lstsq
+from numpy import all, any, array, arctan2, cos, sin, exp, dot, log, logical_and, roll, sqrt, stack, trace, unravel_index, pi, deg2rad, rad2deg, where, zeros, floor, full, nan, isnan, round, float32
+from numpy.linalg import det, lstsq, norm
 from cv2 import resize, GaussianBlur, subtract, KeyPoint, INTER_LINEAR, INTER_NEAREST
 from functools import cmp_to_key
 
@@ -16,7 +16,7 @@ class SiftDescriptorsController():
         image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
 
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        sigma, num_intervals, assumed_blur, image_border_width=1.6, 5, 0.5, 5
+        sigma, num_intervals, assumed_blur, image_border_width=1.6, 3, 0.5, 5
         gray_image = gray_image.astype('float32')
         
         base_image = self.generate_base_image(gray_image, sigma, assumed_blur)
@@ -28,10 +28,9 @@ class SiftDescriptorsController():
         keypoints = self.remove_duplicate_keypoints(keypoints)
         keypoints = self.convert_keypoints_to_input_image_size(keypoints)
 
-        for kp in keypoints:
-            print(f"pt: {kp.pt}, size: {kp.size}, angle: {kp.angle}, octave: {kp.octave}")
+        descriptors = self.generateDescriptors(keypoints, gaussian_images)
 
-            output_image = cv2.drawKeypoints(
+        output_image = cv2.drawKeypoints(
             image, keypoints, None,
             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
             color=(0, 255, 0)  # Green circles
@@ -246,7 +245,7 @@ class SiftDescriptorsController():
                 right_value = smooth_histogram[(peak_index + 1) % num_bins]
                 interpolated_peak_index = (peak_index + 0.5 * (left_value - right_value) / (left_value - 2 * peak_value + right_value)) % num_bins
                 orientation = 360. - interpolated_peak_index * 360. / num_bins
-                if abs(orientation - 360.) < 0.001:
+                if abs(orientation - 360.) < 0.1:
                     orientation = 0
                 new_keypoint = KeyPoint(*keypoint.pt, keypoint.size, orientation, keypoint.response, keypoint.octave)
                 keypoints_with_orientations.append(new_keypoint)
@@ -297,3 +296,106 @@ class SiftDescriptorsController():
             keypoint.octave = (keypoint.octave & ~255) | ((keypoint.octave - 1) & 255)
             converted_keypoints.append(keypoint)
         return converted_keypoints
+    
+    def unpackOctave(self, keypoint):
+        """Compute octave, layer, and scale from a keypoint
+        """
+        octave = keypoint.octave & 255
+        layer = (keypoint.octave >> 8) & 255
+        if octave >= 128:
+            octave = octave | -128
+        scale = 1 / float32(1 << octave) if octave >= 0 else float32(1 << -octave)
+        return octave, layer, scale
+
+    def generateDescriptors(self, keypoints, gaussian_images, window_width=4, num_bins=8, scale_multiplier=3, descriptor_max_value=0.2):
+        """Generate descriptors for each keypoint
+        """
+        descriptors = []
+
+        for keypoint in keypoints:
+            octave, layer, scale = self.unpackOctave(keypoint)
+            gaussian_image = gaussian_images[octave + 1][layer]
+            num_rows, num_cols = gaussian_image.shape
+            point = round(scale * array(keypoint.pt)).astype('int')
+            bins_per_degree = num_bins / 360.
+            angle = 360. - keypoint.angle
+            cos_angle = cos(deg2rad(angle))
+            sin_angle = sin(deg2rad(angle))
+            weight_multiplier = -0.5 / ((0.5 * window_width) ** 2)
+            row_bin_list = []
+            col_bin_list = []
+            magnitude_list = []
+            orientation_bin_list = []
+            histogram_tensor = zeros((window_width + 2, window_width + 2, num_bins))   # first two dimensions are increased by 2 to account for border effects
+
+            # Descriptor window size (described by half_width) follows OpenCV convention
+            hist_width = scale_multiplier * 0.5 * scale * keypoint.size
+            half_width = int(round(hist_width * sqrt(2) * (window_width + 1) * 0.5))   # sqrt(2) corresponds to diagonal length of a pixel
+            half_width = int(min(half_width, sqrt(num_rows ** 2 + num_cols ** 2)))     # ensure half_width lies within image
+
+            for row in range(-half_width, half_width + 1):
+                for col in range(-half_width, half_width + 1):
+                    row_rot = col * sin_angle + row * cos_angle
+                    col_rot = col * cos_angle - row * sin_angle
+                    row_bin = (row_rot / hist_width) + 0.5 * window_width - 0.5
+                    col_bin = (col_rot / hist_width) + 0.5 * window_width - 0.5
+                    if row_bin > -1 and row_bin < window_width and col_bin > -1 and col_bin < window_width:
+                        window_row = int(round(point[1] + row))
+                        window_col = int(round(point[0] + col))
+                        if window_row > 0 and window_row < num_rows - 1 and window_col > 0 and window_col < num_cols - 1:
+                            dx = gaussian_image[window_row, window_col + 1] - gaussian_image[window_row, window_col - 1]
+                            dy = gaussian_image[window_row - 1, window_col] - gaussian_image[window_row + 1, window_col]
+                            gradient_magnitude = sqrt(dx * dx + dy * dy)
+                            gradient_orientation = rad2deg(arctan2(dy, dx)) % 360
+                            weight = exp(weight_multiplier * ((row_rot / hist_width) ** 2 + (col_rot / hist_width) ** 2))
+                            row_bin_list.append(row_bin)
+                            col_bin_list.append(col_bin)
+                            magnitude_list.append(weight * gradient_magnitude)
+                            orientation_bin_list.append((gradient_orientation - angle) * bins_per_degree)
+
+            for row_bin, col_bin, magnitude, orientation_bin in zip(row_bin_list, col_bin_list, magnitude_list, orientation_bin_list):
+                # Smoothing via trilinear interpolation
+                # Notations follows https://en.wikipedia.org/wiki/Trilinear_interpolation
+                # Note that we are really doing the inverse of trilinear interpolation here (we take the center value of the cube and distribute it among its eight neighbors)
+                row_bin_floor, col_bin_floor, orientation_bin_floor = floor([row_bin, col_bin, orientation_bin]).astype(int)
+                row_fraction, col_fraction, orientation_fraction = row_bin - row_bin_floor, col_bin - col_bin_floor, orientation_bin - orientation_bin_floor
+                if orientation_bin_floor < 0:
+                    orientation_bin_floor += num_bins
+                if orientation_bin_floor >= num_bins:
+                    orientation_bin_floor -= num_bins
+
+                c1 = magnitude * row_fraction
+                c0 = magnitude * (1 - row_fraction)
+                c11 = c1 * col_fraction
+                c10 = c1 * (1 - col_fraction)
+                c01 = c0 * col_fraction
+                c00 = c0 * (1 - col_fraction)
+                c111 = c11 * orientation_fraction
+                c110 = c11 * (1 - orientation_fraction)
+                c101 = c10 * orientation_fraction
+                c100 = c10 * (1 - orientation_fraction)
+                c011 = c01 * orientation_fraction
+                c010 = c01 * (1 - orientation_fraction)
+                c001 = c00 * orientation_fraction
+                c000 = c00 * (1 - orientation_fraction)
+
+                histogram_tensor[row_bin_floor + 1, col_bin_floor + 1, orientation_bin_floor] += c000
+                histogram_tensor[row_bin_floor + 1, col_bin_floor + 1, (orientation_bin_floor + 1) % num_bins] += c001
+                histogram_tensor[row_bin_floor + 1, col_bin_floor + 2, orientation_bin_floor] += c010
+                histogram_tensor[row_bin_floor + 1, col_bin_floor + 2, (orientation_bin_floor + 1) % num_bins] += c011
+                histogram_tensor[row_bin_floor + 2, col_bin_floor + 1, orientation_bin_floor] += c100
+                histogram_tensor[row_bin_floor + 2, col_bin_floor + 1, (orientation_bin_floor + 1) % num_bins] += c101
+                histogram_tensor[row_bin_floor + 2, col_bin_floor + 2, orientation_bin_floor] += c110
+                histogram_tensor[row_bin_floor + 2, col_bin_floor + 2, (orientation_bin_floor + 1) % num_bins] += c111
+
+            descriptor_vector = histogram_tensor[1:-1, 1:-1, :].flatten()  # Remove histogram borders
+            # Threshold and normalize descriptor_vector
+            threshold = norm(descriptor_vector) * descriptor_max_value
+            descriptor_vector[descriptor_vector > threshold] = threshold
+            descriptor_vector /= max(norm(descriptor_vector), 0.1)
+            # Multiply by 512, round, and saturate between 0 and 255 to convert from float32 to unsigned char (OpenCV convention)
+            descriptor_vector = round(512 * descriptor_vector)
+            descriptor_vector[descriptor_vector < 0] = 0
+            descriptor_vector[descriptor_vector > 255] = 255
+            descriptors.append(descriptor_vector)
+        return array(descriptors, dtype='float32')
