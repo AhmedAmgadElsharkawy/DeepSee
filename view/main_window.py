@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem,QVBoxLayout,QLabel,QPushButton
+from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem,QVBoxLayout,QLabel,QPushButton,QToolButton
 from PyQt5.QtGui import QIcon, QFont, QColor, QPixmap
-from PyQt5.QtCore import Qt,pyqtSignal
+from PyQt5.QtCore import Qt,pyqtSignal, QEvent, QSize
 
 from view.window.noise_window import NoiseWindow
 from view.window.filters_window import FiltersWindow
@@ -15,6 +15,138 @@ from view.window.corner_detection_window import CornerDetectionWindow
 from view.window.sift_descriptors_window import SiftDescriptorsWindow
 from view.window.segmentation_window import SegmentationWindow
 from view.window.face_detection_and_recognition_window import FaceDetectionAndRecognitionWindow
+
+
+
+class CustomTitleBar(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.initial_pos = None
+        central_layout = QHBoxLayout(self)
+        central_layout.setContentsMargins(0,0,0,0)
+        title_bar = QWidget()
+        self.setFixedHeight(35)
+        title_bar.setObjectName("title_bar")
+        central_layout.addWidget(title_bar)
+        title_bar_layout = QHBoxLayout(title_bar)
+        title_bar_layout.setContentsMargins(10, 0,0, 0)
+        
+        self.title = QLabel (self)
+        font = QFont("Inter",10)
+        font.setWeight(QFont.DemiBold)  
+        self.title.setFont(font)
+        self.title.setObjectName("title_bar_label")
+        self.title.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        self.title.setText("DeepSee")
+        title_bar_layout.addWidget(self.title)
+
+        self.icon = QLabel()
+        self.icon.setFixedSize(24, 24)  # Adjust size as needed
+        self.icon.setScaledContents(True)
+        self.icon.setPixmap(QPixmap("assets/icons/deepsee.png"))  # <- replace with actual path
+
+        title_bar_layout.addWidget(self.icon)
+        title_bar_layout.addWidget(self.title)
+
+        self.min_button = QToolButton(self)
+        min_icon = QIcon()
+        self.min_button.setIcon(min_icon)
+        self.min_button.clicked.connect(self.window().showMinimized)
+
+        self.max_button = QToolButton(self)
+        max_icon = QIcon()
+        self.max_button.setIcon(max_icon)
+        self.max_button.clicked.connect(self.window().showMaximized)
+
+        self.close_button = QToolButton(self)
+        close_icon = QIcon()
+        self.close_button.setIcon(close_icon)
+        self.close_button.clicked.connect(self.window().close)
+
+        self.normal_button = QToolButton(self)
+        normal_icon = QIcon()
+        self.normal_button.setIcon(normal_icon)
+        self.normal_button.clicked.connect(self.window().showNormal)
+        self.normal_button.setVisible(False)
+
+        buttons = [
+            self.min_button,
+            self.normal_button,
+            self.max_button,
+            self.close_button,
+        ]
+
+        self.buttons_widget = QWidget()
+        self.buttons_widget_layout = QHBoxLayout(self.buttons_widget)
+        self.buttons_widget_layout.setContentsMargins(10,0,10,0)
+        self.buttons_widget_layout.setSpacing(10)
+        title_bar_layout.addWidget(self.buttons_widget)
+        self.buttons_widget.setFixedWidth(120)
+        
+        for button in buttons:
+            button.setFocusPolicy(Qt.NoFocus)
+            button.setFixedSize(QSize(16, 16))
+            self.buttons_widget_layout.addWidget(button)
+
+
+        self.close_button.setStyleSheet("""
+            QToolButton {
+                background: #FF5F56;
+                border: none;
+                border-radius: 8px;
+            }
+            QToolButton:hover {
+                background: #E0443E;
+            }
+        """)
+
+        # Minimize button - Yellow
+        self.min_button.setStyleSheet("""
+            QToolButton {
+                background: #FFBD2E;
+                border: none;
+                border-radius: 8px;
+            }
+            QToolButton:hover {
+                background: #FFA500;
+            }
+        """)
+
+        # Maximize button - Green
+        self.max_button.setStyleSheet("""
+            QToolButton {
+                background: #27C93F;
+                border: none;
+                border-radius: 8px;
+            }
+            QToolButton:hover {
+                background: #1AAB29;
+            }
+        """)
+
+        self.normal_button.setStyleSheet("""
+            QToolButton {
+                background: #27C93F;
+                border: none;
+                border-radius: 8px;
+            }
+            QToolButton:hover {
+                background: #1AAB29;
+            }
+        """)
+
+
+    def window_state_changed(self, state):
+        if state == Qt.WindowMaximized:
+            self.normal_button.setVisible(True)
+            self.max_button.setVisible(False)
+        else:
+            self.normal_button.setVisible(False)
+            self.max_button.setVisible(True)
+
+
+
 
 class MainWindow(QMainWindow):
     __instance = None
@@ -33,27 +165,42 @@ class MainWindow(QMainWindow):
         MainWindow.__instance = self
 
         self.is_dark_mode = True
-        self.setWindowIcon(QIcon("assets/icons/deepsee.png"))
+        # self.setWindowIcon(QIcon("assets/icons/deepsee.png"))
 
-        self.setWindowTitle('DeepSee')
+        # self.setWindowTitle('DeepSee')
+
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.main_widget = QWidget(self)
         self.main_widget.setObjectName("main_widget")
         self.setCentralWidget(self.main_widget)
-        self.main_widget_layout = QHBoxLayout(self.main_widget)
-        self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_widget_layout.setSpacing(10)
+
+        self.main_layout = QVBoxLayout(self.main_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        self.title_bar = CustomTitleBar(self)
+        self.title_bar.setObjectName("title_bar")
+        self.main_layout.addWidget(self.title_bar)
+
+        self.content_widget = QWidget()
+        self.content_layout = QHBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setSpacing(10)
+        self.main_layout.addWidget(self.content_widget)
 
         self.side_bar_container = QWidget()
         self.side_bar_container_layout = QVBoxLayout(self.side_bar_container)
         self.side_bar_container.setObjectName("side_bar")
-        self.side_bar_container_layout.setContentsMargins(0,0,0,0)
+        self.side_bar_container_layout.setContentsMargins(0,10,0,0)
 
         self.list_widget = QListWidget()
         self.side_bar_container_layout.addWidget(self.list_widget)
         self.list_widget.setObjectName("list_widget")
         self.list_widget.setFocusPolicy(Qt.NoFocus)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        
 
 
         self.list_widget_items = [
@@ -115,8 +262,8 @@ class MainWindow(QMainWindow):
         
 
         self.side_bar_container.setFixedWidth(330)
-        self.main_widget_layout.addWidget(self.side_bar_container)
-        self.main_widget_layout.addWidget(self.stackedWidget)
+        self.content_layout.addWidget(self.side_bar_container)
+        self.content_layout.addWidget(self.stackedWidget)
 
 
         self.dark_mode_toggle_button_container = QWidget()
@@ -193,6 +340,13 @@ class MainWindow(QMainWindow):
             #main_widget {
                 background-color: #f5f7fa;
             }      
+            #title_bar{
+                background-color: white;
+            }
+            #title_bar_label { 
+                font-size: 10pt; 
+                color: #343C6A;
+            }
             #list_widget {
                 background-color: white;
                 color: #B1B1B1; 
@@ -403,6 +557,7 @@ class MainWindow(QMainWindow):
             border: none;
         }
 
+
         """
 
     def dark_mode_stylesheet(self):
@@ -410,6 +565,13 @@ class MainWindow(QMainWindow):
             #main_widget {
                 background-color: #1B2431;
             }     
+            #title_bar{
+                background-color: #273142;
+            }
+            #title_bar_label { 
+                font-size: 10pt; 
+                color: white;
+            }
             QColorDialog {
                 background-color: #273142;
                 color: white;
@@ -626,3 +788,23 @@ class MainWindow(QMainWindow):
 
 
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.initial_pos = event.pos()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if hasattr(self, 'initial_pos') and self.initial_pos is not None:
+            delta = event.pos() - self.initial_pos
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.initial_pos = None
+        super().mouseReleaseEvent(event)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.WindowStateChange:
+            self.title_bar.window_state_changed(self.windowState())
+        super().changeEvent(event)
