@@ -14,9 +14,12 @@ class SiftDescriptorsController():
 
     def apply_sift(self):
         image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
+        sigma = self.sift_descriptors_window.detect_keypoints_sigma_spin_box.value()
+        num_intervals = self.sift_descriptors_window.detect_keypoints_intervals_number_spin_box.value()
+        assumed_blur = self.sift_descriptors_window.detect_keypoints_assumed_blur_spin_box.value()
 
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        sigma, num_intervals, assumed_blur, image_border_width=1.6, 3, 0.5, 5
+        image_border_width=5
         gray_image = gray_image.astype('float32')
         
         base_image = self.generate_base_image(gray_image, sigma, assumed_blur)
