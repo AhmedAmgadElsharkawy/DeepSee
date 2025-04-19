@@ -4,11 +4,10 @@ import cv2
 import multiprocessing as mp
 from PyQt5.QtCore import QTimer
 
-from controller.filters_controller import FiltersController
+from controller.filters_controller import gaussian_filter
 
 def process_active_conntour(input_image,image,num_iterations,radius,num_points,window_size,alpha,beta,gamma,queue = None):
-    filters = FiltersController()
-    image=filters.gaussian_filter(image, kernel_size=window_size, sigma=1)
+    image = gaussian_filter(image, kernel_size=window_size, sigma=1)
     center = (image.shape[1] // 2, image.shape[0] // 2)
     curve = initialize_contours(center, radius, num_points)
     output_image = np.zeros_like(input_image)
