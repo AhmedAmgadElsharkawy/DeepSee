@@ -79,7 +79,7 @@ def apply_low_or_high_pass_filter(image, Radius=2,Type="low", queue = None):
     if queue:
         queue.put(output_image)
     else:
-        return output_image
+        return dft_shift_filtered, output_image
 
 class FiltersController():
     def __init__(self,filters_window = None):
