@@ -142,7 +142,7 @@ class ThresholdingController():
     def _check_queue(self):
         if self.queue and not self.queue.empty():
             self.queue_timer.stop()
-            self.thresholding_window.output_image_viewer.show_loading_effect()
+            self.thresholding_window.output_image_viewer.hide_loading_effect()
             self.thresholding_window.controls_container.setEnabled(True)
             self.thresholding_window.image_viewers_container.setEnabled(True)
             thresholded_image = self.queue.get()

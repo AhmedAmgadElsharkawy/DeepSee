@@ -131,7 +131,7 @@ class FiltersController():
     def _check_queue(self):
         if self.queue and not self.queue.empty():
             self.queue_timer.stop()
-            self.filters_window.output_image_viewer.show_loading_effect()
+            self.filters_window.output_image_viewer.hide_loading_effect()
             self.filters_window.controls_container.setEnabled(False)
             self.filters_window.image_viewers_container.setEnabled(False)
             filtered_img = self.queue.get()

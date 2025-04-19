@@ -198,7 +198,7 @@ class ActiveContoursController():
     def _check_queue(self):
         if self.queue and not self.queue.empty():
             self.queue_timer.stop()
-            self.active_contours_window.output_image_viewer.show_loading_effect()
+            self.active_contours_window.output_image_viewer.hide_loading_effect()
             self.active_contours_window.controls_container.setEnabled(True)
             self.active_contours_window.image_viewers_container.setEnabled(True)
             output_image,contour_area,contour_perimeter,chain_code = self.queue.get()
