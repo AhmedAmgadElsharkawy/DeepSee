@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import skimage.exposure as exposure
 import utils.utils as utils
+
+from controller.filters_controller import gaussian_filter
+
 class EdgeDetectionController():
     def __init__(self,edge_detection_window = None):
         self.edge_detection_window = edge_detection_window
@@ -24,7 +27,7 @@ class EdgeDetectionController():
     
     def prewitt(self, image):
         kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
-        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
+        image = gaussian_filter(image, kernel_size)
         if kernel_size == 3:
             prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
             prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
@@ -55,7 +58,7 @@ class EdgeDetectionController():
         lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
         upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
         variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
-        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size, variance)
+        image = gaussian_filter(image, kernel_size, variance)
 
         edges = cv2.Canny(image, lower_threshold, upper_threshold)
         return edges
@@ -76,7 +79,7 @@ class EdgeDetectionController():
         if kernel_size == None:
             kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
             direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
-        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size, variance)
+        image = gaussian_filter(image, kernel_size, variance)
         if kernel_size == 3:
             sobel_kernel_x = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
             sobel_kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
@@ -110,7 +113,7 @@ class EdgeDetectionController():
         
     def roberts(self, image):
         kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
-        image = self.edge_detection_window.main_window.filters_window.filters_controller.gaussian_filter(image, kernel_size)
+        image = gaussian_filter(image, kernel_size)
 
         roberts_x = np.array([[-1, 0], [0, 1]])
         roberts_y = np.array([[0, -1], [1, 0]])
