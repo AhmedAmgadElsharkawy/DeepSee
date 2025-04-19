@@ -4,7 +4,7 @@ import numpy as np
 import time
 from PyQt5.QtCore import QTimer
 
-from controller.sift_descriptors_controller import SiftDescriptorsController
+from controller.sift_descriptors_controller import get_sift_keypoints_and_descriptors
 
 
 """
@@ -23,10 +23,9 @@ from controller.sift_descriptors_controller import SiftDescriptorsController
 
 def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,template_sigma, template_num_intervals, template_assumed_blur, selected_matching_algorithm, gray_img, gray_template, img, template, queue = None):
     start_time = time.time()
-    sift = SiftDescriptorsController()
 
-    kp1, desc1 = sift.get_sift_keypoints_and_descriptors(gray_img, img_sigma, img_assumed_blur, img_num_intervals)
-    kp2, desc2 = sift.get_sift_keypoints_and_descriptors(gray_template, template_sigma, template_assumed_blur, template_num_intervals)
+    kp1, desc1 = get_sift_keypoints_and_descriptors(gray_img, img_sigma, img_assumed_blur, img_num_intervals)
+    kp2, desc2 = get_sift_keypoints_and_descriptors(gray_template, template_sigma, template_assumed_blur, template_num_intervals)
 
     matches = None
     if selected_matching_algorithm == "Sum Of Squared Differences":
