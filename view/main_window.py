@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QMainWindow, QWidget, QListWidget, QStackedWidget, QHBoxLayout, QListWidgetItem,QVBoxLayout,QLabel,QPushButton,QToolButton
 from PyQt5.QtGui import QIcon, QFont, QColor, QPixmap
 from PyQt5.QtCore import Qt,pyqtSignal, QEvent, QSize, QPoint
+import multiprocessing as mp
+
 
 from view.window.noise_window import NoiseWindow
 from view.window.filters_window import FiltersWindow
@@ -918,3 +920,14 @@ class MainWindow(QMainWindow):
         self.initial_pos = None
         super().mouseReleaseEvent(event)
         event.accept()
+
+
+    def closeEvent(self, event):
+        for proc in mp.active_children():
+            try:
+                proc.terminate()
+                proc.join(timeout=1)
+            except Exception as e:
+                print(f"Failed to terminate process {proc.pid}: {e}")
+
+        super(MainWindow, self).closeEvent(event)

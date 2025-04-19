@@ -1,84 +1,128 @@
 import cv2
+from multiprocessing import Process, Queue
 import numpy as np
 import time
+from PyQt5.QtCore import QTimer
+
 
 from controller.sift_descriptors_controller import SiftDescriptorsController
 
-class ImageMatchingController():
-    def __init__(self,image_matching_window = None):
+
+"""
+    any function you pass to multiprocessing.Process must be defined at the top level of a module, not 
+    inside a class or another function. That way, Python’s pickler (serialize and deserialize data between processes memory) can import it by name
+
+    not all objects can be easily pickled. For example:
+    Functions or classes defined inside another function: These can't be pickled because they don't have a top-level name, and pickling requires that objects can be imported by name.
+    Local variables: Variables that are only local to a function or method might also pose issues with pickling.  
+
+
+    underscore before a function or variable name in Python is a convention that 
+    This is a private/internal function or variable. Please don’t use it outside this class/module unless you really know what you’re doing. 
+"""
+
+
+def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,template_sigma, template_num_intervals, template_assumed_blur, selected_matching_algorithm, gray_img, gray_template, img, template, queue):
+    start_time = time.time()
+    sift = SiftDescriptorsController()
+
+    kp1, desc1 = sift.get_sift_keypoints_and_descriptors(gray_img, img_sigma, img_assumed_blur, img_num_intervals)
+    kp2, desc2 = sift.get_sift_keypoints_and_descriptors(gray_template, template_sigma, template_assumed_blur, template_num_intervals)
+
+    matches = None
+    if selected_matching_algorithm == "Sum Of Squared Differences":
+        matches = match_ssd(desc1, desc2)
+    elif selected_matching_algorithm == "Normalized Cross Correlation":
+        matches = match_ncc(desc1, desc2)
+
+    img_with_matches = cv2.drawMatches(img, kp1, template, kp2, matches[:100], None, flags=2)
+
+    elapsed_time = time.time() - start_time
+    queue.put((elapsed_time, img_with_matches))
+
+
+def match_ssd(desc1, desc2, ratio_threshold=0.4):
+    matches = []
+    for i, d1 in enumerate(desc1):
+        ssd = np.sum((desc2 - d1) ** 2, axis=1)
+        best, second = np.argsort(ssd)[:2]
+        if ssd[best] < ratio_threshold * ssd[second]:
+            matches.append(cv2.DMatch(_queryIdx=i, _trainIdx=best, _distance=ssd[best]))
+    return matches
+
+def normalize_desc(desc):
+    return desc / (np.linalg.norm(desc, axis=1, keepdims=True) + 1e-10)
+
+def match_ncc(desc1, desc2, threshold=0.9):
+    desc1_n = normalize_desc(desc1)
+    desc2_n = normalize_desc(desc2)
+    matches = []
+    for i, d1 in enumerate(desc1_n):
+        sim = np.dot(desc2_n, d1)
+        j = np.argmax(sim)
+        if sim[j] > threshold:
+            matches.append(cv2.DMatch(_queryIdx=i, _trainIdx=j, _distance=1 - sim[j]))
+    return matches
+
+
+
+class ImageMatchingController:
+    def __init__(self, image_matching_window=None):
         self.image_matching_window = image_matching_window
+        self.process = None
+        self.queue = None
         if self.image_matching_window:
             self.image_matching_window.apply_button.clicked.connect(self.apply_image_matching)
-        self.sift_descriptors_controller = SiftDescriptorsController()
-
 
     def apply_image_matching(self):
-        start_time = time.time()
+        self.image_matching_window.output_image_viewer.show_loading_effect()
 
-        img_sigma = self.image_matching_window.img_detect_keypoints_sigma_spin_box.value()
-        img_num_intervals = self.image_matching_window.img_detect_keypoints_intervals_number_spin_box.value()
-        img_assumed_blur = self.image_matching_window.img_detect_keypoints_assumed_blur_spin_box.value()
+        """
+            Create IPC queue to share resources between cores
+            IPC stands for Inter‑Process Communication. 
+            It’s the set of mechanisms an operating system (and your programs) provide 
+            to let separate processes—each with its own private memory space—exchange data and signals.
+            Without IPC, one process couldn’t directly read or write another process’s memory.
+        """
 
-        template_sigma = self.image_matching_window.template_detect_keypoints_sigma_spin_box.value()
-        template_num_intervals = self.image_matching_window.template_detect_keypoints_intervals_number_spin_box.value()
-        template_assumed_blur = self.image_matching_window.template_detect_keypoints_assumed_blur_spin_box.value()
+        self.queue = Queue()
 
-        selected_matching_algorithm = self.image_matching_window.matching_algorithm_custom_combo_box.current_text()
-        img = self.image_matching_window.input_image_viewer.image_model.gray_image_matrix
-        tempelate = self.image_matching_window.input_template_viewer.image_model.gray_image_matrix
-        gray_img = self.image_matching_window.input_image_viewer.image_model.gray_image_matrix.astype('float32')
-        gray_template = self.image_matching_window.input_template_viewer.image_model.gray_image_matrix.astype('float32')
+        args = (
+                self.image_matching_window.img_detect_keypoints_sigma_spin_box.value(),
+                self.image_matching_window.img_detect_keypoints_intervals_number_spin_box.value(),
+                self.image_matching_window.img_detect_keypoints_assumed_blur_spin_box.value(),
+                self.image_matching_window.template_detect_keypoints_sigma_spin_box.value(),
+                self.image_matching_window.template_detect_keypoints_intervals_number_spin_box.value(),
+                self.image_matching_window.template_detect_keypoints_assumed_blur_spin_box.value(),
+                self.image_matching_window.matching_algorithm_custom_combo_box.current_text(),
+                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix.astype('float32'),
+                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix.astype('float32'),
+                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix,
+                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix,
+            )
 
-        if gray_img is None or gray_template is None:
-            return
+        self.process = Process(target=process_image_matching, args=(*args, self.queue))
+        self.process.start()
 
-        kp1, desc1 = self.sift_descriptors_controller.get_sift_keypoints_and_descriptors(gray_img,img_sigma,img_assumed_blur,img_num_intervals)
-        kp2, desc2 = self.sift_descriptors_controller.get_sift_keypoints_and_descriptors(gray_template,template_sigma,template_assumed_blur,template_num_intervals)
-
-        matches = None
-
-        if selected_matching_algorithm == "Sum Of Squared Differences":
-            matches = self.match_ssd(desc1,desc2)
-        elif selected_matching_algorithm == "Normalized Cross Correlation":
-            matches = self.match_ncc(desc1,desc2)
-
-        if matches is None:
-            return
-        
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-
-        self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
-        
-        img_with_matches = cv2.drawMatches(img, kp1, tempelate, kp2, matches[:100], None, flags=2)
-
-        self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
+        self._start_queue_timer()
 
 
-    def match_ssd(self,desc1, desc2, ratio_threshold=0.4):
-        matches = []
-        for i, d1 in enumerate(desc1):
-            ssd = np.sum((desc2 - d1) ** 2, axis=1)
-            sorted_indices = np.argsort(ssd)  
-            best_match_idx = sorted_indices[0]
-            second_best_match_idx = sorted_indices[1]
-            if ssd[best_match_idx] < ratio_threshold * ssd[second_best_match_idx]:
-                matches.append(cv2.DMatch(_queryIdx=i, _trainIdx=best_match_idx, _distance=ssd[best_match_idx]))
-        return matches
+    def _start_queue_timer(self):
+        self.queue_timer = QTimer()
+        self.queue_timer.timeout.connect(self._check_queue)
+        self.queue_timer.start(100)
 
+    def _check_queue(self):
+        if self.queue and not self.queue.empty():
+            elapsed_time, img_with_matches = self.queue.get()
+            self.queue_timer.stop()
+            self.image_matching_window.output_image_viewer.hide_loading_effect()
 
-    def normalize_desc(self,desc):
-        return desc / (np.linalg.norm(desc, axis=1, keepdims=True) + 1e-10)
-    
-
-    def match_ncc(self,desc1, desc2, threshold=0.9):  
-        desc1_n = self.normalize_desc(desc1)
-        desc2_n = self.normalize_desc(desc2)
-        matches = []
-        for i, d1 in enumerate(desc1_n):
-            sim = np.dot(desc2_n, d1)
-            j = np.argmax(sim)
-            if sim[j] > threshold:  
-                matches.append(cv2.DMatch(_queryIdx=i, _trainIdx=j, _distance=1 - sim[j]))
-        return matches
-        
+            if elapsed_time is None:
+                self.image_matching_window.time_elapsed_value.setText("Error in processing")
+            else:
+                self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
+                if img_with_matches is not None:
+                    self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
+                else:
+                    self.image_matching_window.output_image_viewer.reset()

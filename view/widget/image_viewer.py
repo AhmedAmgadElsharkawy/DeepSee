@@ -53,6 +53,7 @@ class ImageViewer(pg.ImageView):
 
 
     def show_loading_effect(self):
+        self.clear()
         self.temp_label.hide()
         self.loading_label.show()
         self.movie.start()
