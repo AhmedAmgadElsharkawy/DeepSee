@@ -4,7 +4,6 @@ import numpy as np
 import time
 from PyQt5.QtCore import QTimer
 
-
 from controller.sift_descriptors_controller import SiftDescriptorsController
 
 
@@ -76,6 +75,7 @@ class ImageMatchingController:
 
     def apply_image_matching(self):
         self.image_matching_window.output_image_viewer.show_loading_effect()
+        self.image_matching_window.controls_container.setEnabled(False)
 
         """
             Create IPC queue to share resources between cores
@@ -117,12 +117,7 @@ class ImageMatchingController:
             elapsed_time, img_with_matches = self.queue.get()
             self.queue_timer.stop()
             self.image_matching_window.output_image_viewer.hide_loading_effect()
+            self.image_matching_window.controls_container.setEnabled(True)
+            self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
+            self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
 
-            if elapsed_time is None:
-                self.image_matching_window.time_elapsed_value.setText("Error in processing")
-            else:
-                self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
-                if img_with_matches is not None:
-                    self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
-                else:
-                    self.image_matching_window.output_image_viewer.reset()
