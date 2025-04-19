@@ -76,6 +76,7 @@ class ImageMatchingController:
     def apply_image_matching(self):
         self.image_matching_window.output_image_viewer.show_loading_effect()
         self.image_matching_window.controls_container.setEnabled(False)
+        self.image_matching_window.image_viewers_container.setEnabled(False)
 
         """
             Create IPC queue to share resources between cores
@@ -118,6 +119,7 @@ class ImageMatchingController:
             self.queue_timer.stop()
             self.image_matching_window.output_image_viewer.hide_loading_effect()
             self.image_matching_window.controls_container.setEnabled(True)
+            self.image_matching_window.image_viewers_container.setEnabled(True)
             self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
             self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
 
