@@ -6,7 +6,7 @@ from PyQt5.QtCore import QTimer
 
 from controller.filters_controller import FiltersController
 
-def process_active_conntour(input_image,image,num_iterations,radius,num_points,window_size,alpha,beta,gamma,queue):
+def process_active_conntour(input_image,image,num_iterations,radius,num_points,window_size,alpha,beta,gamma,queue = None):
     filters = FiltersController()
     image=filters.gaussian_filter(image, kernel_size=window_size, sigma=1)
     center = (image.shape[1] // 2, image.shape[0] // 2)
@@ -17,8 +17,10 @@ def process_active_conntour(input_image,image,num_iterations,radius,num_points,w
     curve=new_curve
 
     output_image,contour_area,contour_perimeter,chain_code=process_contour(input_image, output_image, curve)
-    queue.put((output_image,contour_area,contour_perimeter,chain_code))
-
+    if queue:
+        queue.put((output_image,contour_area,contour_perimeter,chain_code))
+    else:
+        return output_image,contour_area,contour_perimeter,chain_code
 
 def initialize_contours(center, radius, number_of_points):
     curve = []

@@ -4,19 +4,25 @@ from PyQt5.QtCore import QTimer
 
 
 
-def add_gaussian_noise(image,mean,sigma,queue):
+def add_gaussian_noise(image,mean,sigma,queue = None):
     noise = np.random.normal(mean, sigma, image.shape).astype(np.float32)
     noisy_image = image.astype(np.float32) + noise
     noisy_image = np.clip(noisy_image, 0, 255)
-    queue.put(noisy_image)
-
-def add_uniform_noise(image,noise_level,queue):
+    if queue:
+        queue.put(noisy_image)
+    else:
+        return noisy_image
+    
+def add_uniform_noise(image,noise_level,queue = None):
     noise = np.random.uniform(-noise_level, noise_level, image.shape).astype(np.float32)
     noisy_image = image.astype(np.float32) + noise
     noisy_image = np.clip(noisy_image, 0, 255)
-    queue.put(noisy_image)
-
-def add_salt_and_pepper_noise(image,salt,pepper,queue):
+    if queue:
+        queue.put(noisy_image)
+    else:
+        return noisy_image
+    
+def add_salt_and_pepper_noise(image,salt,pepper,queue = None):
     noisy_image = image.copy()
     num_of_salt_pixels = int(salt * image.size)
     num_of_pepper_pixels = int(pepper * image.size) 
@@ -27,7 +33,10 @@ def add_salt_and_pepper_noise(image,salt,pepper,queue):
     coords = [np.random.randint(0, i - 1, num_of_pepper_pixels) for i in image.shape]
     noisy_image[coords[0], coords[1]] = 0
 
-    queue.put(noisy_image)
+    if queue:
+        queue.put(noisy_image)
+    else:
+        return noisy_image
 
 
 class NoiseController():

@@ -21,7 +21,7 @@ from controller.sift_descriptors_controller import SiftDescriptorsController
 """
 
 
-def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,template_sigma, template_num_intervals, template_assumed_blur, selected_matching_algorithm, gray_img, gray_template, img, template, queue):
+def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,template_sigma, template_num_intervals, template_assumed_blur, selected_matching_algorithm, gray_img, gray_template, img, template, queue = None):
     start_time = time.time()
     sift = SiftDescriptorsController()
 
@@ -37,8 +37,10 @@ def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,templa
     img_with_matches = cv2.drawMatches(img, kp1, template, kp2, matches[:100], None, flags=2)
 
     elapsed_time = time.time() - start_time
-    queue.put((elapsed_time, img_with_matches))
-
+    if queue:
+        queue.put((elapsed_time, img_with_matches))
+    else:
+        return elapsed_time, img_with_matches
 
 def match_ssd(desc1, desc2, ratio_threshold=0.4):
     matches = []
