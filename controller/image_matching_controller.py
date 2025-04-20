@@ -86,8 +86,8 @@ class ImageMatchingController:
         """
 
 
-        img1 =  self.image_matching_window.input_image_viewer.image_model.gray_image_matrix
-        img2 =  self.image_matching_window.input_template_viewer.image_model.gray_image_matrix
+        img1 =  self.image_matching_window.input_image_viewer.image_model.image_matrix
+        img2 =  self.image_matching_window.input_template_viewer.image_model.image_matrix
 
         if(img1 is None or img2 is None):
             self.image_matching_window.show_toast(title = "Warning!", text = "Image Matching Invalid Images.",type="ERROR")      
@@ -108,10 +108,10 @@ class ImageMatchingController:
                 self.image_matching_window.template_detect_keypoints_intervals_number_spin_box.value(),
                 self.image_matching_window.template_detect_keypoints_assumed_blur_spin_box.value(),
                 self.image_matching_window.matching_algorithm_custom_combo_box.current_text(),
-                img1.astype('float32'),
-                img2.astype('float32'),
-                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix,
-                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix,
+                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix.astype('float32'),
+                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix.astype('float32'),
+                img1,
+                img2,
             )
 
         self.process = Process(target=process_image_matching, args=(*args, self.queue))
