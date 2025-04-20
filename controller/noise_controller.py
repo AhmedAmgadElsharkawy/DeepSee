@@ -62,7 +62,7 @@ class NoiseController():
             process = mp.Process(target = add_gaussian_noise,args=(image,mean,sigma,self.queue))
         elif type == "Uniform Noise":
             noise_level = self.noise_window.noise_value_spin_box.value()
-            process = mp.Process(target = add_gaussian_noise,args=(image,noise_level,self.queue))
+            process = mp.Process(target = add_uniform_noise,args=(image,noise_level,self.queue))
         else:
             salt = self.noise_window.salt_probability_spin_box.value() / 100
             pepper = self.noise_window.pepper_probability_spin_box.value() / 100
