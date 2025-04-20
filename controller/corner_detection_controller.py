@@ -181,4 +181,6 @@ class CornerDetectionController():
             self.corner_detection_window.controls_container.setEnabled(True)
             self.corner_detection_window.image_viewers_container.setEnabled(True)
             output_image = self.queue.get()
-            self.corner_detection_window.output_image_viewer.display_and_set_image_matrix(output_image)      
+            self.corner_detection_window.output_image_viewer.display_and_set_image_matrix(output_image)   
+            self.corner_detection_window.show_toast(text = "Corner Detection is Complete.")        
+   

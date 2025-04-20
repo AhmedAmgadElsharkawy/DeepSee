@@ -205,6 +205,7 @@ class ActiveContoursController():
             self.update_perimeter_area(contour_perimeter,contour_area)
             self.update_chain_code_display(chain_code)
             self.active_contours_window.output_image_viewer.display_and_set_image_matrix(output_image)
+            self.active_contours_window.show_toast(text = "Active Contour is Complete.")
 
     
 

@@ -123,4 +123,5 @@ class ImageMatchingController:
             self.image_matching_window.image_viewers_container.setEnabled(True)
             self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
             self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
+            self.image_matching_window.show_toast(text = "Image Matching is complete.")        
 

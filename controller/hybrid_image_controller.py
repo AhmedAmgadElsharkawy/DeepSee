@@ -129,3 +129,4 @@ class HybridImageController():
             self.hybrid_image_window.controls_container.setEnabled(True)
             self.hybrid_image_window.image_viewers_container.setEnabled(True)
             self.plotting_images(img1, img2, mix,inverse_mix)
+            self.hybrid_image_window.show_toast(text = "Hybrid Image is complete.")        

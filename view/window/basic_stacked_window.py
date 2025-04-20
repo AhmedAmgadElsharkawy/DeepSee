@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont,QColor
+from PyQt5.QtCore import Qt,QSize
+from pyqttoast import Toast, ToastPreset
 
 from view.widget.interactive_image_viewer import InteractiveImageViewer
 from view.widget.image_viewer import ImageViewer
@@ -65,3 +66,34 @@ class BasicStackedWindow(QWidget):
         self.inputs_container_layout.setContentsMargins(0, 0, 0, 0)
         self.controls_container_layout.addWidget(self.inputs_container)
 
+
+
+    def show_toast(self,title = "Success!",text = "Finished",type = "SUCCESS"):
+        toast = Toast(self)
+        Toast.setPositionRelativeToWidget(self.main_window)
+        toast.setFixedSize(QSize(350, 80))
+        toast.setDuration(3000) 
+        toast.setTitle(title)
+        toast.setText(text)
+
+        if type == "SUCCESS":
+            if self.main_window.is_dark_mode:
+                toast.applyPreset(ToastPreset.SUCCESS_DARK)
+            else:
+                toast.applyPreset(ToastPreset.SUCCESS)
+            toast.setIconColor(QColor('#27C93F'))       
+            toast.setDurationBarColor(QColor('#27C93F'))               
+        elif type == "ERROR":
+            if self.main_window.is_dark_mode:
+                toast.applyPreset(ToastPreset.ERROR_DARK)
+            else:
+                toast.applyPreset(ToastPreset.ERROR)
+            toast.setIconColor(QColor('#FF5F56'))  
+            toast.setDurationBarColor(QColor('#FF5F56'))                          
+        else:
+            print("Wrong Toast Type")
+
+        if self.main_window.is_dark_mode:
+            toast.setBackgroundColor(QColor('#273142'))          
+
+        toast.show()

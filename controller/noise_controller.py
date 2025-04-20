@@ -85,6 +85,8 @@ class NoiseController():
             self.noise_window.image_viewers_container.setEnabled(True)
             result = self.queue.get()
             self.noise_window.output_image_viewer.display_and_set_image_matrix(result)
+            self.noise_window.show_toast(text = "Noise is complete.")        
+
 
 
         

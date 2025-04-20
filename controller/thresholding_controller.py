@@ -147,3 +147,4 @@ class ThresholdingController():
             self.thresholding_window.image_viewers_container.setEnabled(True)
             thresholded_image = self.queue.get()
             self.thresholding_window.output_image_viewer.display_and_set_image_matrix(thresholded_image)
+            self.thresholding_window.show_toast(text = "Thresholding is complete.")        

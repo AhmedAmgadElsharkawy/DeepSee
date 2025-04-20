@@ -237,5 +237,5 @@ class EdgeDetectionController():
             self.edge_detection_window.image_viewers_container.setEnabled(True)
             mag = self.queue.get()
             self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(mag)
-    
+            self.edge_detection_window.show_toast(text = "Edge Detection is Commplete.")        
     

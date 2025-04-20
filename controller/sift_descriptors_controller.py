@@ -442,3 +442,4 @@ class SiftDescriptorsController():
             self.sift_descriptors_window.image_viewers_container.setEnabled(True)
             output_image = self.queue.get()
             self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
+            self.sift_descriptors_window.show_toast(text = "SIFT Descriptors are complete.")        

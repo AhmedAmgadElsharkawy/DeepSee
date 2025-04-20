@@ -33,6 +33,7 @@ class TransformationsController():
 
         if transformed_image is not None:
             self.update_ui(input_image, transformed_image)
+            self.transformations_window.show_toast(text = "Transformation is complete.")        
 
 
 

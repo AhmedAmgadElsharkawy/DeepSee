@@ -555,3 +555,4 @@ class HoughTransformController():
             self.hough_transform_window.image_viewers_container.setEnabled(True)
             output_image_matrix = self.queue.get()
             self.hough_transform_window.output_image_viewer.display_and_set_image_matrix(output_image_matrix)
+            self.hough_transform_window.show_toast(text = "Hough Transform is complete.")        
