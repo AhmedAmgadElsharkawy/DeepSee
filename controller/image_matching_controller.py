@@ -75,9 +75,7 @@ class ImageMatchingController:
             self.image_matching_window.apply_button.clicked.connect(self.apply_image_matching)
 
     def apply_image_matching(self):
-        self.image_matching_window.output_image_viewer.show_loading_effect()
-        self.image_matching_window.controls_container.setEnabled(False)
-        self.image_matching_window.image_viewers_container.setEnabled(False)
+
 
         """
             Create IPC queue to share resources between cores
@@ -87,7 +85,20 @@ class ImageMatchingController:
             Without IPC, one process couldn’t directly read or write another process’s memory.
         """
 
+
+        img1 =  self.image_matching_window.input_image_viewer.image_model.gray_image_matrix
+        img2 =  self.image_matching_window.input_template_viewer.image_model.gray_image_matrix
+
+        if(img1 is None or img2 is None):
+            self.image_matching_window.show_toast(title = "Warning!", text = "Image Matching Invalid Images.",type="ERROR")      
+            return  
+        
+        self.image_matching_window.output_image_viewer.show_loading_effect()
+        self.image_matching_window.controls_container.setEnabled(False)
+        self.image_matching_window.image_viewers_container.setEnabled(False)
+
         self.queue = Queue()
+
 
         args = (
                 self.image_matching_window.img_detect_keypoints_sigma_spin_box.value(),
@@ -97,8 +108,8 @@ class ImageMatchingController:
                 self.image_matching_window.template_detect_keypoints_intervals_number_spin_box.value(),
                 self.image_matching_window.template_detect_keypoints_assumed_blur_spin_box.value(),
                 self.image_matching_window.matching_algorithm_custom_combo_box.current_text(),
-                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix.astype('float32'),
-                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix.astype('float32'),
+                img1.astype('float32'),
+                img2.astype('float32'),
                 self.image_matching_window.input_image_viewer.image_model.gray_image_matrix,
                 self.image_matching_window.input_template_viewer.image_model.gray_image_matrix,
             )
