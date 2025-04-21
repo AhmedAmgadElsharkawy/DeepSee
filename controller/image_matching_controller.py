@@ -24,8 +24,13 @@ from controller.sift_descriptors_controller import get_sift_keypoints_and_descri
 def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,template_sigma, template_num_intervals, template_assumed_blur, selected_matching_algorithm, gray_img, gray_template, img, template, queue = None):
     start_time = time.time()
 
-    kp1, desc1 = get_sift_keypoints_and_descriptors(gray_img, img_sigma, img_assumed_blur, img_num_intervals)
-    kp2, desc2 = get_sift_keypoints_and_descriptors(gray_template, template_sigma, template_assumed_blur, template_num_intervals)
+    sift = cv2.SIFT_create()
+    kp1, desc1 = sift.detectAndCompute(gray_img, None)
+    kp2, desc2 = sift.detectAndCompute(gray_template, None)
+
+
+    # kp1, desc1 = get_sift_keypoints_and_descriptors(gray_img.astype('float32'), img_sigma, img_assumed_blur, img_num_intervals)
+    # kp2, desc2 = get_sift_keypoints_and_descriptors(gray_template.astype('float32'), template_sigma, template_assumed_blur, template_num_intervals)
 
     matches = None
     if selected_matching_algorithm == "Sum Of Squared Differences":
@@ -108,8 +113,8 @@ class ImageMatchingController:
                 self.image_matching_window.template_detect_keypoints_intervals_number_spin_box.value(),
                 self.image_matching_window.template_detect_keypoints_assumed_blur_spin_box.value(),
                 self.image_matching_window.matching_algorithm_custom_combo_box.current_text(),
-                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix.astype('float32'),
-                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix.astype('float32'),
+                self.image_matching_window.input_image_viewer.image_model.gray_image_matrix,
+                self.image_matching_window.input_template_viewer.image_model.gray_image_matrix,
                 img1,
                 img2,
             )
