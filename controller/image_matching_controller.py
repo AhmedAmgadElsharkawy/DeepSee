@@ -24,13 +24,13 @@ from controller.sift_descriptors_controller import get_sift_keypoints_and_descri
 def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,img2_sigma, img2_num_intervals, img2_assumed_blur, selected_matching_algorithm, gray_img, gray_img2, img, img2,ssd_lowe_ratio,ncc_threshold, queue = None):
     start_time = time.time()
 
-    sift = cv2.SIFT_create()
-    kp1, desc1 = sift.detectAndCompute(gray_img, None)
-    kp2, desc2 = sift.detectAndCompute(gray_img2, None)
+    # sift = cv2.SIFT_create()
+    # kp1, desc1 = sift.detectAndCompute(gray_img, None)
+    # kp2, desc2 = sift.detectAndCompute(gray_img2, None)
 
 
-    # kp1, desc1 = get_sift_keypoints_and_descriptors(gray_img.astype('float32'), img_sigma, img_assumed_blur, img_num_intervals)
-    # kp2, desc2 = get_sift_keypoints_and_descriptors(gray_img2.astype('float32'), img2_sigma, img2_assumed_blur, img2_num_intervals)
+    kp1, desc1 = get_sift_keypoints_and_descriptors(gray_img.astype('float32'), img_sigma, img_assumed_blur, img_num_intervals)
+    kp2, desc2 = get_sift_keypoints_and_descriptors(gray_img2.astype('float32'), img2_sigma, img2_assumed_blur, img2_num_intervals)
 
     matches = None
     if selected_matching_algorithm == "Sum Of Squared Differences":

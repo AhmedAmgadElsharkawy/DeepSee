@@ -58,7 +58,7 @@ class ImageMatchingWindow(BasicStackedWindow):
         self.image_viewers_container_layout.addWidget(self.output_image_viewer)
 
         self.ssd_lowe_ratio = CustomSpinBox(label="Lowe's Ratio",range_start=0,range_end=1,initial_value=0.2,step_value=0.01,decimals=2,double_value=True)
-        self.ncc_threshold = CustomSpinBox(label="Threshold",range_start=0,range_end=1,initial_value=0.97,step_value=0.01,decimals=2,double_value=True)
+        self.ncc_threshold = CustomSpinBox(label="Threshold",range_start=0,range_end=1,initial_value=0.98,step_value=0.01,decimals=2,double_value=True)
         self.inputs_container_layout.addWidget(self.ssd_lowe_ratio)
         self.inputs_container_layout.addWidget(self.ncc_threshold)
         self.ncc_threshold.setVisible(False)
