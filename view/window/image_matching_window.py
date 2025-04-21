@@ -32,6 +32,7 @@ class ImageMatchingWindow(BasicStackedWindow):
 
         self.matching_algorithm_custom_combo_box = CustomComboBox(label= "Matching Algorithm",combo_box_items_list=["Sum Of Squared Differences","Normalized Cross Correlation"])
         self.inputs_container_layout.addWidget(self.matching_algorithm_custom_combo_box)
+        self.matching_algorithm_custom_combo_box.currentIndexChanged.connect(self.on_matching_algorithm_change)
         
         self.image_viewers_container.deleteLater()
 
@@ -50,11 +51,17 @@ class ImageMatchingWindow(BasicStackedWindow):
         self.input_image_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the image here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
         self.input_images_viewers_container_layout.addWidget(self.input_image_viewer)
 
-        self.input_template_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the template here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
-        self.input_images_viewers_container_layout.addWidget(self.input_template_viewer)
+        self.input_img2_viewer = InteractiveImageViewer(custom_placeholder="Double click, or drop the img2 here\n\nAllowed Files: PNG, JPG, JPEG BMP files")
+        self.input_images_viewers_container_layout.addWidget(self.input_img2_viewer)
 
         self.output_image_viewer = ImageViewer(custom_placeholder = "Matching result will appear here")
         self.image_viewers_container_layout.addWidget(self.output_image_viewer)
+
+        self.ssd_lowe_ratio = CustomSpinBox(label="Lowe's Ratio",range_start=0,range_end=1,initial_value=0.2,step_value=0.01,decimals=2,double_value=True)
+        self.ncc_threshold = CustomSpinBox(label="Threshold",range_start=0,range_end=1,initial_value=0.97,step_value=0.01,decimals=2,double_value=True)
+        self.inputs_container_layout.addWidget(self.ssd_lowe_ratio)
+        self.inputs_container_layout.addWidget(self.ncc_threshold)
+        self.ncc_threshold.setVisible(False)
 
 
         self.img_detect_keypoints_inputs_container = QWidget()
@@ -70,16 +77,16 @@ class ImageMatchingWindow(BasicStackedWindow):
 
 
 
-        self.template_detect_keypoints_inputs_container = QWidget()
-        self.template_detect_keypoints_inputs_container_layout = QHBoxLayout(self.template_detect_keypoints_inputs_container)
-        self.template_detect_keypoints_inputs_container_layout.setContentsMargins(0,0,0,0)
-        self.inputs_container_layout.addWidget(self.template_detect_keypoints_inputs_container)
-        self.template_detect_keypoints_sigma_spin_box = CustomSpinBox(label="Template Sigma",range_start=0.1,range_end=100,initial_value=1.6,step_value=0.01,decimals=2,double_value=True)
-        self.template_detect_keypoints_assumed_blur_spin_box = CustomSpinBox(label="Template Assumed Blur",range_start=0.01,range_end=100,initial_value=0.5,step_value=0.01,decimals=2,double_value=True)
-        self.template_detect_keypoints_intervals_number_spin_box = CustomSpinBox(label="Template Intervals Number",range_start=1,range_end=5,initial_value=3,step_value=1)
-        self.template_detect_keypoints_inputs_container_layout.addWidget(self.template_detect_keypoints_sigma_spin_box)
-        self.template_detect_keypoints_inputs_container_layout.addWidget(self.template_detect_keypoints_assumed_blur_spin_box)
-        self.template_detect_keypoints_inputs_container_layout.addWidget(self.template_detect_keypoints_intervals_number_spin_box)
+        self.img2_detect_keypoints_inputs_container = QWidget()
+        self.img2_detect_keypoints_inputs_container_layout = QHBoxLayout(self.img2_detect_keypoints_inputs_container)
+        self.img2_detect_keypoints_inputs_container_layout.setContentsMargins(0,0,0,0)
+        self.inputs_container_layout.addWidget(self.img2_detect_keypoints_inputs_container)
+        self.img2_detect_keypoints_sigma_spin_box = CustomSpinBox(label="img2 Sigma",range_start=0.1,range_end=100,initial_value=1.6,step_value=0.01,decimals=2,double_value=True)
+        self.img2_detect_keypoints_assumed_blur_spin_box = CustomSpinBox(label="img2 Assumed Blur",range_start=0.01,range_end=100,initial_value=0.5,step_value=0.01,decimals=2,double_value=True)
+        self.img2_detect_keypoints_intervals_number_spin_box = CustomSpinBox(label="img2 Intervals Number",range_start=1,range_end=5,initial_value=3,step_value=1)
+        self.img2_detect_keypoints_inputs_container_layout.addWidget(self.img2_detect_keypoints_sigma_spin_box)
+        self.img2_detect_keypoints_inputs_container_layout.addWidget(self.img2_detect_keypoints_assumed_blur_spin_box)
+        self.img2_detect_keypoints_inputs_container_layout.addWidget(self.img2_detect_keypoints_intervals_number_spin_box)
 
         self.image_matching_controller = ImageMatchingController(self)
 
@@ -103,3 +110,14 @@ class ImageMatchingWindow(BasicStackedWindow):
         
 
 
+
+    def on_matching_algorithm_change(self):
+        selected_matching_algoritm = self.matching_algorithm_custom_combo_box.current_text()
+
+        match selected_matching_algoritm:
+            case "Sum Of Squared Differences":
+                self.ssd_lowe_ratio.setVisible(True)
+                self.ncc_threshold.setVisible(False)
+            case "Normalized Cross Correlation":
+                self.ssd_lowe_ratio.setVisible(False)
+                self.ncc_threshold.setVisible(True)
