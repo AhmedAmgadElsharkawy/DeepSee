@@ -136,6 +136,7 @@ class FiltersController():
             self.filters_window.image_viewers_container.setEnabled(True)
             filtered_img = self.queue.get()
             self.filters_window.output_image_viewer.display_and_set_image_matrix(filtered_img)
+            self.filters_window.show_toast(text = "Filtering is complete.")        
 
 
 

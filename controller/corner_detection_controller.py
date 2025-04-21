@@ -130,7 +130,7 @@ def harris_and_lambda(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,thre
 
     # Lambda corner detection
     lambda_corners = cv2.cornerMinEigenVal(gray, blockSize=block_size, ksize=ksize)
-    lambda_corners = np.int0(lambda_corners)
+    lambda_corners = lambda_corners.astype(np.intp)
     
     harris_corners_list = np.array(harris_corners_list).reshape(-1, 2)
     lambda_corners = np.array(lambda_corners).reshape(-1, 2)
@@ -197,4 +197,6 @@ class CornerDetectionController():
             self.corner_detection_window.controls_container.setEnabled(True)
             self.corner_detection_window.image_viewers_container.setEnabled(True)
             output_image = self.queue.get()
-            self.corner_detection_window.output_image_viewer.display_and_set_image_matrix(output_image)      
+            self.corner_detection_window.output_image_viewer.display_and_set_image_matrix(output_image)   
+            self.corner_detection_window.show_toast(text = "Corner Detection is Complete.")        
+   
