@@ -57,7 +57,7 @@ def compute_number_of_octaves(image_shape):
 def generate_gaussian_kernels(sigma, num_intervals):
     """Generate list of gaussian kernels at which to blur the input image. Default values of sigma, intervals, and octaves follow section 3 of Lowe's paper.
     """
-    num_images_per_octave = num_intervals + 3
+    num_images_per_octave = num_intervals + 3  # Provides 2 buffer images (one below, one above) + 1 extra to ensure smooth DoG extrema detection across octaves.
     k = 2 ** (1. / num_intervals)
     gaussian_kernels = zeros(num_images_per_octave)  # scale of gaussian blur necessary to go from one blur scale to the next within an octave
     gaussian_kernels[0] = sigma
@@ -80,7 +80,7 @@ def generate_gaussian_images(image, num_octaves, gaussian_kernels):
             image = GaussianBlur(image, (0, 0), sigmaX=gaussian_kernel, sigmaY=gaussian_kernel)
             gaussian_images_in_octave.append(image)
         gaussian_images.append(gaussian_images_in_octave)
-        octave_base = gaussian_images_in_octave[-3]
+        octave_base = gaussian_images_in_octave[-3]    #The third-to-last image has the optimal blur level for downsampling without aliasing or losing key details.
         image = resize(octave_base, (int(octave_base.shape[1] / 2), int(octave_base.shape[0] / 2)), interpolation=INTER_NEAREST)
     return gaussian_images
 
