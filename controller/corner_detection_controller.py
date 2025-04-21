@@ -1,4 +1,5 @@
 import cv2
+import time
 import numpy as np
 import multiprocessing as mp
 from PyQt5.QtCore import QTimer
@@ -24,7 +25,8 @@ def draw_corners(image, corners: list) -> np.ndarray:
 
 def harris_corner_detector(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,threshold:float = 0.01,queue = None)->list:
     
-        # Convert image to grayscale if it is colored (3-channel)
+    start_time = time.time()
+    # Convert image to grayscale if it is colored (3-channel)
     gray = gray_image(image)
         
     
@@ -44,6 +46,10 @@ def harris_corner_detector(image,block_size:int = 2,ksize:int = 3,k:float = 0.04
     det_M = (Sxx * Syy) - (Sxy ** 2)
     trace_M = Sxx + Syy
     R = det_M - k * (trace_M ** 2)
+    
+    elapsed_time = time.time() - start_time
+    print(f"Harris corner detection took {elapsed_time:.4f} seconds")
+    
     # Thresholding to get the corners
     corners = np.argwhere(R > threshold * R.max())
     if queue:
@@ -52,6 +58,9 @@ def harris_corner_detector(image,block_size:int = 2,ksize:int = 3,k:float = 0.04
         return draw_corners(image, corners)
 
 def lambda_corner_detector(image, max_corners=10, min_distance=5, quality_level=0.01,queue = None) -> list:
+    
+    start_time = time.time()
+    
     # Convert image to grayscale
     gray = gray_image(image)
 
@@ -96,7 +105,9 @@ def lambda_corner_detector(image, max_corners=10, min_distance=5, quality_level=
             final_corners.append(pt)
             if len(final_corners) >= max_corners:
                 break
-
+    elapsed_time = time.time() - start_time
+    print(f"Lambda corner detection took {elapsed_time:.4f} seconds")
+    
     if queue:
         queue.put(draw_corners(image, corners))
     else:
@@ -105,6 +116,8 @@ def lambda_corner_detector(image, max_corners=10, min_distance=5, quality_level=
             
 def harris_and_lambda(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,threshold:float = 0.01
                         ,max_corners:int = 10,min_distance:int = 5,quality_level:float = 0.01,queue = None)->list:
+    start_time = time.time()
+    
     # Convert image to grayscale if it is colored (3-channel)
     gray = gray_image(image)
 
@@ -123,6 +136,9 @@ def harris_and_lambda(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,thre
     lambda_corners = np.array(lambda_corners).reshape(-1, 2)
 
     all_corners = np.concatenate((harris_corners_list, lambda_corners), axis=0)
+
+    elapsed_time = time.time() - start_time
+    print(f"Combined Harris + Lambda detection took {elapsed_time:.4f} seconds")
 
     if queue:
         queue.put(draw_corners(image, all_corners))
