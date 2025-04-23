@@ -1,7 +1,7 @@
 import numpy as np
 import utils.utils as utils
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 
@@ -63,7 +63,7 @@ def compute_ifft(fft_shifted):    # inverse fourier transform
 def create_mask(shape, radius,type):
     rows, cols = shape
     center_row, center_col = rows // 2, cols // 2
-    y, x = np.ogrid[:rows, :cols]        # mesh grid
+    y, x = np.ogrid[:rows, :cols]        
     if type == "low":
         mask = np.sqrt((x - center_col) ** 2 + (y - center_row) ** 2) <= radius
     elif type == "high":
@@ -80,67 +80,77 @@ def apply_low_or_high_pass_filter(image, Radius=2,Type="low", queue = None):
         queue.put(output_image)
     else:
         return dft_shift_filtered, output_image
+    
+    
+    
+class FilterProcessWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
 
-class FiltersController():
-    def __init__(self,filters_window = None):
+    def __init__(self, image, filter_type, params):
+        super().__init__()
+        self.image = image
+        self.filter_type = filter_type
+        self.params = params
+
+    def run(self):
+        queue = mp.Queue()
+
+        if self.filter_type == "Average Filter":
+            process = mp.Process(target=average_filter, args=(self.image, self.params["kernel"], queue))
+        elif self.filter_type == "Gaussian Filter":
+            process = mp.Process(target=gaussian_filter, args=(self.image, self.params["kernel"], self.params["sigma"], queue))
+        elif self.filter_type == "Median Filter":
+            process = mp.Process(target=median_filter, args=(self.image, self.params["kernel"], queue))
+        elif self.filter_type == "Low Pass Filter":
+            process = mp.Process(target=apply_low_or_high_pass_filter, args=(self.image, self.params["radius"], "low", queue))
+        elif self.filter_type == "High Pass Filter":
+            process = mp.Process(target=apply_low_or_high_pass_filter, args=(self.image, self.params["radius"], "high", queue))
+
+        process.start()
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
+
+
+
+class FiltersController:
+    def __init__(self, filters_window=None):
         self.filters_window = filters_window
         if self.filters_window:
             self.filters_window.apply_button.clicked.connect(self.apply_filter)
 
     def apply_filter(self):
-        filter_type=self.filters_window.filter_type_custom_combo_box.current_text()
-        image=self.filters_window.input_image_viewer.image_model.get_gray_image_matrix()
+        filter_type = self.filters_window.filter_type_custom_combo_box.current_text()
+        image = self.filters_window.input_image_viewer.image_model.get_gray_image_matrix()
 
-        self.queue = mp.Queue()
-
+        params = {}
         if filter_type == "Average Filter":
-            kernel = self.filters_window.average_filter_kernel_size_spin_box.value()
-            process =mp.Process(target = average_filter,args=(image, kernel,self.queue))
-
+            params["kernel"] = self.filters_window.average_filter_kernel_size_spin_box.value()
         elif filter_type == "Gaussian Filter":
-            kernel = self.filters_window.guassian_filter_kernel_size_spin_box.value()
-            variance=self.filters_window.guassian_filter_variance_spin_box.value()
-            process =mp.Process(target = gaussian_filter,args=(image, kernel, variance, self.queue))
-
+            params["kernel"] = self.filters_window.guassian_filter_kernel_size_spin_box.value()
+            params["sigma"] = self.filters_window.guassian_filter_variance_spin_box.value()
         elif filter_type == "Median Filter":
-            kernel = self.filters_window.average_filter_kernel_size_spin_box.value()
-            process =mp.Process(target = median_filter,args=(image, kernel, self.queue))
-
+            params["kernel"] = self.filters_window.average_filter_kernel_size_spin_box.value()
         elif filter_type == "Low Pass Filter":
-            raduis = self.filters_window.low_pass_filter_radius_spin_box.value()
-            process =mp.Process(target = apply_low_or_high_pass_filter,args=(image, raduis,"low" , self.queue))
-
+            params["radius"] = self.filters_window.low_pass_filter_radius_spin_box.value()
         elif filter_type == "High Pass Filter":
-            raduis = self.filters_window.high_pass_filter_radius_spin_box.value()
-            process =mp.Process(target = apply_low_or_high_pass_filter,args=(image, raduis,"high" , self.queue))
+            params["radius"] = self.filters_window.high_pass_filter_radius_spin_box.value()
 
         self.filters_window.output_image_viewer.show_loading_effect()
         self.filters_window.controls_container.setEnabled(False)
         self.filters_window.image_viewers_container.setEnabled(False)
 
-        process.start()
-        self._start_queue_timer()
+        self.worker = FilterProcessWorker(image, filter_type, params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
-
-
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.filters_window.output_image_viewer.hide_loading_effect()
-            self.filters_window.controls_container.setEnabled(True)
-            self.filters_window.image_viewers_container.setEnabled(True)
-            filtered_img = self.queue.get()
-            self.filters_window.output_image_viewer.display_and_set_image_matrix(filtered_img)
-            self.filters_window.show_toast(text = "Filtering is complete.")        
-
-
-
-
-
-
-
+    def _on_result(self, filtered_img):
+        self.filters_window.output_image_viewer.hide_loading_effect()
+        self.filters_window.controls_container.setEnabled(True)
+        self.filters_window.image_viewers_container.setEnabled(True)
+        self.filters_window.output_image_viewer.display_and_set_image_matrix(filtered_img)
+        self.filters_window.show_toast(text="Filtering is complete.")
