@@ -1,7 +1,7 @@
 import numpy as np
 import multiprocessing as mp
 from PyQt5.QtCore import QTimer
-
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 def add_gaussian_noise(image,mean,sigma,queue = None):
@@ -39,6 +39,34 @@ def add_salt_and_pepper_noise(image,salt,pepper,queue = None):
         return noisy_image
 
 
+class NoiseProcessWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
+
+    def __init__(self,type,params):
+        super().__init__()
+        self.params = params
+        self.type = type
+
+    def run(self):  
+        queue = mp.Queue()
+
+        if self.type == "Gaussian Noise":
+            process = mp.Process(target = add_gaussian_noise,args=(self.params['image'],self.params['mean'],self.params['sigma'],queue))
+        elif self.type == "Uniform Noise":
+            process = mp.Process(target = add_uniform_noise,args=(self.params['image'],self.params['noise_level'],queue))
+        else:
+            process = mp.Process(target = add_salt_and_pepper_noise,args=(self.params['image'],self.params['salt'],self.params['pepper'],queue))
+
+        process.start()
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
+
+
 class NoiseController():
     def __init__(self,noise_window = None):
         self.noise_window = noise_window
@@ -51,41 +79,31 @@ class NoiseController():
         self.noise_window.controls_container.setEnabled(False)
         self.noise_window.image_viewers_container.setEnabled(False)
 
-        self.queue = mp.Queue()
+        params = {}
 
-
-        type = self.noise_window.noise_type_custom_combo_box.current_text()
-        image = self.noise_window.input_image_viewer.image_model.get_image_matrix()
+        params['type'] = self.noise_window.noise_type_custom_combo_box.current_text()
+        params['image'] = self.noise_window.input_image_viewer.image_model.get_image_matrix()
         if type == "Gaussian Noise":
-            mean = self.noise_window.guassian_noise_mean_spin_box.value()
-            sigma = self.noise_window.guassian_noise_sigma_spin_box.value()
-            process = mp.Process(target = add_gaussian_noise,args=(image,mean,sigma,self.queue))
+            params['mean'] = self.noise_window.guassian_noise_mean_spin_box.value()
+            params['sigma'] = self.noise_window.guassian_noise_sigma_spin_box.value()
         elif type == "Uniform Noise":
-            noise_level = self.noise_window.noise_value_spin_box.value()
-            process = mp.Process(target = add_uniform_noise,args=(image,noise_level,self.queue))
+            params['noise_level'] = self.noise_window.noise_value_spin_box.value()
         else:
-            salt = self.noise_window.salt_probability_spin_box.value() / 100
-            pepper = self.noise_window.pepper_probability_spin_box.value() / 100
-            process = mp.Process(target = add_salt_and_pepper_noise,args=(image,salt,pepper,self.queue))
+            params['salt'] = self.noise_window.salt_probability_spin_box.value() / 100
+            params['pepper'] = self.noise_window.pepper_probability_spin_box.value() / 100
 
-        process.start()
-        self._start_queue_timer()
+        self.worker = NoiseProcessWorker(type,params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
 
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.noise_window.output_image_viewer.hide_loading_effect()
-            self.noise_window.controls_container.setEnabled(True)
-            self.noise_window.image_viewers_container.setEnabled(True)
-            result = self.queue.get()
-            self.noise_window.output_image_viewer.display_and_set_image_matrix(result)
-            self.noise_window.show_toast(text = "Noise is complete.")        
+    def _on_result(self,result):
+        self.noise_window.output_image_viewer.hide_loading_effect()
+        self.noise_window.controls_container.setEnabled(True)
+        self.noise_window.image_viewers_container.setEnabled(True)
+        self.noise_window.output_image_viewer.display_and_set_image_matrix(result)
+        self.noise_window.show_toast(text = "Noise is complete.")      
+  
 
 
 
