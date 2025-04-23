@@ -2,19 +2,30 @@ import cv2
 from multiprocessing import Process, Queue
 import numpy as np
 import time
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
+
 
 from controller.sift_descriptors_controller import get_sift_keypoints_and_descriptors
 
 
 """
+    we use multiprocessing to run the algorithms on seperate core from the gui
+
+    The creation of the process take some time which freeezes the gui if run on the same therad so 
+    use multithreading to do the logic of creating and tracking the process on different thread
+
+    Create IPC queue to share resources between cores
+    IPC stands for Inter‑Process Communication. 
+    It’s the set of mechanisms an operating system (and your programs) provide 
+    to let separate processes—each with its own private memory space—exchange data and signals.
+    Without IPC, one process couldn’t directly read or write another process’s memory.
+
     any function you pass to multiprocessing.Process must be defined at the top level of a module, not 
     inside a class or another function. That way, Python’s pickler (serialize and deserialize data between processes memory) can import it by name
 
     not all objects can be easily pickled. For example:
     Functions or classes defined inside another function: These can't be pickled because they don't have a top-level name, and pickling requires that objects can be imported by name.
     Local variables: Variables that are only local to a function or method might also pose issues with pickling.  
-
 
     underscore before a function or variable name in Python is a convention that 
     This is a private/internal function or variable. Please don’t use it outside this class/module unless you really know what you’re doing. 
@@ -70,6 +81,26 @@ def match_ncc(desc1, desc2, threshold=0.97):
     return matches
 
 
+class ImageMatchingProcessWorker(QThread):
+    result_ready = pyqtSignal(dict)
+
+    def __init__(self,args):
+        super().__init__()
+        self.args = args
+
+    def run(self):  
+        queue = Queue()
+        process = Process(target=process_image_matching, args=(*self.args, queue))
+        process.start()
+        while True:
+            if not queue.empty():
+                result = {}
+                result['elapsed_time'],result['img_with_matches'] = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
+
 
 class ImageMatchingController:
     def __init__(self, image_matching_window=None):
@@ -80,17 +111,6 @@ class ImageMatchingController:
             self.image_matching_window.apply_button.clicked.connect(self.apply_image_matching)
 
     def apply_image_matching(self):
-
-
-        """
-            Create IPC queue to share resources between cores
-            IPC stands for Inter‑Process Communication. 
-            It’s the set of mechanisms an operating system (and your programs) provide 
-            to let separate processes—each with its own private memory space—exchange data and signals.
-            Without IPC, one process couldn’t directly read or write another process’s memory.
-        """
-
-
         img1 =  self.image_matching_window.input_image_viewer.image_model.image_matrix
         img2 =  self.image_matching_window.input_img2_viewer.image_model.image_matrix
 
@@ -101,9 +121,6 @@ class ImageMatchingController:
         self.image_matching_window.output_image_viewer.show_loading_effect()
         self.image_matching_window.controls_container.setEnabled(False)
         self.image_matching_window.image_viewers_container.setEnabled(False)
-
-        self.queue = Queue()
-
 
         args = (
                 self.image_matching_window.img_detect_keypoints_sigma_spin_box.value(),
@@ -120,26 +137,20 @@ class ImageMatchingController:
                 self.image_matching_window.ssd_lowe_ratio.value(),
                 self.image_matching_window.ncc_threshold.value(),
             )
+        
+        
+        self.worker = ImageMatchingProcessWorker(args)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
-        self.process = Process(target=process_image_matching, args=(*args, self.queue))
-        self.process.start()
 
-        self._start_queue_timer()
+    def _on_result(self,result):
+        self.image_matching_window.output_image_viewer.hide_loading_effect()
+        self.image_matching_window.controls_container.setEnabled(True)
+        self.image_matching_window.image_viewers_container.setEnabled(True)
+        self.image_matching_window.time_elapsed_value.setText(f"{result['elapsed_time']:.2f} Seconds")
+        self.image_matching_window.output_image_viewer.display_and_set_image_matrix(result['img_with_matches'])
+        self.image_matching_window.show_toast(text = "Image Matching is complete.")     
 
 
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            elapsed_time, img_with_matches = self.queue.get()
-            self.queue_timer.stop()
-            self.image_matching_window.output_image_viewer.hide_loading_effect()
-            self.image_matching_window.controls_container.setEnabled(True)
-            self.image_matching_window.image_viewers_container.setEnabled(True)
-            self.image_matching_window.time_elapsed_value.setText(f"{elapsed_time:.2f} Seconds")
-            self.image_matching_window.output_image_viewer.display_and_set_image_matrix(img_with_matches)
-            self.image_matching_window.show_toast(text = "Image Matching is complete.")        
-
+  
