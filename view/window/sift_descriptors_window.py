@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QWidget,QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 
 from view.window.basic_stacked_window import BasicStackedWindow
 from view.widget.custom_spin_box import CustomSpinBox
@@ -32,6 +34,24 @@ class SiftDescriptorsWindow(BasicStackedWindow):
         self.detect_keypoints_inputs_container_layout.addWidget(self.detect_keypoints_intervals_number_spin_box)
         
         self.sift_controller = SiftDescriptorsController(self)
+
+
+        self.time_elapsed_container =  QWidget()
+        self.time_elapsed_container_layout = QHBoxLayout(self.time_elapsed_container)
+        self.time_elapsed_container_layout.setContentsMargins(0,0,0,0)
+        self.time_elapsed_title = QLabel("Time Elapsed:")
+        # font = QFont("Inter", 11)
+        # font.setWeight(QFont.Medium)
+        self.time_elapsed_value = QLabel("-- Seconds")
+        # self.time_elapsed_value.setFont(font)
+        # self.time_elapsed_title.setFont(font)
+        self.time_elapsed_title.setObjectName("time_elapsed_title")
+        self.time_elapsed_value.setObjectName("time_elapsed_value")
+        self.time_elapsed_container_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.time_elapsed_container_layout.addWidget(self.time_elapsed_title)
+        self.time_elapsed_container_layout.addWidget(self.time_elapsed_value)
+        self.main_widget_layout.addWidget(self.time_elapsed_container)
+        self.time_elapsed_container_layout.setSpacing(20)
         
         
 

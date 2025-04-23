@@ -71,12 +71,12 @@ def harris_corner_detector(image,block_size:int = 2,ksize:int = 3,k:float = 0.04
     R = det_M - k * (trace_M ** 2)
     
     elapsed_time = time.time() - start_time
-    print(f"Harris corner detection took {elapsed_time:.4f} seconds")
+    # print(f"Harris corner detection took {elapsed_time:.4f} seconds")
     
     # Thresholding to get the corners
     corners = np.argwhere(R > threshold * R.max())
     if queue:
-        queue.put(draw_corners(image, corners))
+        queue.put((draw_corners(image, corners),elapsed_time))
     else:
         return draw_corners(image, corners)
 
@@ -129,10 +129,10 @@ def lambda_corner_detector(image, max_corners=10, min_distance=5, quality_level=
             if len(final_corners) >= max_corners:
                 break
     elapsed_time = time.time() - start_time
-    print(f"Lambda corner detection took {elapsed_time:.4f} seconds")
+    # print(f"Lambda corner detection took {elapsed_time:.4f} seconds")
     
     if queue:
-        queue.put(draw_corners(image, corners))
+        queue.put((draw_corners(image, corners),elapsed_time))
     else:
         return draw_corners(image, corners)
 
@@ -161,17 +161,17 @@ def harris_and_lambda(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,thre
     all_corners = np.concatenate((harris_corners_list, lambda_corners), axis=0)
 
     elapsed_time = time.time() - start_time
-    print(f"Combined Harris + Lambda detection took {elapsed_time:.4f} seconds")
+    # print(f"Combined Harris + Lambda detection took {elapsed_time:.4f} seconds")
 
     if queue:
-        queue.put(draw_corners(image, all_corners))
+        queue.put((draw_corners(image, all_corners),elapsed_time))
     else:
         return draw_corners(image, all_corners)
 
 
 
 class ProcessWorker(QThread):
-    result_ready = pyqtSignal(np.ndarray)
+    result_ready = pyqtSignal(dict)
 
     def __init__(self, image, method, params):
         super().__init__()
@@ -211,7 +211,8 @@ class ProcessWorker(QThread):
         process.start()
         while True:
             if not queue.empty():
-                result = queue.get()
+                result = {}
+                result['output_image'] , result['elapsed_time'] = queue.get()
                 self.result_ready.emit(result)
                 break
             self.msleep(50)
@@ -244,10 +245,11 @@ class CornerDetectionController:
         self.worker.result_ready.connect(self._on_result)
         self.worker.start()
 
-    def _on_result(self, output_image):
+    def _on_result(self, result):
         win = self.corner_detection_window
         win.output_image_viewer.hide_loading_effect()
         win.controls_container.setEnabled(True)
         win.image_viewers_container.setEnabled(True)
-        win.output_image_viewer.display_and_set_image_matrix(output_image)
+        win.output_image_viewer.display_and_set_image_matrix(result['output_image'])
+        win.time_elapsed_value.setText(f"{result['elapsed_time']:.2f} Seconds")
         win.show_toast("Corner Detection is Complete.")

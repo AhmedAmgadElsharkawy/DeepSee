@@ -8,6 +8,7 @@ from functools import cmp_to_key
 import multiprocessing as mp
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
+import time
 
 
 
@@ -36,6 +37,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 
 def sift_process(image,sigma,assumed_blur,num_intervals,image_border_width,queue):
+    start_time = time.time()
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray_image = gray_image.astype('float32')
     
@@ -47,13 +49,15 @@ def sift_process(image,sigma,assumed_blur,num_intervals,image_border_width,queue
         color=(0, 255, 0)  # Green circles
     )
 
+    elapsed_time = time.time() - start_time
+
     if queue:
-        queue.put(output_image)
+        queue.put((output_image,elapsed_time))
     else:
         return output_image
 
 
-def get_sift_keypoints_and_descriptors(gray_image,sigma,assumed_blur,num_intervals,image_border_width = 5):
+def get_sift_keypoints_and_descriptors(gray_image,sigma,assumed_blur,num_intervals,image_border_width = 5,queue = None):
     base_image = generate_base_image(gray_image, sigma, assumed_blur)
     num_octaves = compute_number_of_octaves(base_image.shape)
     gaussian_kernels = generate_gaussian_kernels(sigma, num_intervals)
@@ -65,7 +69,10 @@ def get_sift_keypoints_and_descriptors(gray_image,sigma,assumed_blur,num_interva
 
     descriptors = generateDescriptors(keypoints, gaussian_images)
 
-    return keypoints, descriptors
+    if queue:
+        queue.put((keypoints,descriptors))
+    else:
+        return keypoints, descriptors
 
 
 def generate_base_image(image, sigma, assumed_blur):
@@ -432,7 +439,7 @@ def generateDescriptors(keypoints, gaussian_images, window_width=4, num_bins=8, 
 
 
 class SiftDescriptorsProcessWorker(QThread):
-    result_ready = pyqtSignal(np.ndarray)
+    result_ready = pyqtSignal(dict)
 
     def __init__(self,params):
         super().__init__()
@@ -444,7 +451,8 @@ class SiftDescriptorsProcessWorker(QThread):
         process.start()
         while True:
             if not queue.empty():
-                result = queue.get()
+                result = {}
+                result['output_image'] , result['elapsed_time'] = queue.get()
                 self.result_ready.emit(result)
                 break
             self.msleep(50)
@@ -480,6 +488,7 @@ class SiftDescriptorsController():
         self.sift_descriptors_window.output_image_viewer.hide_loading_effect()
         self.sift_descriptors_window.controls_container.setEnabled(True)
         self.sift_descriptors_window.image_viewers_container.setEnabled(True)
-        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(result)
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(result['output_image'])
+        self.sift_descriptors_window.time_elapsed_value.setText(f"{result['elapsed_time']:.2f} Seconds")
         self.sift_descriptors_window.show_toast(text = "SIFT Descriptors are complete.")   
          
