@@ -49,7 +49,7 @@ def process_image_matching(img_sigma, img_num_intervals, img_assumed_blur,img2_s
     elif selected_matching_algorithm == "Normalized Cross Correlation":
         matches = match_ncc(desc1, desc2,ncc_threshold)
 
-    img_with_matches = cv2.drawMatches(img, kp1, img2, kp2, matches[:100], None, flags=2)
+    img_with_matches = cv2.drawMatches(img, kp1, img2, kp2, matches, None, flags=2)
 
     elapsed_time = time.time() - start_time
     if queue:
