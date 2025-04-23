@@ -3,7 +3,8 @@ import numpy as np
 import skimage.exposure as exposure
 import utils.utils as utils
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
+
 
 from controller.filters_controller import gaussian_filter
 
@@ -185,57 +186,89 @@ def hysteresis_thresholding(image, low_threshold, high_threshold):
     return result
 
 
-class EdgeDetectionController():
-    def __init__(self,edge_detection_window = None):
+
+class EdgeDetectionWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
+
+    def __init__(self, image, method, params):
+        super().__init__()
+        self.image = image
+        self.method = method
+        self.params = params
+
+    def run(self):
+        queue = mp.Queue()
+        if self.method == "Sobel Detector":
+            target = sobel
+            args = (self.image, 1, self.params['kernel_size'], self.params['direction'], queue)
+        elif self.method == "Roberts Detector":
+            target = roberts
+            args = (self.image, self.params['kernel_size'], queue)
+        elif self.method == "Prewitt Detector":
+            target = prewitt
+            args = (self.image, self.params['kernel_size'], queue)
+        else:  # Canny (Handmade)
+            target = canny_handmaded
+            args = (self.image,
+                    self.params['kernel_size'],
+                    self.params['lower_threshold'],
+                    self.params['upper_threshold'],
+                    self.params['variance'],
+                    queue)
+
+        process = mp.Process(target=target, args=args)
+        process.start()
+
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+
+        process.join()
+
+
+class EdgeDetectionController:
+    def __init__(self, edge_detection_window=None):
         self.edge_detection_window = edge_detection_window
-        if self.edge_detection_window:
-            self.edge_detection_window.apply_button.clicked.connect(self.apply_edge_detection)
+        if edge_detection_window:
+            edge_detection_window.apply_button.clicked.connect(self.apply_edge_detection)
 
     def apply_edge_detection(self):
-        type = self.edge_detection_window.edge_detector_type_custom_combo_box.current_text()
-        # image = self.edge_detection_window.input_image_viewer.image_model.get_image_matrix()
-        gray_image = self.edge_detection_window.input_image_viewer.image_model.get_gray_image_matrix()
+        win = self.edge_detection_window
+        image = win.input_image_viewer.image_model.get_gray_image_matrix()
+        method = win.edge_detector_type_custom_combo_box.current_text()
 
-        self.queue = mp.Queue()
-
-        if type == "Sobel Detector":
-            kernel_size = self.edge_detection_window.sobel_detector_kernel_size_spin_box.value()
-            direction = self.edge_detection_window.sobel_detector_direction_custom_combo_box.current_text()
-            process = mp.Process(target=sobel,args=(gray_image,1,kernel_size,direction,self.queue))
-        elif type == "Roberts Detector":
-            kernel_size = self.edge_detection_window.roberts_detector_kernel_size_spin_box.value()
-            process = mp.Process(target=roberts,args=(gray_image,kernel_size,self.queue))
-        elif type == "Prewitt Detector":
-            kernel_size = self.edge_detection_window.prewitt_detector_kernel_size_spin_box.value()
-            process = mp.Process(target = prewitt,args = (gray_image,kernel_size,self.queue))
+        if method == "Sobel Detector":
+            params = {
+                'kernel_size': win.sobel_detector_kernel_size_spin_box.value(),
+                'direction': win.sobel_detector_direction_custom_combo_box.current_text()
+            }
+        elif method == "Roberts Detector":
+            params = {'kernel_size': win.roberts_detector_kernel_size_spin_box.value()}
+        elif method == "Prewitt Detector":
+            params = {'kernel_size': win.prewitt_detector_kernel_size_spin_box.value()}
         else:
-            kernel_size = self.edge_detection_window.canny_detector_kernel_spin_box.value()
-            lower_threshold = self.edge_detection_window.canny_detector_lower_threshold_spin_box.value()
-            upper_threshold = self.edge_detection_window.canny_detector_upper_threshold_spin_box.value()
-            variance = self.edge_detection_window.canny_detector_variance_spin_box.value()
-            process = mp.Process(target = canny_handmaded,args = (gray_image,kernel_size,lower_threshold,upper_threshold,variance,self.queue))
+            params = {
+                'kernel_size': win.canny_detector_kernel_spin_box.value(),
+                'lower_threshold': win.canny_detector_lower_threshold_spin_box.value(),
+                'upper_threshold': win.canny_detector_upper_threshold_spin_box.value(),
+                'variance': win.canny_detector_variance_spin_box.value()
+            }
 
-        self.edge_detection_window.output_image_viewer.show_loading_effect()
-        self.edge_detection_window.controls_container.setEnabled(False)
-        self.edge_detection_window.image_viewers_container.setEnabled(False)
+        win.output_image_viewer.show_loading_effect()
+        win.controls_container.setEnabled(False)
+        win.image_viewers_container.setEnabled(False)
 
-        process.start()
-        self._start_queue_timer()
+        self.worker = EdgeDetectionWorker(image, method, params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
-
-
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.edge_detection_window.output_image_viewer.hide_loading_effect()
-            self.edge_detection_window.controls_container.setEnabled(True)
-            self.edge_detection_window.image_viewers_container.setEnabled(True)
-            mag = self.queue.get()
-            self.edge_detection_window.output_image_viewer.display_and_set_image_matrix(mag)
-            self.edge_detection_window.show_toast(text = "Edge Detection is Commplete.")        
-    
+    def _on_result(self, result_image):
+        win = self.edge_detection_window
+        win.output_image_viewer.hide_loading_effect()
+        win.controls_container.setEnabled(True)
+        win.image_viewers_container.setEnabled(True)
+        win.output_image_viewer.display_and_set_image_matrix(result_image)
+        win.show_toast("Edge Detection is Complete.")

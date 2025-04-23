@@ -190,7 +190,7 @@ class ProcessWorker(QThread):
                 result = queue.get()
                 self.result_ready.emit(result)
                 break
-            time.sleep(0.05)
+            self.msleep(50)
         process.join()
 
 class CornerDetectionController:

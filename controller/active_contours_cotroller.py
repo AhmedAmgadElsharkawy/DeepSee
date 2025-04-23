@@ -3,7 +3,6 @@ import math
 import cv2
 import multiprocessing as mp
 from PyQt5.QtCore import QThread, pyqtSignal
-import time
 
 from controller.filters_controller import gaussian_filter
 
@@ -192,7 +191,7 @@ class ActiveContourWorker(QThread):
                 output_image, contour_area, contour_perimeter, chain_code = queue.get()
                 self.result_ready.emit(output_image, contour_area, contour_perimeter, chain_code)
                 break
-            time.sleep(0.05)
+            self.msleep(50)
 
         process.join()
 
