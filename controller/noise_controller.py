@@ -1,7 +1,31 @@
 import numpy as np
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import QThread, pyqtSignal
+
+
+
+"""
+    we use multiprocessing to run the algorithms on seperate core from the gui
+
+    The creation of the process take some time which freeezes the gui if run on the same therad so 
+    use multithreading to do the logic of creating and tracking the process on different thread
+
+    Create IPC queue to share resources between cores
+    IPC stands for Inter‑Process Communication. 
+    It’s the set of mechanisms an operating system (and your programs) provide 
+    to let separate processes—each with its own private memory space—exchange data and signals.
+    Without IPC, one process couldn’t directly read or write another process’s memory.
+
+    any function you pass to multiprocessing.Process must be defined at the top level of a module, not 
+    inside a class or another function. That way, Python’s pickler (serialize and deserialize data between processes memory) can import it by name
+
+    not all objects can be easily pickled. For example:
+    Functions or classes defined inside another function: These can't be pickled because they don't have a top-level name, and pickling requires that objects can be imported by name.
+    Local variables: Variables that are only local to a function or method might also pose issues with pickling.  
+
+    underscore before a function or variable name in Python is a convention that 
+    This is a private/internal function or variable. Please don’t use it outside this class/module unless you really know what you’re doing. 
+"""
 
 
 def add_gaussian_noise(image,mean,sigma,queue = None):
