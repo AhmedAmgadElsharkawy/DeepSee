@@ -6,7 +6,33 @@ from numpy.linalg import det, lstsq, norm
 from cv2 import resize, GaussianBlur, subtract, KeyPoint, INTER_LINEAR, INTER_NEAREST
 from functools import cmp_to_key
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
+import numpy as np
+from PyQt5.QtCore import QThread, pyqtSignal
+
+
+
+"""
+    we use multiprocessing to run the algorithms on seperate core from the gui
+
+    The creation of the process take some time which freeezes the gui if run on the same therad so 
+    use multithreading to do the logic of creating and tracking the process on different thread
+
+    Create IPC queue to share resources between cores
+    IPC stands for Inter‑Process Communication. 
+    It’s the set of mechanisms an operating system (and your programs) provide 
+    to let separate processes—each with its own private memory space—exchange data and signals.
+    Without IPC, one process couldn’t directly read or write another process’s memory.
+
+    any function you pass to multiprocessing.Process must be defined at the top level of a module, not 
+    inside a class or another function. That way, Python’s pickler (serialize and deserialize data between processes memory) can import it by name
+
+    not all objects can be easily pickled. For example:
+    Functions or classes defined inside another function: These can't be pickled because they don't have a top-level name, and pickling requires that objects can be imported by name.
+    Local variables: Variables that are only local to a function or method might also pose issues with pickling.  
+
+    underscore before a function or variable name in Python is a convention that 
+    This is a private/internal function or variable. Please don’t use it outside this class/module unless you really know what you’re doing. 
+"""
 
 
 def sift_process(image,sigma,assumed_blur,num_intervals,image_border_width,queue):
@@ -405,6 +431,26 @@ def generateDescriptors(keypoints, gaussian_images, window_width=4, num_bins=8, 
     return array(descriptors, dtype='float32')
 
 
+class SiftDescriptorsProcessWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
+
+    def __init__(self,params):
+        super().__init__()
+        self.params = params
+
+    def run(self):  
+        queue = mp.Queue()
+        process = mp.Process(target=sift_process,args=(self.params['image'],self.params['sigma'],self.params['assumed_blur'],self.params['num_intervals'],self.params['image_border_width'],queue))
+        process.start()
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
+
+
 class SiftDescriptorsController():
     def __init__(self,sift_descriptors_window = None):
         self.sift_descriptors_window = sift_descriptors_window
@@ -412,34 +458,28 @@ class SiftDescriptorsController():
             self.sift_descriptors_window.apply_button.clicked.connect(self.apply_sift)
 
     def apply_sift(self):
-        image = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
-        sigma = self.sift_descriptors_window.detect_keypoints_sigma_spin_box.value()
-        num_intervals = self.sift_descriptors_window.detect_keypoints_intervals_number_spin_box.value()
-        assumed_blur = self.sift_descriptors_window.detect_keypoints_assumed_blur_spin_box.value()
-        image_border_width=5
+        params = {}
+        params['image'] = self.sift_descriptors_window.input_image_viewer.image_model.get_image_matrix()
+        params['sigma'] = self.sift_descriptors_window.detect_keypoints_sigma_spin_box.value()
+        params['num_intervals'] = self.sift_descriptors_window.detect_keypoints_intervals_number_spin_box.value()
+        params['assumed_blur'] = self.sift_descriptors_window.detect_keypoints_assumed_blur_spin_box.value()
+        params['image_border_width']=5
 
 
         self.sift_descriptors_window.output_image_viewer.show_loading_effect()
         self.sift_descriptors_window.controls_container.setEnabled(False)
         self.sift_descriptors_window.image_viewers_container.setEnabled(False)
 
-        self.queue = mp.Queue()
-        process = mp.Process(target=sift_process,args=(image,sigma,assumed_blur,num_intervals,image_border_width,self.queue))
-        process.start()
-        self._start_queue_timer()
-    
 
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
+        self.worker = SiftDescriptorsProcessWorker(params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.sift_descriptors_window.output_image_viewer.hide_loading_effect()
-            self.sift_descriptors_window.controls_container.setEnabled(True)
-            self.sift_descriptors_window.image_viewers_container.setEnabled(True)
-            output_image = self.queue.get()
-            self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(output_image)
-            self.sift_descriptors_window.show_toast(text = "SIFT Descriptors are complete.")        
+
+    def _on_result(self,result):
+        self.sift_descriptors_window.output_image_viewer.hide_loading_effect()
+        self.sift_descriptors_window.controls_container.setEnabled(True)
+        self.sift_descriptors_window.image_viewers_container.setEnabled(True)
+        self.sift_descriptors_window.output_image_viewer.display_and_set_image_matrix(result)
+        self.sift_descriptors_window.show_toast(text = "SIFT Descriptors are complete.")   
+         
