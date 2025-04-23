@@ -2,8 +2,7 @@ import cv2
 import time
 import numpy as np
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
-
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 def gray_image(image: np.ndarray) -> np.ndarray:
@@ -147,56 +146,84 @@ def harris_and_lambda(image,block_size:int = 2,ksize:int = 3,k:float = 0.04,thre
 
 
 
+class ProcessWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
 
-class CornerDetectionController():
-    def __init__(self,corner_detection_window = None):
+    def __init__(self, image, method, params):
+        super().__init__()
+        self.image = image
+        self.method = method
+        self.params = params
+
+    def run(self):
+        queue = mp.Queue()
+        if self.method == "Harris Detector":
+            target = harris_corner_detector
+            args = (self.image,
+                    self.params['block_size'],
+                    self.params['kernel_size'],
+                    self.params['k'],
+                    self.params['threshold'],
+                    queue)
+        elif self.method == "Lambda Detector":
+            target = lambda_corner_detector
+            args = (self.image,
+                    self.params['max_corners'],
+                    self.params['min_distance'],
+                    self.params['quality_level'],
+                    queue)
+        else:
+            target = harris_and_lambda
+            args = (self.image,
+                    self.params['block_size'],
+                    self.params['kernel_size'],
+                    self.params['k'],
+                    self.params['threshold'],
+                    self.params['max_corners'],
+                    self.params['min_distance'],
+                    self.params['quality_level'],
+                    queue)
+        process = mp.Process(target=target, args=args)
+        process.start()
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            time.sleep(0.05)
+        process.join()
+
+class CornerDetectionController:
+    def __init__(self, corner_detection_window=None):
         self.corner_detection_window = corner_detection_window
-        if self.corner_detection_window:
-            self.corner_detection_window.apply_button.clicked.connect(self.apply_corner_detection)
+        if corner_detection_window:
+            corner_detection_window.apply_button.clicked.connect(self.apply_corner_detection)
 
     def apply_corner_detection(self):
-        image=self.corner_detection_window.input_image_viewer.image_model.get_image_matrix()
-        detected_corners_type=self.corner_detection_window.corner_detector_type_custom_combo_box.current_text()
-        
-        # Get the parameters from the UI
-        kernel_size=self.corner_detection_window.harris_detector_kernel_size_spin_box.value()
-        block_size=self.corner_detection_window.harris_detector_block_size_spin_box.value() 
-        k=self.corner_detection_window.harris_detector_k_factor_spin_box.value()
-        threshold=self.corner_detection_window.harris_detector_threshold_spin_box.value()
-        max_corners=self.corner_detection_window.lambda_detector_max_corners_spin_box.value()
-        min_distance=self.corner_detection_window.lambda_detector_min_distance_spin_box.value()
-        quality_level=self.corner_detection_window.lambda_detector_quality_level_spin_box.value()
+        win = self.corner_detection_window
+        image = win.input_image_viewer.image_model.get_image_matrix()
+        method = win.corner_detector_type_custom_combo_box.current_text()
+        params = {
+            'kernel_size': win.harris_detector_kernel_size_spin_box.value(),
+            'block_size': win.harris_detector_block_size_spin_box.value(),
+            'k': win.harris_detector_k_factor_spin_box.value(),
+            'threshold': win.harris_detector_threshold_spin_box.value(),
+            'max_corners': win.lambda_detector_max_corners_spin_box.value(),
+            'min_distance': win.lambda_detector_min_distance_spin_box.value(),
+            'quality_level': win.lambda_detector_quality_level_spin_box.value()
+        }
+        win.output_image_viewer.show_loading_effect()
+        win.controls_container.setEnabled(False)
+        win.image_viewers_container.setEnabled(False)
 
-        self.queue = mp.Queue()
+        self.worker = ProcessWorker(image, method, params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
-        if detected_corners_type == "Harris Detector":
-            process = mp.Process(target = harris_corner_detector,args=(image,block_size,kernel_size,k,threshold,self.queue))
-        elif detected_corners_type == "Lambda Detector":
-            process = mp.Process(target = lambda_corner_detector,args=(image,max_corners,min_distance,quality_level,self.queue))
-        else:
-            process = mp.Process(target = harris_and_lambda,args=(image,block_size,kernel_size,k,threshold,max_corners,min_distance,quality_level,self.queue))
-
-        self.corner_detection_window.output_image_viewer.show_loading_effect()
-        self.corner_detection_window.controls_container.setEnabled(False)
-        self.corner_detection_window.image_viewers_container.setEnabled(False)
-        process.start()
-        self._start_queue_timer()
-
-
-
-
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.corner_detection_window.output_image_viewer.hide_loading_effect()
-            self.corner_detection_window.controls_container.setEnabled(True)
-            self.corner_detection_window.image_viewers_container.setEnabled(True)
-            output_image = self.queue.get()
-            self.corner_detection_window.output_image_viewer.display_and_set_image_matrix(output_image)   
-            self.corner_detection_window.show_toast(text = "Corner Detection is Complete.")        
-   
+    def _on_result(self, output_image):
+        win = self.corner_detection_window
+        win.output_image_viewer.hide_loading_effect()
+        win.controls_container.setEnabled(True)
+        win.image_viewers_container.setEnabled(True)
+        win.output_image_viewer.display_and_set_image_matrix(output_image)
+        win.show_toast("Corner Detection is Complete.")
