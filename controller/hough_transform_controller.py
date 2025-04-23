@@ -8,6 +8,8 @@ import pandas as pd
 
 import multiprocessing as mp
 from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
+
 
 
 
@@ -478,10 +480,34 @@ def average_weight(old_value, new_value, score):
 
 
 
+class HoughProcessWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray)
+    
+    def __init__(self,detected_objects_type,params):
+        super().__init__()
+        self.params = params
+        self.detected_objects_type = detected_objects_type
 
+    def run(self):
+        queue = mp.Queue()
 
+        match self.detected_objects_type:
+            case "Lines Detection":
+                process = mp.Process(target=detect_lines, args = (self.params['input_image_matrix'],self.params['gray'],1, self.params['theta'], self.params['threshold'], self.params['color'],queue))
+            case "Circles Detection":
+                process = mp.Process(target=detect_circles,args=(self.params['input_image_matrix'],self.params['gray'],self.params['min_radius'], self.params['max_radius'],self.params['threshold'] ,self.params['color'],queue))
+            case "Ellipses Detection":
+                process = mp.Process(target=detect_ellipses,args=(self.params['input_image_matrix'],self.params['ellipse_canny_sigma'],self.params['ellipse_canny_low_threshold'],self.params['ellipse_canny_high_threshold'],self.params['number_of_detected_ellipses'],self.params['color'],queue))
+            
 
-
+        process.start()
+        while True:
+            if not queue.empty():
+                result = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
 
 
 
@@ -507,7 +533,7 @@ class HoughTransformController():
 
         color = hex_to_bgr(self.hough_transform_window.choosen_color_hex)
 
-        self.queue = mp.Queue()
+        params = {}
 
         match detected_objects_type:
             case "Lines Detection":
@@ -515,7 +541,11 @@ class HoughTransformController():
                     gray = self.hough_transform_window.input_image_viewer.image_model.get_gray_image_matrix()
                 else:
                     gray = input_image_matrix.copy()
-                process = mp.Process(target=detect_lines, args = (input_image_matrix,gray,1, theta, threshold, color,self.queue))
+                params["input_image_matrix"] = input_image_matrix
+                params["gray"] = gray
+                params["theta"] = theta
+                params["threshold"] = threshold
+                params["color"] = color
             case "Circles Detection":
                 min_radius = self.hough_transform_window.circles_detection_min_radius_spin_box.value()
                 max_radius = self.hough_transform_window.circles_detection_max_radius_spin_box.value()
@@ -523,36 +553,38 @@ class HoughTransformController():
                     gray = cv2.cvtColor(input_image_matrix, cv2.COLOR_BGR2GRAY)
                 else:
                     gray = input_image_matrix.copy()
-                process = mp.Process(target=detect_circles,args=(input_image_matrix,gray,min_radius, max_radius,threshold ,color,self.queue))
+                params["input_image_matrix"] = input_image_matrix
+                params["gray"] = gray
+                params["min_radius"] = min_radius
+                params["max_radius"] = max_radius
+                params["threshold"] = threshold
+                params["color"] = color
             case "Ellipses Detection":
                 ellipse_canny_sigma = self.hough_transform_window.ellipses_detection_canny_sigma_spin_box.value()
                 ellipse_canny_low_threshold = self.hough_transform_window.ellipses_detection_canny_low_threshold_spin_box.value()
                 ellipse_canny_high_threshold = self.hough_transform_window.ellipses_detection_canny_high_threshold_spin_box.value()
                 number_of_detected_ellipses = self.hough_transform_window.number_of_detected_ellipses_spin_box.value()
-                process = mp.Process(target=detect_ellipses,args=(input_image_matrix,ellipse_canny_sigma,ellipse_canny_low_threshold,ellipse_canny_high_threshold,number_of_detected_ellipses,color,self.queue))
-            
+                params["input_image_matrix"] = input_image_matrix
+                params["ellipse_canny_sigma"] = ellipse_canny_sigma
+                params["ellipse_canny_low_threshold"] = ellipse_canny_low_threshold
+                params["ellipse_canny_high_threshold"] = ellipse_canny_high_threshold
+                params["number_of_detected_ellipses"] = number_of_detected_ellipses
+                params["color"] = color            
 
         self.hough_transform_window.output_image_viewer.show_loading_effect()
         self.hough_transform_window.controls_container.setEnabled(False)
         self.hough_transform_window.image_viewers_container.setEnabled(False)
 
-        process.start()
-        self._start_queue_timer()
+        self.worker = HoughProcessWorker(detected_objects_type,params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
         
 
-    
+    def _on_result(self, result_img):
+        self.hough_transform_window.output_image_viewer.hide_loading_effect()
+        self.hough_transform_window.controls_container.setEnabled(True)
+        self.hough_transform_window.image_viewers_container.setEnabled(True)
+        self.hough_transform_window.output_image_viewer.display_and_set_image_matrix(result_img)
+        self.hough_transform_window.show_toast(text = "Hough Transform is complete.")       
 
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.hough_transform_window.output_image_viewer.hide_loading_effect()
-            self.hough_transform_window.controls_container.setEnabled(True)
-            self.hough_transform_window.image_viewers_container.setEnabled(True)
-            output_image_matrix = self.queue.get()
-            self.hough_transform_window.output_image_viewer.display_and_set_image_matrix(output_image_matrix)
-            self.hough_transform_window.show_toast(text = "Hough Transform is complete.")        
+ 
