@@ -2,9 +2,11 @@ import numpy as np
 import math
 import cv2
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
+import time
 
 from controller.filters_controller import gaussian_filter
+
 
 def process_active_conntour(input_image,image,num_iterations,radius,num_points,window_size,alpha,beta,gamma,queue = None):
     image = gaussian_filter(image, kernel_size=window_size, sigma=1)
@@ -161,67 +163,96 @@ def calculate_average_distance(curve):
 
 
 
-class ActiveContoursController():
-    def __init__(self,active_contours_window = None):
-        self.active_contours_window = active_contours_window
-        if self.active_contours_window:
-            self.active_contours_window.apply_button.clicked.connect(self.apply_active_contour)
+class ActiveContourWorker(QThread):
+    result_ready = pyqtSignal(np.ndarray, float, float, list)
 
+    def __init__(self, input_image, image, num_iterations, radius, num_points, window_size, alpha, beta, gamma):
+        super().__init__()
+        self.input_image = input_image
+        self.image = image
+        self.num_iterations = num_iterations
+        self.radius = radius
+        self.num_points = num_points
+        self.window_size = window_size
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+
+    def run(self):
+        queue = mp.Queue()
+        process = mp.Process(
+            target=process_active_conntour,
+            args=(self.input_image, self.image, self.num_iterations, self.radius,
+                  self.num_points, self.window_size, self.alpha, self.beta, self.gamma, queue)
+        )
+        process.start()
+
+        while True:
+            if not queue.empty():
+                output_image, contour_area, contour_perimeter, chain_code = queue.get()
+                self.result_ready.emit(output_image, contour_area, contour_perimeter, chain_code)
+                break
+            time.sleep(0.05)
+
+        process.join()
+
+
+
+
+class ActiveContoursController:
+    def __init__(self, active_contours_window=None):
+        self.active_contours_window = active_contours_window
+        if active_contours_window:
+            active_contours_window.apply_button.clicked.connect(self.apply_active_contour)
 
     def apply_active_contour(self):
-        input_image = self.active_contours_window.input_image_viewer.image_model.get_image_matrix()
-        image=self.active_contours_window.input_image_viewer.image_model.get_gray_image_matrix()
-        num_iterations=self.active_contours_window.active_contours_iterations_spin_box.value()
-        radius=self.active_contours_window.active_contours_radius_spin_box.value()
-        num_points=self.active_contours_window.active_contours_points_spin_box.value()
-        window_size=self.active_contours_window.active_contours_window_size_spin_box.value()
-        alpha=self.active_contours_window.active_contours_detector_alpha_spin_box.value()
-        beta=self.active_contours_window.active_contours_detector_beta_spin_box.value()
-        gamma=self.active_contours_window.active_contours_detector_gamma_spin_box.value()
+        win = self.active_contours_window
+        input_image = win.input_image_viewer.image_model.get_image_matrix()
+        image = win.input_image_viewer.image_model.get_gray_image_matrix()
 
-        self.active_contours_window.output_image_viewer.show_loading_effect()
-        self.active_contours_window.controls_container.setEnabled(False)
-        self.active_contours_window.image_viewers_container.setEnabled(False)
+        params = {
+            'num_iterations': win.active_contours_iterations_spin_box.value(),
+            'radius': win.active_contours_radius_spin_box.value(),
+            'num_points': win.active_contours_points_spin_box.value(),
+            'window_size': win.active_contours_window_size_spin_box.value(),
+            'alpha': win.active_contours_detector_alpha_spin_box.value(),
+            'beta': win.active_contours_detector_beta_spin_box.value(),
+            'gamma': win.active_contours_detector_gamma_spin_box.value(),
+        }
 
-        self.queue = mp.Queue()
-        process = mp.Process(target = process_active_conntour, args = (input_image,image,num_iterations,radius,num_points,window_size,alpha,beta,gamma,self.queue))
-        process.start()
-        self._start_queue_timer()
+        win.output_image_viewer.show_loading_effect()
+        win.controls_container.setEnabled(False)
+        win.image_viewers_container.setEnabled(False)
 
+        self.worker = ActiveContourWorker(
+            input_image, image,
+            params['num_iterations'], params['radius'], params['num_points'],
+            params['window_size'], params['alpha'], params['beta'], params['gamma']
+        )
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
+    def _on_result(self, output_image, contour_area, contour_perimeter, chain_code):
+        win = self.active_contours_window
+        win.output_image_viewer.hide_loading_effect()
+        win.controls_container.setEnabled(True)
+        win.image_viewers_container.setEnabled(True)
+        win.output_image_viewer.display_and_set_image_matrix(output_image)
+        self.update_perimeter_area(contour_perimeter, contour_area)
+        self.update_chain_code_display(chain_code)
+        win.show_toast("Active Contour is Complete.")
 
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            self.active_contours_window.output_image_viewer.hide_loading_effect()
-            self.active_contours_window.controls_container.setEnabled(True)
-            self.active_contours_window.image_viewers_container.setEnabled(True)
-            output_image,contour_area,contour_perimeter,chain_code = self.queue.get()
-            self.update_perimeter_area(contour_perimeter,contour_area)
-            self.update_chain_code_display(chain_code)
-            self.active_contours_window.output_image_viewer.display_and_set_image_matrix(output_image)
-            self.active_contours_window.show_toast(text = "Active Contour is Complete.")
-
-    
-
-    def update_perimeter_area(self, contour_perimeter, contour_area ):
-        self.active_contours_window.active_contours_detector_perimeter.setText(f"{contour_perimeter:.2f} ")
-        self.active_contours_window.active_contours_detector_area.setText(f"{contour_area:.2f} ")
+    def update_perimeter_area(self, contour_perimeter, contour_area):
+        self.active_contours_window.active_contours_detector_perimeter.setText(f"{contour_perimeter:.2f}")
+        self.active_contours_window.active_contours_detector_area.setText(f"{contour_area:.2f}")
 
     def update_chain_code_display(self, chain_code):
         chain_text = "".join(str(code) for code in chain_code)
-        chain_text=self.format_chain_code(chain_text)
-        print(chain_text)
-        self.active_contours_window.active_contours_detector_chaincode.setText(f"{chain_text} ")
-        # self.active_contours_window.active_contours_detector_chaincode.setPlainText(f"{chain_text} ")
+        formatted_text = self.format_chain_code(chain_text)
+        self.active_contours_window.active_contours_detector_chaincode.setText(f"{formatted_text}")
 
-    def format_chain_code(self,chain_code: str, line_width: int = 40) -> str:
-        return '\n'.join(chain_code[i:i+line_width] for i in range(0, len(chain_code), line_width))
+    def format_chain_code(self, chain_code: str, line_width: int = 40) -> str:
+        return '\n'.join(chain_code[i:i + line_width] for i in range(0, len(chain_code), line_width))
 
 
 
