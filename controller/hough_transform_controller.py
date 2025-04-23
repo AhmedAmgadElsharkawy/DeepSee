@@ -7,7 +7,6 @@ from skimage.feature import canny
 import pandas as pd
 
 import multiprocessing as mp
-from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import QThread, pyqtSignal
 
 

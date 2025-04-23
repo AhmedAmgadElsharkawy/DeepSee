@@ -3,6 +3,8 @@ import multiprocessing as mp
 from PyQt5.QtCore import QTimer
 
 from controller.filters_controller import compute_ifft,apply_low_or_high_pass_filter
+from PyQt5.QtCore import QThread, pyqtSignal
+
 
 
 def hybrid_image_process(image1,image2,radius,type1,type2,queue):
@@ -56,6 +58,31 @@ def calculate_ffts(image1, image2,radius,type1,type2):
     return img1, img2, result
 
 
+class HybridImageProcessWorker(QThread):
+    result_ready = pyqtSignal(dict)
+
+    def __init__(self,params):
+        super().__init__()
+        self.params = params
+
+    def run(self):
+        queue = mp.Queue()
+        process = mp.Process(target = hybrid_image_process,args = (self.params['image1'],self.params['image2'],self.params['radius'],self.params['type1'],self.params['type2'],queue))
+        process.start()
+        while True:
+            if not queue.empty():
+                result = {}
+                result['img1'],result['img2'],result['mix'],result['inverse_mix'] = queue.get()
+                self.result_ready.emit(result)
+                break
+            self.msleep(50)
+        process.join()
+
+
+
+
+
+
 class HybridImageController():
     def __init__(self,hybrid_image_window = None):
         self.hybrid_image_window = hybrid_image_window
@@ -74,29 +101,38 @@ class HybridImageController():
         combo_box.combo_box.blockSignals(False)
 
     def apply_image_mixing(self):
-        image1 = self.hybrid_image_window.first_original_image_viewer.image_model.get_gray_image_matrix()
-        image2 = self.hybrid_image_window.second_original_image_viewer.image_model.get_gray_image_matrix()
-        radius = self.hybrid_image_window.radius_custom_spin_box.value()
-        type1 = self.hybrid_image_window.first_image_filter_type_custom_combo_box.current_text()
-        type2 = self.hybrid_image_window.second_image_filter_type_custom_combo_box.current_text()
+        params = {}
+        params['image1'] = self.hybrid_image_window.first_original_image_viewer.image_model.get_gray_image_matrix()
+        params['image2'] = self.hybrid_image_window.second_original_image_viewer.image_model.get_gray_image_matrix()
+        params['radius'] = self.hybrid_image_window.radius_custom_spin_box.value()
+        params['type1'] = self.hybrid_image_window.first_image_filter_type_custom_combo_box.current_text()
+        params['type2'] = self.hybrid_image_window.second_image_filter_type_custom_combo_box.current_text()
         
-        self.queue = mp.Queue()
 
         self.hybrid_image_window.hybrid_image_viewer.show_loading_effect()
-        if image1 is not None:
+        if params['image1'] is not None:
             self.hybrid_image_window.first_filtered_image_viewer.show_loading_effect()
-        if image2 is not None:
+        if params['image2'] is not None:
             self.hybrid_image_window.second_filtered_image_viewer.show_loading_effect()
         self.hybrid_image_window.controls_container.setEnabled(False)
         self.hybrid_image_window.image_viewers_container.setEnabled(False)
 
-        process = mp.Process(target = hybrid_image_process,args = (image1,image2,radius,type1,type2,self.queue))
-        process.start()
-        self._start_queue_timer()
+        self.worker = HybridImageProcessWorker(params)
+        self.worker.result_ready.connect(self._on_result)
+        self.worker.start()
 
 
         
-
+    def _on_result(self,result):
+        self.hybrid_image_window.hybrid_image_viewer.hide_loading_effect()
+        if result['img1'] is not None:
+            self.hybrid_image_window.first_filtered_image_viewer.hide_loading_effect()
+        if result['img2'] is not None:
+            self.hybrid_image_window.second_filtered_image_viewer.hide_loading_effect()
+        self.hybrid_image_window.controls_container.setEnabled(True)
+        self.hybrid_image_window.image_viewers_container.setEnabled(True)
+        self.plotting_images(result['img1'], result['img2'], result['mix'],result['inverse_mix'])
+        self.hybrid_image_window.show_toast(text = "Hybrid Image is complete.")        
 
     
     def plotting_images(self, image1, image2, mix,inverse_mix):
@@ -108,25 +144,4 @@ class HybridImageController():
 
         if mix is not None:
             self.hybrid_image_window.hybrid_image_viewer.display_and_set_image_matrix(inverse_mix)
-
-        
-
-
-    def _start_queue_timer(self):
-        self.queue_timer = QTimer()
-        self.queue_timer.timeout.connect(self._check_queue)
-        self.queue_timer.start(100)
-
-    def _check_queue(self):
-        if self.queue and not self.queue.empty():
-            self.queue_timer.stop()
-            img1, img2, mix,inverse_mix = self.queue.get()
-            self.hybrid_image_window.hybrid_image_viewer.hide_loading_effect()
-            if img1 is not None:
-                self.hybrid_image_window.first_filtered_image_viewer.hide_loading_effect()
-            if img2 is not None:
-                self.hybrid_image_window.second_filtered_image_viewer.hide_loading_effect()
-            self.hybrid_image_window.controls_container.setEnabled(True)
-            self.hybrid_image_window.image_viewers_container.setEnabled(True)
-            self.plotting_images(img1, img2, mix,inverse_mix)
-            self.hybrid_image_window.show_toast(text = "Hybrid Image is complete.")        
+            
