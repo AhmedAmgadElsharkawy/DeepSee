@@ -24,7 +24,7 @@ class ThresholdingWindow(BasicStackedWindow):
         self.thresholding_scope_custom_combo_box = CustomComboBox(label= "Thresholding Scope",combo_box_items_list=["Global Thresholding","Local Thresholding"])
         self.thresholding_scope_custom_combo_box.currentIndexChanged.connect(self.on_thresholding_scope_change)
         self.inputs_container_layout.addWidget(self.thresholding_scope_custom_combo_box)
-        self.thresholding_type_custom_combo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Otsu Thresholding", "Global Mean"])
+        self.thresholding_type_custom_combo_box = CustomComboBox(label= "Thresholding Type",combo_box_items_list=["Global Mean","Otsu Thresholding","Optimal Thresholding","Spectral Thresholding"])
         self.inputs_container_layout.addWidget(self.thresholding_type_custom_combo_box)
 
         self.local_thresholding_inputs_container = QWidget()
@@ -51,10 +51,10 @@ class ThresholdingWindow(BasicStackedWindow):
 
         if selected_scope == "Local Thresholding":
             self.local_thresholding_inputs_container.setVisible(True)
-            new_items = ["Adaptive Mean", "Adaptive Gaussian"]
+            new_items = ["Adaptive Mean", "Adaptive Gaussian","Otsu Thresholding","Optimal Thresholding","Spectral Thresholding"]
         else:
             self.local_thresholding_inputs_container.setVisible(False)
-            new_items = ["Otsu Thresholding", "Global Mean"]
+            new_items = ["Global Mean","Otsu Thresholding","Optimal Thresholding","Spectral Thresholding"]
 
 
         self.thresholding_type_custom_combo_box.clear_iteams()

@@ -88,8 +88,8 @@ class ImageViewer(pg.ImageView):
         hybrid_image_first_viewer_action = QAction("First Image", self)
         hybrid_image_second_viewer_action = QAction("Second Image", self)
 
-        image_matching_input_image_viewer_action = QAction("Matching Features Image", self)
-        image_matching_input_template_viewer_action = QAction("Matching Features Template", self)
+        image_matching_input_image_viewer_action = QAction("First Image", self)
+        image_matching_input_image2_viewer_action = QAction("Second Image", self)
 
         sift_descriptors_detect_keypoints_action = QAction("Detect Keypoints", self)
 
@@ -111,7 +111,7 @@ class ImageViewer(pg.ImageView):
 
         image_matching_menu = move_menu.addMenu("Image Matching")
         image_matching_menu.addAction(image_matching_input_image_viewer_action)
-        image_matching_menu.addAction(image_matching_input_template_viewer_action)
+        image_matching_menu.addAction(image_matching_input_image2_viewer_action)
 
 
         noise_action.triggered.connect(self.move_to_noise)
@@ -125,7 +125,7 @@ class ImageViewer(pg.ImageView):
         active_contours_action.triggered.connect(self.move_to_active_contours_viewer)
         corner_detection_action.triggered.connect(self.move_to_corner_detection_viewer)
         image_matching_input_image_viewer_action.triggered.connect(self.move_to_image_matching_window_image_viewer)
-        image_matching_input_template_viewer_action.triggered.connect(self.move_to_image_matching_window_template_viewer)
+        image_matching_input_image2_viewer_action.triggered.connect(self.move_to_image_matching_window_image2_viewer)
         sift_descriptors_detect_keypoints_action.triggered.connect(self.move_to_sift_descriptors_window)
         segmentation_action.triggered.connect(self.move_to_segmentation)
         face_detection_and_recognition_action.triggered.connect(self.move_to_face_detection_and_recognition)
@@ -181,8 +181,8 @@ class ImageViewer(pg.ImageView):
         self.main_window.image_matching_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.image_matching_window.output_image_viewer.reset()
 
-    def move_to_image_matching_window_template_viewer(self):
-        self.main_window.image_matching_window.input_template_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
+    def move_to_image_matching_window_image2_viewer(self):
+        self.main_window.image_matching_window.input_img2_viewer.display_and_set_image_matrix(self.image_model.image_matrix)
         self.main_window.image_matching_window.output_image_viewer.reset()
     
     def move_to_corner_detection_viewer(self):
