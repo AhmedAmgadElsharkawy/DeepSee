@@ -77,3 +77,6 @@ class InteractiveImageViewer(ImageViewer):
         elif not enabled:
             self.getView().scene().sigMouseClicked.disconnect(self.handle_mouse_click)
             self.reset_markers()
+
+    def get_markers_positions(self):
+        return self.markers_positions
