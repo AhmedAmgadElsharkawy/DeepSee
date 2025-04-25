@@ -28,8 +28,76 @@ from PyQt5.QtCore import QThread, pyqtSignal
 """
 
 
+def thresholding_process(thresholding_type,thresholding_scope,params,queue):
+    if thresholding_scope == "Global Thresholding":
+        thresholded_image = apply_global_thresholding(thresholding_type,params["gray_image"])
+    else:
+        thresholded_image = apply_local_thresholding(thresholding_type,image = params["gray_image"],window_size = params["window_size"],offset = params["offset"],sigma = params['sigma'])
+    queue.put(thresholded_image)
 
-def global_otsu(image, queue = None):
+
+def apply_global_thresholding(thresholding_type,image):
+    if thresholding_type == "Global Mean":
+        thresholded_image = global_mean(image)
+    elif thresholding_type == "Otsu Thresholding":
+        thresholded_image = otsu_thresholding(image)
+    elif thresholding_type == "Optimal Thresholding":
+        thresholded_image,_ = optimal_thresholding(image)
+
+    return thresholded_image
+
+
+def apply_local_thresholding(thresholding_type, image, window_size, offset, sigma):
+
+    if thresholding_type=="Adaptive Mean":
+        return adaptive_mean_threshold (image, window_size, offset)
+    elif thresholding_type=="Adaptive Gaussian":
+        return  adaptive_gaussian_threshold(image, window_size, offset,sigma)
+
+    thresholded_image = np.zeros(image.shape[:2], dtype=np.uint8)
+    image_height, image_width = image.shape[:2]
+    window = (window_size, window_size)
+    step_y, step_x = window
+
+
+    for y in range(0, image_height, step_y):
+        for x in range(0, image_width, step_x):
+
+            sub_image = image[y : min(y + step_y, image_height), x : min(x + step_x, image_width)]
+
+            if thresholding_type == "Optimal Thresholding":
+                _, threshold = optimal_thresholding(sub_image)
+                threshold = threshold - offset
+                local_thresholded = (sub_image > threshold).astype(np.uint8) * 255
+
+            thresholded_image[y : min(y + step_y, image_height), x : min(x + step_x, image_width)] = local_thresholded
+
+    return thresholded_image
+
+
+def optimal_thresholding(image):
+    height, width = image.shape[:2]
+    corners = [
+        image[0, 0],
+        image[0, width - 1],
+        image[height - 1, 0],
+        image[height - 1, width - 1],
+    ]
+    threshold = np.mean(corners)
+    while True:
+        class1_mean = np.mean(image[image < threshold])
+        class2_mean = np.mean(image[image >= threshold])
+        new_threshold = (class1_mean + class2_mean) / 2
+        if np.abs(new_threshold - threshold) < 1e-6:
+            break
+        threshold = new_threshold
+
+    thresholded_image = (image > threshold).astype(np.uint8) * 255
+
+    return thresholded_image, threshold
+
+
+def otsu_thresholding(image):
     hist, bin_edges = np.histogram(image.ravel(), bins=256, range=[0, 256])
     total_pixels = image.size
     hist = hist.astype(np.float32) / total_pixels
@@ -42,12 +110,10 @@ def global_otsu(image, queue = None):
     optimal_threshold = np.argmax(between_class_variance)
 
     thresholded_image = (image > optimal_threshold).astype(np.uint8) * 255
-    if queue:
-        queue.put(thresholded_image)
-    else:    
-        return thresholded_image
+    
+    return thresholded_image
 
-def global_mean(image, queue = None):
+def global_mean(image):
     T = np.mean(image)
     thresholded = np.zeros_like(image)
 
@@ -58,13 +124,10 @@ def global_mean(image, queue = None):
             else:
                 thresholded[i, j] = 0
 
-    if queue:
-        queue.put(thresholded)
-    else:    
-        return thresholded
+    return thresholded
 
 
-def adaptive_mean_threshold(image, kernel_size=11, constant=2, queue = None):
+def adaptive_mean_threshold(image, kernel_size=11, constant=2):
 
     height, width = image.shape
 
@@ -86,14 +149,11 @@ def adaptive_mean_threshold(image, kernel_size=11, constant=2, queue = None):
             else:
                 output_image[y, x] = 0
 
-    if queue:
-        queue.put(output_image)
-    else:    
-        return output_image
+    return output_image
 
 
 
-def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1, queue = None):
+def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1):
 
     height, width = image.shape
 
@@ -112,31 +172,22 @@ def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1, queue
             else:
                 output_image[y, x] = 0
 
-    if queue:
-        queue.put(output_image)
-    else:    
-        return output_image
+    return output_image
     
 
 class ThresholdingProcessWorker(QThread):
     result_ready = pyqtSignal(np.ndarray)
 
-    def __init__(self,thresholding_type,params):
+    def __init__(self,thresholding_type,thresholding_scope,params):
         super().__init__()
         self.params = params
         self.thresholding_type = thresholding_type
+        self.thresholding_scope = thresholding_scope
 
     def run(self):  
         queue = mp.Queue()
 
-        if self.thresholding_type == "Otsu Thresholding":
-            process = mp.Process(target=global_otsu,args=(self.params['gray_image'],queue))
-        elif self.thresholding_type == "Global Mean":
-            process = mp.Process(target=global_mean,args=(self.params['gray_image'],queue))
-        elif self.thresholding_type=="Adaptive Mean":
-            process = mp.Process(target=adaptive_gaussian_threshold,args=(self.params['gray_image'],self.params['kernel'],self.params['constant'],1,queue))
-        elif self.thresholding_type=="Adaptive Gaussian":
-            process = mp.Process(target=adaptive_gaussian_threshold,args=(self.params['gray_image'],self.params['kernel'],self.params['constant'],self.params['sigma'],queue))
+        process = mp.Process(target = thresholding_process,args=(self.thresholding_type,self.thresholding_scope,self.params,queue))
 
         process.start()
         while True:
@@ -157,30 +208,22 @@ class ThresholdingController():
 
     def apply_thresholding(self):
         params = {}
+        thresholding_scope = self.thresholding_window.thresholding_scope_custom_combo_box.current_text()
         thresholding_type = self.thresholding_window.thresholding_type_custom_combo_box.current_text()
         params['gray_image'] = self.thresholding_window.input_image_viewer.image_model.get_gray_image_matrix()
-        
-        if thresholding_type=="Adaptive Mean":
-            params['kernel'],params['constant']=self.return_parammeters()
-        elif thresholding_type=="Adaptive Gaussian":
-            params['kernel'],params['constant']=self.return_parammeters()
-            params['sigma']=self.thresholding_window.variance_spin_box.value()
+        params['window_size']=self.thresholding_window.local_thresholding_window_size_spin_box.value()
+        params['offset']=self.thresholding_window.local_thresholding_window_offset_spin_box.value()
+        params['sigma']=self.thresholding_window.variance_spin_box.value()
 
         self.thresholding_window.output_image_viewer.show_loading_effect()
         self.thresholding_window.controls_container.setEnabled(False)
         self.thresholding_window.image_viewers_container.setEnabled(False)
 
 
-        self.worker = ThresholdingProcessWorker(thresholding_type,params)
+        self.worker = ThresholdingProcessWorker(thresholding_type,thresholding_scope,params)
         self.worker.result_ready.connect(self._on_result)
         self.worker.start()
 
-
-
-    def return_parammeters(self):
-        kernel=self.thresholding_window.local_thresholding_window_size_spin_box.value()
-        constant=self.thresholding_window.local_thresholding_window_offset_spin_box.value()
-        return kernel,constant
 
     
     def _on_result(self,result):
