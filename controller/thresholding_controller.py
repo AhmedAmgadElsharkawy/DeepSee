@@ -43,6 +43,8 @@ def apply_global_thresholding(thresholding_type,image):
         thresholded_image, _ = otsu_thresholding(image)
     elif thresholding_type == "Optimal Thresholding":
         thresholded_image,_ = optimal_thresholding(image)
+    elif thresholding_type == "Spectral Thresholding":
+        thresholded_image = spectral_thresholding(image)
 
     return thresholded_image
 
