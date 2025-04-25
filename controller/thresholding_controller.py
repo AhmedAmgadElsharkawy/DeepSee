@@ -117,7 +117,7 @@ def spectral_thresholding(image, window_size=11, offset=2):
     histogram = np.histogram(image.ravel(), bins=256, range=[0, 256])[0]
     cumulative_histogram = histogram.cumsum()
     global_mean_intensity = np.sum(np.arange(256) * histogram) / histogram.sum()
-    
+
 
 def global_mean(image):
     T = np.mean(image)
@@ -176,6 +176,25 @@ def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1):
                 output_image[y, x] = 0
 
     return output_image
+
+def find_thresholds(histogram, global_mean_intensity):
+    max_variance = 0
+    best_low_threshold, best_high_threshold = 0, 0
+    for h in range(1, 255):
+        for l in range(0, h):
+            p1 = np.sum(histogram[:l])
+            p2 = np.sum(histogram[l:h])
+            p3 = np.sum(histogram[h:])
+            if p1 + p2 + p3 == 0:
+                continue
+            mean1 = np.sum(np.arange(l) * histogram[:l]) / (p1 + 1e-10)
+            mean2 = np.sum(np.arange(l, h) * histogram[l:h]) / (p2 + 1e-10)
+            mean3 = np.sum(np.arange(h, 256) * histogram[h:]) / (p3 + 1e-10)
+            variance = (p1 * (mean1 - global_mean_intensity) ** 2 + p2 * (mean2 - global_mean_intensity) ** 2 + p3 * (mean3 - global_mean_intensity)) / (p1 + p2)
+            if variance > max_variance:
+                max_variance = variance
+                best_low_threshold, best_high_threshold = l, h
+    return best_low_threshold, best_high_threshold
     
 class ThresholdingProcessWorker(QThread):
     result_ready = pyqtSignal(np.ndarray)
