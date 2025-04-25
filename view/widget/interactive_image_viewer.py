@@ -12,6 +12,7 @@ class InteractiveImageViewer(ImageViewer):
         self.setAcceptDrops(True)
         self.markers_positions = []
         self.marker_items = []
+        self.add_markers_connected = False
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -70,12 +71,14 @@ class InteractiveImageViewer(ImageViewer):
         super().reset()  
         self.reset_markers()
 
-
     def enable_add_marker(self, enabled: bool):
-        if enabled:
-            self.getView().scene().sigMouseClicked.connect(self.handle_mouse_click)
-        elif not enabled:
-            self.getView().scene().sigMouseClicked.disconnect(self.handle_mouse_click)
+        scene = self.getView().scene()
+        if enabled and not self.add_markers_connected:
+            scene.sigMouseClicked.connect(self.handle_mouse_click)
+            self.add_markers_connected = True
+        elif not enabled and self.add_markers_connected:
+            scene.sigMouseClicked.disconnect(self.handle_mouse_click)
+            self.add_markers_connected = False
             self.reset_markers()
 
     def get_markers_positions(self):
