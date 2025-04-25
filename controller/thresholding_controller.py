@@ -48,7 +48,6 @@ def apply_global_thresholding(thresholding_type,image):
 
 
 def apply_local_thresholding(thresholding_type, image, window_size, offset, sigma):
-
     if thresholding_type=="Adaptive Mean":
         return adaptive_mean_threshold (image, window_size, offset)
     elif thresholding_type=="Adaptive Gaussian":
@@ -59,7 +58,6 @@ def apply_local_thresholding(thresholding_type, image, window_size, offset, sigm
     window = (window_size, window_size)
     step_y, step_x = window
 
-
     for y in range(0, image_height, step_y):
         for x in range(0, image_width, step_x):
 
@@ -69,11 +67,10 @@ def apply_local_thresholding(thresholding_type, image, window_size, offset, sigm
                 _, threshold = optimal_thresholding(sub_image)
                 threshold = threshold - offset
                 local_thresholded = (sub_image > threshold).astype(np.uint8) * 255
-
+            
             thresholded_image[y : min(y + step_y, image_height), x : min(x + step_x, image_width)] = local_thresholded
 
     return thresholded_image
-
 
 def optimal_thresholding(image):
     height, width = image.shape[:2]
@@ -95,7 +92,6 @@ def optimal_thresholding(image):
     thresholded_image = (image > threshold).astype(np.uint8) * 255
 
     return thresholded_image, threshold
-
 
 def otsu_thresholding(image):
     hist, bin_edges = np.histogram(image.ravel(), bins=256, range=[0, 256])
@@ -126,7 +122,6 @@ def global_mean(image):
 
     return thresholded
 
-
 def adaptive_mean_threshold(image, kernel_size=11, constant=2):
 
     height, width = image.shape
@@ -151,8 +146,6 @@ def adaptive_mean_threshold(image, kernel_size=11, constant=2):
 
     return output_image
 
-
-
 def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1):
 
     height, width = image.shape
@@ -174,7 +167,6 @@ def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1):
 
     return output_image
     
-
 class ThresholdingProcessWorker(QThread):
     result_ready = pyqtSignal(np.ndarray)
 
@@ -198,13 +190,11 @@ class ThresholdingProcessWorker(QThread):
             self.msleep(50)
         process.join()
 
-
 class ThresholdingController():
     def __init__(self,thresholding_window = None):
         self.thresholding_window = thresholding_window
         if self.thresholding_window: 
             self.thresholding_window.apply_button.clicked.connect(self.apply_thresholding)
-
 
     def apply_thresholding(self):
         params = {}
@@ -223,8 +213,6 @@ class ThresholdingController():
         self.worker = ThresholdingProcessWorker(thresholding_type,thresholding_scope,params)
         self.worker.result_ready.connect(self._on_result)
         self.worker.start()
-
-
     
     def _on_result(self,result):
         self.thresholding_window.output_image_viewer.hide_loading_effect()
