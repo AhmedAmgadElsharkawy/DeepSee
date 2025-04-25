@@ -74,6 +74,9 @@ def apply_local_thresholding(thresholding_type, image, window_size, offset, sigm
                 threshold = threshold - offset
                 local_thresholded = (sub_image > threshold).astype(np.uint8) * 255
             
+            if thresholding_type == "Spectral Thresholding":
+                local_thresholded = spectral_thresholding(sub_image)
+            
             thresholded_image[y : min(y + step_y, image_height), x : min(x + step_x, image_width)] = local_thresholded
 
     return thresholded_image
@@ -191,23 +194,38 @@ def adaptive_gaussian_threshold(image, kernel_size=11, constant=2,sigma=1):
 
 def find_thresholds(histogram, global_mean_intensity):
     max_variance = 0
-    best_low_threshold, best_high_threshold = 0, 0
+    best_low, best_high = 0, 0
+    
+    # Precompute cumulative sums and weighted cumulative sums
+    cumsum = np.cumsum(histogram)
+    cumsum_weighted = np.cumsum(np.arange(256) * histogram)
+    
     for h in range(1, 255):
         for l in range(1, h):
-            p1 = np.sum(histogram[:l]).astype(np.float32)
-            p2 = np.sum(histogram[l:h]).astype(np.float32)
-            p3 = np.sum(histogram[h:]).astype(np.float32)
-
-            mean1 = np.sum(np.arange(l) * histogram[:l]) / (p1 + 1e-10)
-            mean2 = np.sum(np.arange(l, h) * histogram[l:h]) / (p2 + 1e-10)
-            mean3 = np.sum(np.arange(h, 256) * histogram[h:]) / (p3 + 1e-10)
-            variance = (p1 * ((mean1 - global_mean_intensity) ** 2) + p2 * ((mean2 - global_mean_intensity) ** 2) + (p3 * (mean3 - global_mean_intensity) ** 2)) / (p1 + p2 + p3)
+            # Compute weights using precomputed sums
+            w1 = cumsum[l]
+            w2 = cumsum[h] - cumsum[l]
+            w3 = cumsum[255] - cumsum[h]
+            
+            # Skip invalid divisions
+            if w1 == 0 or w2 == 0 or w3 == 0:
+                continue
+                
+            # Compute means using precomputed weighted sums
+            mean1 = cumsum_weighted[l] / w1
+            mean2 = (cumsum_weighted[h] - cumsum_weighted[l]) / w2
+            mean3 = (cumsum_weighted[255] - cumsum_weighted[h]) / w3
+            
+            # Calculate variance
+            variance = (w1*(mean1 - global_mean_intensity)**2 + 
+                       w2*(mean2 - global_mean_intensity)**2 + 
+                       w3*(mean3 - global_mean_intensity)**2) / (w1 + w2 + w3)
             
             if variance > max_variance:
                 max_variance = variance
-                best_low_threshold, best_high_threshold = l, h
+                best_low, best_high = l, h
                 
-    return best_low_threshold, best_high_threshold
+    return best_low, best_high
     
 class ThresholdingProcessWorker(QThread):
     result_ready = pyqtSignal(np.ndarray)

@@ -32,7 +32,7 @@ class ThresholdingWindow(BasicStackedWindow):
         self.local_thresholding_inputs_container_layout = QHBoxLayout(self.local_thresholding_inputs_container)
         self.local_thresholding_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.local_thresholding_inputs_container)
-        self.local_thresholding_window_size_spin_box = CustomSpinBox(label="Window Size",range_start=3,range_end=11,initial_value=11,step_value=2)
+        self.local_thresholding_window_size_spin_box = CustomSpinBox(label="Window Size",range_start=3,range_end=50,initial_value=11,step_value=2)
         self.local_thresholding_window_offset_spin_box = CustomSpinBox(label="Offset Value",range_start=-20,range_end=20,initial_value=2,step_value=1)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_size_spin_box)
         self.local_thresholding_inputs_container_layout.addWidget(self.local_thresholding_window_offset_spin_box)
