@@ -113,11 +113,21 @@ def otsu_thresholding(image):
     
     return thresholded_image, optimal_threshold
 
-def spectral_thresholding(image, window_size=11, offset=2):
+def spectral_thresholding(image):
     histogram = np.histogram(image.ravel(), bins=256, range=[0, 256])[0]
-    cumulative_histogram = histogram.cumsum()
     global_mean_intensity = np.sum(np.arange(256) * histogram) / histogram.sum()
+    
+    optimal_low_threshold, optimal_high_threshold = find_thresholds(histogram, global_mean_intensity)
 
+    if optimal_low_threshold == 0 or optimal_high_threshold == 0:
+            raise ValueError("No valid thresholds found")
+
+    binary_image = np.zeros_like(image)
+    binary_image[image < optimal_low_threshold] = 0
+    binary_image[(image >= optimal_low_threshold) & (image <= optimal_high_threshold)] = 128
+    binary_image[image > optimal_high_threshold] = 255
+    
+    return binary_image
 
 def global_mean(image):
     T = np.mean(image)
