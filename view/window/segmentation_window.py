@@ -65,8 +65,10 @@ class SegmentationWindow(BasicStackedWindow):
         self.region_growing_threshold_spin_box = CustomSpinBox(label="Threshold",range_start=1,range_end=100,initial_value=2,step_value=1)
         self.region_growing_inputs_container_layout.addWidget(self.region_growing_threshold_spin_box)
 
+        self.input_image_viewer.enable_add_marker(True)
 
         self.edge_detection_controller = SegmentationController(self)
+
         
     def on_segmentation_algorithm_change(self):
         self.hide_all_inputs()
@@ -76,12 +78,16 @@ class SegmentationWindow(BasicStackedWindow):
         match selected_detector:
             case "k-means":
                 self.k_means_inputs_container.setVisible(True)
+                self.input_image_viewer.enable_add_marker(True)
             case "Mean Shift":
                 self.mean_shift_inputs_container.setVisible(True)
+                self.input_image_viewer.enable_add_marker(False)
             case "Agglomerative Segmentation":
                 self.agglomerative_segmentation_inputs_container.setVisible(True)
+                self.input_image_viewer.enable_add_marker(False)
             case "Region Growing":
                 self.region_growing_inputs_container.setVisible(True)
+                self.input_image_viewer.enable_add_marker(True)
 
     def hide_all_inputs(self):
         self.k_means_inputs_container.setVisible(False)
