@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
 
 class SegmentationController():
     def __init__(self,segmentation_window = None):
@@ -23,9 +24,14 @@ class SegmentationController():
         elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Mean Shift":    
             
             pass
-        elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Agglomerative Segmentation":    
+        elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Agglomerative Segmentation":
+            cluster_numbers=self.segmentation_window.agglomerative_segmentation_clusters_number_spin_box.value()
+            initial_ccluster_numbers= self.segmentation_window.agglomerative_segmentation_initial_clusters_number_spin_box.value()
+
+            output_image=self.agglomerative_segmention(image,cluster_numbers,initial_ccluster_numbers)
+
            
-            pass
+
         else:
            
             output_image = self.region_growing_segmentation(image, markers, region_threshold)   
@@ -117,3 +123,75 @@ class SegmentationController():
                         queue.append((cx + dx, cy + dy))
         
         return result
+
+    def agglomerative_segmention(self,image, final_k=10, initial_k=25):
+
+        pixels = image.reshape((-1, 3)).astype(int)
+
+        # Step 1: Initial Clustering with KMeans
+        initial_clusters = self.initial_kmeans_quantization(pixels, initial_k)
+
+        # Step 2: Agglomerative Merging
+        final_clusters = self.agglomerative_merge(initial_clusters, final_k)
+
+        # Step 3: Recoloring based on final clusters
+        cluster_map, centers = self.build_cluster_lookup(final_clusters)
+        recolored = np.array([
+            centers[cluster_map.get(tuple(np.round(p).astype(int)), 0)]
+            for p in pixels
+        ], dtype=np.uint8)
+
+        # Reshape to original image dimensions
+        h, w = image.shape[:2]
+        segmented = recolored.reshape((h, w, 3))
+
+        return segmented
+
+
+    def initial_kmeans_quantization(self,points, initial_k):
+        """
+        Partitions points into `initial_k` groups using KMeans quantization.
+        """
+        print("[INFO] Performing KMeans-based initial clustering...")
+        kmeans = KMeans(n_clusters=initial_k, n_init=5, random_state=42)
+        labels = kmeans.fit_predict(points)
+
+        groups = [[] for _ in range(initial_k)]
+        for point, label in zip(points, labels):
+            groups[label].append(point)
+
+        return [np.array(g) for g in groups if len(g) > 0]
+
+
+    def agglomerative_merge(self,clusters, target_k):
+        """
+        Agglomeratively merges clusters until only `target_k` clusters remain.
+        """
+        print("[INFO] Merging clusters...")
+        while len(clusters) > target_k:
+            centroids = np.array([np.mean(cluster, axis=0) for cluster in clusters])
+            dist_matrix = cdist(centroids, centroids)
+            np.fill_diagonal(dist_matrix, np.inf)
+            i, j = np.unravel_index(np.argmin(dist_matrix), dist_matrix.shape)
+
+            merged = np.vstack((clusters[i], clusters[j]))
+            clusters[i] = merged
+            del clusters[j]
+
+            print(f"[INFO] Clusters remaining: {len(clusters)}")
+        return clusters
+
+
+    def build_cluster_lookup(self,clusters):
+        """
+        Maps each rounded pixel to its cluster center.
+        """
+        print("[INFO] Assigning clusters to points...")
+        lookup = {}
+        centers = []
+        for idx, cluster in enumerate(clusters):
+            center = np.mean(cluster, axis=0)
+            centers.append(center)
+            for point in cluster:
+                lookup[tuple(np.round(point).astype(int))] = idx
+        return lookup, centers

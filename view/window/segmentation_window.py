@@ -53,8 +53,11 @@ class SegmentationWindow(BasicStackedWindow):
         self.agglomerative_segmentation_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.agglomerative_segmentation_inputs_container)
         self.agglomerative_segmentation_inputs_container.setVisible(False)
-        self.agglomerative_segmentation_clusters_number_spin_box = CustomSpinBox(label="Clusters Number",range_start=1,range_end=100,initial_value=3,step_value=1)
+        self.agglomerative_segmentation_clusters_number_spin_box = CustomSpinBox(label="Clusters Number",range_start=1,range_end=100,initial_value=10,step_value=1)
+        self.agglomerative_segmentation_initial_clusters_number_spin_box = CustomSpinBox(label="Initiak Clusters Number",range_start=1,range_end=100,initial_value=25,step_value=1)
         self.agglomerative_segmentation_inputs_container_layout.addWidget(self.agglomerative_segmentation_clusters_number_spin_box)
+        self.agglomerative_segmentation_inputs_container_layout.addWidget(self.agglomerative_segmentation_initial_clusters_number_spin_box)
+
 
 
         self.region_growing_inputs_container = QWidget()
