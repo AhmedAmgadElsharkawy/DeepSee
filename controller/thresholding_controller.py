@@ -122,7 +122,7 @@ def spectral_thresholding(image):
     optimal_low_threshold, optimal_high_threshold = find_thresholds(histogram, global_mean_intensity)
 
     if optimal_low_threshold == 0 or optimal_high_threshold == 0:
-            raise ValueError("No valid thresholds found")
+        raise ValueError("No valid thresholds found")
 
     binary_image = np.zeros_like(image)
     binary_image[image < optimal_low_threshold] = 0
@@ -193,19 +193,20 @@ def find_thresholds(histogram, global_mean_intensity):
     max_variance = 0
     best_low_threshold, best_high_threshold = 0, 0
     for h in range(1, 255):
-        for l in range(0, h):
-            p1 = np.sum(histogram[:l])
-            p2 = np.sum(histogram[l:h])
-            p3 = np.sum(histogram[h:])
-            if p1 + p2 + p3 == 0:
-                continue
+        for l in range(1, h):
+            p1 = np.sum(histogram[:l]).astype(np.float32)
+            p2 = np.sum(histogram[l:h]).astype(np.float32)
+            p3 = np.sum(histogram[h:]).astype(np.float32)
+
             mean1 = np.sum(np.arange(l) * histogram[:l]) / (p1 + 1e-10)
             mean2 = np.sum(np.arange(l, h) * histogram[l:h]) / (p2 + 1e-10)
             mean3 = np.sum(np.arange(h, 256) * histogram[h:]) / (p3 + 1e-10)
-            variance = (p1 * (mean1 - global_mean_intensity) ** 2 + p2 * (mean2 - global_mean_intensity) ** 2 + p3 * (mean3 - global_mean_intensity)) / (p1 + p2)
+            variance = (p1 * ((mean1 - global_mean_intensity) ** 2) + p2 * ((mean2 - global_mean_intensity) ** 2) + (p3 * (mean3 - global_mean_intensity) ** 2)) / (p1 + p2 + p3)
+            
             if variance > max_variance:
                 max_variance = variance
                 best_low_threshold, best_high_threshold = l, h
+                
     return best_low_threshold, best_high_threshold
     
 class ThresholdingProcessWorker(QThread):
