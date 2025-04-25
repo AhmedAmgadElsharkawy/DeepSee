@@ -100,10 +100,10 @@ def optimal_thresholding(image):
 def otsu_thresholding(image):
     hist, bin_edges = np.histogram(image.ravel(), bins=256, range=[0, 256])
     total_pixels = image.size
-    hist = hist.astype(np.float32) / total_pixels
+    hist_pdf = hist.astype(np.float32) / total_pixels
     
-    cumulative_sum = np.cumsum(hist)
-    cumulative_mean = np.cumsum(hist * np.arange(256))
+    cumulative_sum = np.cumsum(hist_pdf)
+    cumulative_mean = np.cumsum(hist_pdf * np.arange(256))
     global_mean = cumulative_mean[-1]
 
     between_class_variance = (global_mean * cumulative_sum - cumulative_mean) ** 2 / (cumulative_sum * (1 - cumulative_sum) + 1e-10)
@@ -112,6 +112,12 @@ def otsu_thresholding(image):
     thresholded_image = (image > optimal_threshold).astype(np.uint8) * 255
     
     return thresholded_image, optimal_threshold
+
+def spectral_thresholding(image, window_size=11, offset=2):
+    histogram = np.histogram(image.ravel(), bins=256, range=[0, 256])[0]
+    cumulative_histogram = histogram.cumsum()
+    global_mean_intensity = np.sum(np.arange(256) * histogram) / histogram.sum()
+    
 
 def global_mean(image):
     T = np.mean(image)
