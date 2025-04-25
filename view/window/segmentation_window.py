@@ -78,7 +78,7 @@ class SegmentationWindow(BasicStackedWindow):
         match selected_detector:
             case "k-means":
                 self.k_means_inputs_container.setVisible(True)
-                self.input_image_viewer.enable_add_marker(True)
+                # self.input_image_viewer.enable_add_marker(True)
             case "Mean Shift":
                 self.mean_shift_inputs_container.setVisible(True)
                 self.input_image_viewer.enable_add_marker(False)

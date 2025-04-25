@@ -16,6 +16,7 @@ class SegmentationController():
         
         
         region_threshold = self.segmentation_window.region_growing_threshold_spin_box.value()
+        markers = [(m['x'], m['y']) for m in self.segmentation_window.input_image_viewer.markers_positions]
         
         if self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "k-means":
             output_image = self.k_means_segmentation(image, k_value, max_iterations)
@@ -27,9 +28,9 @@ class SegmentationController():
             pass
         else:
            
-            pass             
+            output_image = self.region_growing_segmentation(image, markers, region_threshold)   
+                      
         self.segmentation_window.output_image_viewer.display_and_set_image_matrix(output_image)
-        print("segmentation Done")
 
 
     def k_means_segmentation(self, image, k_value, max_iterations):
@@ -61,4 +62,58 @@ class SegmentationController():
        
         return segmented_image
 
-    
+
+    def region_growing_segmentation(self, image, markers, threshold):
+     
+        # Make a copy of the original image
+        result = image.copy()
+        
+        # Convert to grayscale for intensity comparison
+        if len(image.shape) == 3 and image.shape[2] >= 3:
+            working_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            working_image = image.copy()
+        
+        h, w = working_image.shape[:2]
+        
+        # 4-connectivity neighbors (up, down, left, right)
+        neighbors = [(0,1), (1,0), (0,-1), (-1,0)]
+        
+        # Process each seed point
+        for seed in markers:
+            x, y = int(seed[0]), int(seed[1])
+            
+            # Validate seed point
+            if x < 0 or y < 0 or x >= w or y >= h:
+                continue
+                
+            # Initialize queue and visited matrix
+            queue = [(x, y)]
+            visited = np.zeros((h, w), dtype=bool)
+            seed_value = working_image[y, x]
+            
+            while queue:
+                cx, cy = queue.pop(0)
+                
+                # Skip if already visited or out of bounds
+                if (cx < 0 or cy < 0 or cx >= w or cy >= h or 
+                    visited[cy, cx]):
+                    continue
+                    
+                # Check intensity difference
+                current_value = working_image[cy, cx]
+                if abs(int(current_value) - int(seed_value)) <= threshold:
+                    # Mark as visited
+                    visited[cy, cx] = True
+                    
+                    # Handle both 3-channel and 4-channel images
+                    if result.shape[2] == 4:  # RGBA
+                        result[cy, cx] = [0, 0, 255, 255]  # Red with full alpha
+                    else:  # RGB
+                        result[cy, cx] = [0, 0, 255]  # Red in BGR
+                    
+                    # Add neighbors to queue
+                    for dx, dy in neighbors:
+                        queue.append((cx + dx, cy + dy))
+        
+        return result
