@@ -56,7 +56,6 @@ class ThresholdingWindow(BasicStackedWindow):
             self.local_thresholding_inputs_container.setVisible(False)
             new_items = ["Global Mean","Otsu Thresholding","Optimal Thresholding","Spectral Thresholding"]
 
-
         self.thresholding_type_custom_combo_box.clear_iteams()
         self.thresholding_type_custom_combo_box.add_item(new_items)
 

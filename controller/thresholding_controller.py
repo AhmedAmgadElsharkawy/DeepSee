@@ -40,12 +40,11 @@ def apply_global_thresholding(thresholding_type,image):
     if thresholding_type == "Global Mean":
         thresholded_image = global_mean(image)
     elif thresholding_type == "Otsu Thresholding":
-        thresholded_image = otsu_thresholding(image)
+        thresholded_image, _ = otsu_thresholding(image)
     elif thresholding_type == "Optimal Thresholding":
         thresholded_image,_ = optimal_thresholding(image)
 
     return thresholded_image
-
 
 def apply_local_thresholding(thresholding_type, image, window_size, offset, sigma):
     if thresholding_type=="Adaptive Mean":
@@ -65,6 +64,11 @@ def apply_local_thresholding(thresholding_type, image, window_size, offset, sigm
 
             if thresholding_type == "Optimal Thresholding":
                 _, threshold = optimal_thresholding(sub_image)
+                threshold = threshold - offset
+                local_thresholded = (sub_image > threshold).astype(np.uint8) * 255
+
+            if thresholding_type == "Otsu Thresholding":
+                _, threshold = otsu_thresholding(sub_image)
                 threshold = threshold - offset
                 local_thresholded = (sub_image > threshold).astype(np.uint8) * 255
             
@@ -107,7 +111,7 @@ def otsu_thresholding(image):
 
     thresholded_image = (image > optimal_threshold).astype(np.uint8) * 255
     
-    return thresholded_image
+    return thresholded_image, optimal_threshold
 
 def global_mean(image):
     T = np.mean(image)
