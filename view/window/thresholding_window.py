@@ -61,10 +61,13 @@ class ThresholdingWindow(BasicStackedWindow):
 
     def on_thresholding_type_change(self):
             selected_type = self.thresholding_type_custom_combo_box.current_text()
+            self.variance_spin_box.setVisible(False)
+            self.local_thresholding_window_offset_spin_box.setVisible(True)
             if selected_type == "Adaptive Gaussian":
                 self.variance_spin_box.setVisible(True)
-            else:
-                self.variance_spin_box.setVisible(False)
+            elif self.thresholding_type_custom_combo_box.current_text() == "Spectral Thresholding":
+                self.local_thresholding_window_offset_spin_box.setVisible(False)
+
 
 
     
