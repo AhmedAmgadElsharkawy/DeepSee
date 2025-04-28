@@ -64,7 +64,9 @@ class ImageViewer(pg.ImageView):
     def contextMenuEvent(self, event):
         if self.image_model.image_matrix is None:
             return 
+        self.display_context_menu(event)
 
+    def display_context_menu(self,event):
         menu = QMenu(self)
 
         move_menu = menu.addMenu("Move To")
@@ -132,6 +134,7 @@ class ImageViewer(pg.ImageView):
         sift_descriptors_action.triggered.connect(self.move_to_sift_descriptors_window)
 
         menu.exec_(event.globalPos())
+
 
     def move_to_noise(self):
         self.main_window.nosie_window.input_image_viewer.display_and_set_image_matrix(self.image_model.image_matrix)

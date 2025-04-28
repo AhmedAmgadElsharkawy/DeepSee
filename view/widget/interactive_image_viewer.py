@@ -13,6 +13,7 @@ class InteractiveImageViewer(ImageViewer):
         self.markers_positions = []
         self.marker_items = []
         self.add_markers_connected = False
+        self.just_removed_item = False
 
         self.just_double_clicked = False
         self.click_timer = None  # To hold the timer for detecting double-click
@@ -45,24 +46,35 @@ class InteractiveImageViewer(ImageViewer):
         # print("load end")
 
     def handle_mouse_click(self, event):
-        # print("mouse_click_start")
         if self.just_double_clicked:
-            print(self.getView().mapSceneToView(event.scenePos()))
-            # event.ignore()
             self.just_double_clicked = False
             return
-        
-        if event.button() == Qt.LeftButton and self.image_model.image_matrix is not None:
-            # print("single")
-            mouse_point = self.getView().mapSceneToView(event.scenePos())
-            x, y = mouse_point.x(), mouse_point.y()
 
-            image_matrix = self.image_model.image_matrix
-            height, width = image_matrix.shape[:2]
+        if self.image_model.image_matrix is None:
+            return
 
+        mouse_point = self.getView().mapSceneToView(event.scenePos())
+        x, y = mouse_point.x(), mouse_point.y()
+
+        if event.button() == Qt.RightButton:
+            for i, marker in enumerate(self.markers_positions):
+                marker_x, marker_y = marker["x"], marker["y"]
+                distance = ((x - marker_x) ** 2 + (y - marker_y) ** 2) ** 0.5
+                if distance <= 5: 
+                    self.remove_marker(i)
+                    self.just_removed_item = True
+                    return  
+        elif event.button() == Qt.LeftButton:
+            height, width = self.image_model.image_matrix.shape[:2]
             if 0 <= x < width and 0 <= y < height:
                 self.add_x_marker(x, y)
-            # print("mouse_click_end")
+
+    def remove_marker(self, index):
+        line1 = self.marker_items.pop(index * 2)
+        line2 = self.marker_items.pop(index * 2)
+        self.getView().removeItem(line1)
+        self.getView().removeItem(line2)
+        self.markers_positions.pop(index)
 
 
     def add_x_marker(self, x, y, size=6):
@@ -104,3 +116,10 @@ class InteractiveImageViewer(ImageViewer):
 
     def get_markers_positions(self):
         return self.markers_positions
+    
+
+    def contextMenuEvent(self, event):
+        if self.image_model.image_matrix is None or self.just_removed_item:
+            self.just_removed_item = False
+            return 
+        self.display_context_menu(event)
