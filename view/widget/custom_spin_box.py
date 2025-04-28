@@ -1,7 +1,11 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSpinBox
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSignal
 
 class CustomSpinBox(QWidget):
+
+    # Expose a new signal that mirrors the internal spin box signal
+    valueChanged = pyqtSignal(float)
     def __init__(self, label="Label", double_value=False, range_start=0, range_end=100, initial_value=0, decimals=5, step_value=1):
         super().__init__()
 
@@ -40,9 +44,30 @@ class CustomSpinBox(QWidget):
 
         self.main_widget_layout.addWidget(self.spin_box)
         # self.spin_box.setButtonSymbols(QDoubleSpinBox.NoButtons)
+        # Connect internal spinbox valueChanged to the external signal
+        self.spin_box.valueChanged.connect(self.emit_value_changed)
+
 
     def value(self):
         return round(self.spin_box.value(), self.spin_box.decimals()) if isinstance(self.spin_box, QDoubleSpinBox) else self.spin_box.value()
 
     def setValue(self, value):
         self.spin_box.setValue(value)
+
+    def emit_value_changed(self, value):
+        """
+        Emit valueChanged from CustomSpinBox when internal spinbox changes.
+        Always emit float to be consistent.
+        """
+        self.valueChanged.emit(float(value))
+
+    def setMaximum(self, max_value):
+        if isinstance(self.spin_box, QSpinBox):
+            max_value = int(max_value)
+        self.spin_box.setMaximum(max_value)
+
+    def setMinimum(self, min_value):
+        if isinstance(self.spin_box, QSpinBox):
+            min_value = int(min_value)
+        self.spin_box.setMinimum(min_value)
+

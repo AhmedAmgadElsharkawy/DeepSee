@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
+import time
+from collections import defaultdict
 from scipy.spatial.distance import cdist
 
 class SegmentationController():
@@ -23,7 +25,7 @@ class SegmentationController():
             output_image = self.k_means_segmentation(image, k_value, max_iterations)
         elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Mean Shift":    
             
-            pass
+            output_image=self.mean_shift_segmentation(image,spatial_radius=15,color_radius=20)
         elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Agglomerative Segmentation":
             cluster_numbers=self.segmentation_window.agglomerative_segmentation_clusters_number_spin_box.value()
             initial_ccluster_numbers= self.segmentation_window.agglomerative_segmentation_initial_clusters_number_spin_box.value()
@@ -195,3 +197,193 @@ class SegmentationController():
             for point in cluster:
                 lookup[tuple(np.round(point).astype(int))] = idx
         return lookup, centers
+
+    def mean_shift_segmentation(self,image, spatial_radius=15, color_radius=20, min_shift=0.5, max_iterations=20):
+        """
+        Custom implementation of Mean Shift segmentation without using scikit-learn.
+
+        Args:
+            image: Input image (BGR format)
+            spatial_radius: Spatial radius for the kernel
+            color_radius: Color radius for the kernel
+            min_shift: Minimum shift distance to continue iterations
+            max_iterations: Maximum number of iterations
+
+        Returns:
+            Segmented image
+        """
+        # Convert to CIELAB color space
+        scale_percent = 50  # percent of original size
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        image = cv2.resize(image, (width, height))
+        lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+
+        # Start timing
+        start_time = time.time()
+
+        # Reshape the image to a feature vector [x, y, L, a, b]
+        height, width, _ = lab_image.shape
+        x = np.arange(width)
+        y = np.arange(height)
+        X, Y = np.meshgrid(x, y)
+
+        # Create feature space - combining spatial (x,y) and color (L,a,b) information
+        pixels = np.column_stack((
+            X.flatten(),              # X coordinate
+            Y.flatten(),              # Y coordinate
+            lab_image[:, :, 0].flatten(),  # L channel
+            lab_image[:, :, 1].flatten(),  # a channel
+            lab_image[:, :, 2].flatten()   # b channel
+        ))
+
+        # Normalize spatial and color feature spaces separately
+        spatial_scale = 1.0 / spatial_radius
+        color_scale = 1.0 / color_radius
+
+        # Apply scaling to the feature space
+        scaled_pixels = np.column_stack((
+            pixels[:, 0] * spatial_scale,
+            pixels[:, 1] * spatial_scale,
+            pixels[:, 2] * color_scale,
+            pixels[:, 3] * color_scale,
+            pixels[:, 4] * color_scale
+        ))
+
+        # Create a working copy
+        points = scaled_pixels.copy()
+
+        # Use a grid-based approach to reduce the number of seed points
+        grid_size = 20  # Adjust based on your needs
+        seed_indices = []
+
+        # Create a grid and select one point from each cell
+        for y in range(0, height, grid_size):
+            for x in range(0, width, grid_size):
+                # Calculate pixel indices in this grid cell
+                y_max = min(y + grid_size, height)
+                x_max = min(x + grid_size, width)
+
+                # Get a representative point from this cell
+                cell_indices = []
+                for i in range(y, y_max):
+                    for j in range(x, x_max):
+                        if i < height and j < width:
+                            cell_indices.append(i * width + j)
+
+                if cell_indices:
+                    seed_indices.append(cell_indices[len(cell_indices) // 2])  # Middle point
+
+        print(f"Number of seed points: {len(seed_indices)}")
+
+        # Start with seed points
+        print("Performing mean shift...")
+        seed_points = points[seed_indices].copy()
+        shifted_points = seed_points.copy()
+
+        # Mean shift iteration
+        for iteration in range(max_iterations):
+            max_shift_distance = 0
+
+            for i in range(len(seed_points)):
+                # Compute distances from current seed point to all scaled pixels
+                distances = np.sqrt(np.sum((points - shifted_points[i])**2, axis=1))
+
+                # Find points within the bandwidth (points where distance <= 1.0)
+                in_bandwidth_indices = np.where(distances <= 1.0)[0]
+
+                if len(in_bandwidth_indices) > 0:
+                    # Compute mean shift vector
+                    new_point = np.mean(points[in_bandwidth_indices], axis=0)
+
+                    # Calculate shift distance
+                    shift_distance = np.sqrt(np.sum((new_point - shifted_points[i])**2))
+                    max_shift_distance = max(max_shift_distance, shift_distance)
+
+                    # Update position
+                    shifted_points[i] = new_point
+
+            print(f"Iteration {iteration+1}, max shift: {max_shift_distance:.4f}")
+
+            # Check convergence
+            if max_shift_distance < min_shift:
+                print(f"Converged after {iteration+1} iterations")
+                break
+
+        # Merge close modes/clusters
+        merge_distance = 1.0
+
+        # Dictionary to store clusters
+        clusters = {}
+        cluster_id = 0
+
+        # First cluster center
+        clusters[cluster_id] = shifted_points[0]
+        cluster_id += 1
+
+        # Assign shifted points to clusters or create new ones
+        for i in range(1, len(shifted_points)):
+            # Find closest existing cluster
+            min_dist = float('inf')
+            closest_cluster = -1
+
+            for cid, center in clusters.items():
+                dist = np.sqrt(np.sum((shifted_points[i] - center)**2))
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_cluster = cid
+
+            # If close enough to existing cluster, merge
+            if min_dist <= merge_distance:
+                # Update cluster center as the weighted average
+                clusters[closest_cluster] = (clusters[closest_cluster] + shifted_points[i]) / 2
+            else:
+                # Create new cluster
+                clusters[cluster_id] = shifted_points[i]
+                cluster_id += 1
+
+        print(f"Number of clusters after merging: {len(clusters)}")
+
+        # Assign each pixel to the nearest cluster
+        cluster_centers = np.array(list(clusters.values()))
+        labels = np.zeros(len(points), dtype=int)
+
+        # Use efficient vectorized operations for assignment
+        # Calculate distances to all cluster centers
+        distances = cdist(points, cluster_centers)
+
+        # Assign each point to the nearest cluster
+        labels = np.argmin(distances, axis=1)
+
+        # Create segmented image
+        result = np.zeros_like(image)
+
+        # Map each pixel to its cluster center's color
+        for i in range(len(clusters)):
+            mask = labels == i
+            # Get the cluster center
+            center = cluster_centers[i]
+
+            # Convert back to original scale
+            color_center = np.array([
+                center[2] / color_scale,  # L
+                center[3] / color_scale,  # a
+                center[4] / color_scale   # b
+            ])
+
+            # Reshape the mask to the image shape
+            mask_2d = mask.reshape(height, width)
+
+            # Set the color of the segment
+            # First convert center color from LAB to BGR
+            lab_color = np.uint8([[color_center]])
+            bgr_color = cv2.cvtColor(lab_color, cv2.COLOR_LAB2BGR)[0][0]
+
+            # Apply the color to the segment
+            result[mask_2d] = bgr_color
+
+        # End timing
+        end_time = time.time()
+        print(f"Custom segmentation completed in {end_time - start_time:.2f} seconds")
+
+        return result

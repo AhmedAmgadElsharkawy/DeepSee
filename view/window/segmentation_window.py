@@ -41,8 +41,8 @@ class SegmentationWindow(BasicStackedWindow):
         self.mean_shift_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.mean_shift_inputs_container)
         self.mean_shift_inputs_container.setVisible(False)
-        self.mean_shift_window_size_spin_box = CustomSpinBox(label="Window Size",range_start=1,range_end=100,initial_value=2,step_value=1)
-        self.mean_shift_threshold_spin_box = CustomSpinBox(label="Threshold",range_start=1,range_end=100,initial_value=2,step_value=1)
+        self.mean_shift_window_size_spin_box = CustomSpinBox(label="Spatial Radius",range_start=1,range_end=100,initial_value=15,step_value=1)
+        self.mean_shift_threshold_spin_box = CustomSpinBox(label="Color Radius",range_start=1,range_end=100,initial_value=20,step_value=1)
         self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_window_size_spin_box)
         self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_threshold_spin_box)
         
@@ -53,10 +53,11 @@ class SegmentationWindow(BasicStackedWindow):
         self.agglomerative_segmentation_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.agglomerative_segmentation_inputs_container)
         self.agglomerative_segmentation_inputs_container.setVisible(False)
-        self.agglomerative_segmentation_clusters_number_spin_box = CustomSpinBox(label="Clusters Number",range_start=1,range_end=100,initial_value=10,step_value=1)
-        self.agglomerative_segmentation_initial_clusters_number_spin_box = CustomSpinBox(label="Initiak Clusters Number",range_start=1,range_end=100,initial_value=25,step_value=1)
+        self.agglomerative_segmentation_clusters_number_spin_box = CustomSpinBox(label="Clusters Number",range_start=1,range_end=25,initial_value=10,step_value=1)
+        self.agglomerative_segmentation_initial_clusters_number_spin_box = CustomSpinBox(label="Initial Clusters Number",range_start=1,range_end=100,initial_value=25,step_value=1)
         self.agglomerative_segmentation_inputs_container_layout.addWidget(self.agglomerative_segmentation_clusters_number_spin_box)
         self.agglomerative_segmentation_inputs_container_layout.addWidget(self.agglomerative_segmentation_initial_clusters_number_spin_box)
+        self.agglomerative_segmentation_initial_clusters_number_spin_box.valueChanged.connect(self.update_final_clusters_range)
 
 
 
@@ -95,6 +96,18 @@ class SegmentationWindow(BasicStackedWindow):
         self.mean_shift_inputs_container.setVisible(False)
         self.agglomerative_segmentation_inputs_container.setVisible(False)
         self.region_growing_inputs_container.setVisible(False)
+
+
+    def update_final_clusters_range(self, value):
+        """
+        Updates the maximum value of the final clusters spin box
+        based on the initial clusters spin box value.
+        """
+        self.agglomerative_segmentation_clusters_number_spin_box.setMaximum(value)
+        # Optionally, also fix current value if it became invalid
+        if self.agglomerative_segmentation_clusters_number_spin_box.value() > value:
+            self.agglomerative_segmentation_clusters_number_spin_box.setValue(value)
+
 
     
 
