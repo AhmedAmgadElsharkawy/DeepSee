@@ -83,7 +83,6 @@ class InteractiveImageViewer(ImageViewer):
 
         self.marker_items.extend([line1, line2])
         self.markers_positions.append({"x" : int(x), 'y' : int(y)})
-        print(self.markers_positions)
 
     def reset_markers(self):
         for item in self.marker_items:
