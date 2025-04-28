@@ -130,7 +130,7 @@ class SegmentationController():
 
     def agglomerative_segmention(self,image, final_k=10, initial_k=25):
 
-        pixels = image.reshape((-1, 3)).astype(int)
+        pixels = image.reshape((-1, 3)).astype(int) #5d array
 
         # Step 1: Initial Clustering with KMeans
         initial_clusters = self.initial_kmeans_quantization(pixels, initial_k)
@@ -176,9 +176,9 @@ class SegmentationController():
             centroids = np.array([np.mean(cluster, axis=0) for cluster in clusters])
             dist_matrix = cdist(centroids, centroids)
             np.fill_diagonal(dist_matrix, np.inf)
-            i, j = np.unravel_index(np.argmin(dist_matrix), dist_matrix.shape)
+            i, j = np.unravel_index(np.argmin(dist_matrix), dist_matrix.shape)  #Finds the indices (i,j) of the closest pair of clusters in the distance matrix.
 
-            merged = np.vstack((clusters[i], clusters[j]))
+            merged = np.vstack((clusters[i], clusters[j])) #Combines the two closest clusters by vertically stacking their pixel arrays.
             clusters[i] = merged
             del clusters[j]
 
@@ -194,7 +194,7 @@ class SegmentationController():
         lookup = {}
         centers = []
         for idx, cluster in enumerate(clusters):
-            center = np.mean(cluster, axis=0)
+            center = np.mean(cluster, axis=0) #averaging all its pixel values along the color channels
             centers.append(center)
             for point in cluster:
                 lookup[tuple(np.round(point).astype(int))] = idx
@@ -202,18 +202,10 @@ class SegmentationController():
 
     def mean_shift_segmentation(self,image, spatial_radius=15, color_radius=20, min_shift=0.5, max_iterations=20):
         """
-        Custom implementation of Mean Shift segmentation without using scikit-learn.
+        implementation of Mean Shift segmentation
 
-        Args:
-            image: Input image (BGR format)
-            spatial_radius: Spatial radius for the kernel
-            color_radius: Color radius for the kernel
-            min_shift: Minimum shift distance to continue iterations
-            max_iterations: Maximum number of iterations
-
-        Returns:
-            Segmented image
         """
+        # Converts to CIELAB color space which better represents human color perception
         # Convert to CIELAB color space
         scale_percent = 50  # percent of original size
         width = int(image.shape[1] * scale_percent / 100)
@@ -230,7 +222,8 @@ class SegmentationController():
         y = np.arange(height)
         X, Y = np.meshgrid(x, y)
 
-        # Create feature space - combining spatial (x,y) and color (L,a,b) information
+
+        #Combines spatial (x,y) and color (L,a,b) information into a 5D feature vector for each pixel
         pixels = np.column_stack((
             X.flatten(),              # X coordinate
             Y.flatten(),              # Y coordinate
