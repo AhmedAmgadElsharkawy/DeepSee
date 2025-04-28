@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QGraphicsLineItem
 from PyQt5.QtGui import QPen
 
@@ -14,6 +14,18 @@ class InteractiveImageViewer(ImageViewer):
         self.marker_items = []
         self.add_markers_connected = False
 
+        self.just_double_clicked = False
+        self.click_timer = None  # To hold the timer for detecting double-click
+
+    def mouseDoubleClickEvent(self, event):
+        # print("mouseDoubleClickEvent_start")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
+        if file_path:
+            self.just_double_clicked = True
+            self.load_image(file_path)
+            # print("mouseDoubleClickEvent_end")
+
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
@@ -24,18 +36,24 @@ class InteractiveImageViewer(ImageViewer):
             if file_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
                 self.load_image(file_path)
 
-    def mouseDoubleClickEvent(self, event):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
-        if file_path:
-            self.load_image(file_path)
 
     def load_image(self, file_path):
+        # print("load start")
         self.reset()
         self.image_model.load_image(file_path=file_path)
         self.display_image_matrix(self.image_model.get_image_matrix())
+        # print("load end")
 
     def handle_mouse_click(self, event):
+        # print("mouse_click_start")
+        if self.just_double_clicked:
+            print(self.getView().mapSceneToView(event.scenePos()))
+            # event.ignore()
+            self.just_double_clicked = False
+            return
+        
         if event.button() == Qt.LeftButton and self.image_model.image_matrix is not None:
+            # print("single")
             mouse_point = self.getView().mapSceneToView(event.scenePos())
             x, y = mouse_point.x(), mouse_point.y()
 
@@ -44,6 +62,8 @@ class InteractiveImageViewer(ImageViewer):
 
             if 0 <= x < width and 0 <= y < height:
                 self.add_x_marker(x, y)
+            # print("mouse_click_end")
+
 
     def add_x_marker(self, x, y, size=6):
         line1 = QGraphicsLineItem(x - size/2, y - size/2, x + size/2, y + size/2)
@@ -59,6 +79,7 @@ class InteractiveImageViewer(ImageViewer):
 
         self.marker_items.extend([line1, line2])
         self.markers_positions.append({"x" : int(x), 'y' : int(y)})
+        print(self.markers_positions)
 
     def reset_markers(self):
         for item in self.marker_items:
