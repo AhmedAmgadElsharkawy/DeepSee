@@ -392,7 +392,12 @@ class SegmentationController():
             else:  # image.shape[2] == 1
                 image = np.concatenate((image,) * 3, axis=2)
 
-        pixels = image.reshape((-1, 3)).astype(int)
+        # Save original image dimensions and number of channels
+        h, w = image.shape[:2]
+        channels = image.shape[2] if len(image.shape) == 3 else 1
+
+        # Reshape image to a list of pixels (preserving all channels)
+        pixels = image.reshape((-1, channels)).astype(int)
 
         # Step 1: Initial Clustering with KMeans
         initial_clusters = self.initial_kmeans_quantization(pixels, initial_k)
@@ -407,9 +412,8 @@ class SegmentationController():
             for p in pixels
         ], dtype=np.uint8)
 
-        # Reshape to original image dimensions
-        h, w = image.shape[:2]
-        segmented = recolored.reshape((h, w, 3))
+        # Reshape to original image dimensions (ensure correct shape)
+        segmented = recolored.reshape((h, w, channels))
 
         return segmented
 
@@ -470,6 +474,13 @@ class SegmentationController():
         # Check if image is grayscale
         is_grayscale = len(image.shape) == 2 or (len(image.shape) == 3 and image.shape[2] == 1)
 
+        # Detect if image has alpha channel (4 channels)
+        has_alpha = len(image.shape) == 3 and image.shape[2] == 4
+
+        # Store original image shape and channels for later
+        orig_shape = image.shape
+        n_channels = 1 if is_grayscale else (4 if has_alpha else 3)
+
         # Resize for performance
         scale_percent = 50  # percent of original size
         width = int(image.shape[1] * scale_percent / 100)
@@ -508,36 +519,63 @@ class SegmentationController():
                 pixels[:, 2] * intensity_scale
             ))
         else:
-            # For color images, convert to LAB
-            print("[INFO] Processing color image")
-            lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+            # For color images, handle both RGB/BGR and RGBA/BGRA
+            print(f"[INFO] Processing {'RGBA' if has_alpha else 'RGB'} image")
 
-            # Reshape the image to a feature vector [x, y, L, a, b]
-            height, width, _ = lab_image.shape
+            if has_alpha:
+                # Extract alpha channel and convert RGB part to LAB
+                alpha_channel = image[:, :, 3]
+                rgb_image = image[:, :, :3]
+                lab_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2LAB)
+            else:
+                lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+
+            # Reshape the image to a feature vector [x, y, L, a, b, (alpha)]
+            height, width = lab_image.shape[:2]
             x = np.arange(width)
             y = np.arange(height)
             X, Y = np.meshgrid(x, y)
 
-            pixels = np.column_stack((
-                X.flatten(),                    # X coordinate
-                Y.flatten(),                    # Y coordinate
-                lab_image[:, :, 0].flatten(),   # L channel
-                lab_image[:, :, 1].flatten(),   # a channel
-                lab_image[:, :, 2].flatten()    # b channel
-            ))
+            if has_alpha:
+                pixels = np.column_stack((
+                    X.flatten(),                    # X coordinate
+                    Y.flatten(),                    # Y coordinate
+                    lab_image[:, :, 0].flatten(),   # L channel
+                    lab_image[:, :, 1].flatten(),   # a channel
+                    lab_image[:, :, 2].flatten(),   # b channel
+                    alpha_channel.flatten()         # Alpha channel
+                ))
+            else:
+                pixels = np.column_stack((
+                    X.flatten(),                    # X coordinate
+                    Y.flatten(),                    # Y coordinate
+                    lab_image[:, :, 0].flatten(),   # L channel
+                    lab_image[:, :, 1].flatten(),   # a channel
+                    lab_image[:, :, 2].flatten()    # b channel
+                ))
 
             # Normalize spatial and color feature spaces
             spatial_scale = 1.0 / spatial_radius
             color_scale = 1.0 / color_radius
 
-            # Apply scaling
-            scaled_pixels = np.column_stack((
-                pixels[:, 0] * spatial_scale,
-                pixels[:, 1] * spatial_scale,
-                pixels[:, 2] * color_scale,
-                pixels[:, 3] * color_scale,
-                pixels[:, 4] * color_scale
-            ))
+            # Apply scaling - adjust for alpha if present
+            if has_alpha:
+                scaled_pixels = np.column_stack((
+                    pixels[:, 0] * spatial_scale,
+                    pixels[:, 1] * spatial_scale,
+                    pixels[:, 2] * color_scale,
+                    pixels[:, 3] * color_scale,
+                    pixels[:, 4] * color_scale,
+                    pixels[:, 5] * color_scale  # Scale alpha channel
+                ))
+            else:
+                scaled_pixels = np.column_stack((
+                    pixels[:, 0] * spatial_scale,
+                    pixels[:, 1] * spatial_scale,
+                    pixels[:, 2] * color_scale,
+                    pixels[:, 3] * color_scale,
+                    pixels[:, 4] * color_scale
+                ))
 
         # Create a working copy
         points = scaled_pixels.copy()
@@ -664,8 +702,11 @@ class SegmentationController():
                 # Apply the intensity to the segment
                 result[mask_2d] = intensity_value
         else:
-            # Create a color result image
-            result = np.zeros_like(image)
+            # Create a color result image with the appropriate number of channels
+            if has_alpha:
+                result = np.zeros((height, width, 4), dtype=np.uint8)
+            else:
+                result = np.zeros((height, width, 3), dtype=np.uint8)
 
             # Map each pixel to its cluster center's color
             for i in range(len(clusters)):
@@ -673,23 +714,41 @@ class SegmentationController():
                 # Get the cluster center
                 center = cluster_centers[i]
 
-                # Convert back to original scale
-                color_center = np.array([
-                    center[2] / color_scale,  # L
-                    center[3] / color_scale,  # a
-                    center[4] / color_scale   # b
-                ])
-
                 # Reshape the mask to the image shape
                 mask_2d = mask.reshape(height, width)
 
-                # Set the color of the segment
-                # First convert center color from LAB to BGR
-                lab_color = np.uint8([[color_center]])
-                bgr_color = cv2.cvtColor(lab_color, cv2.COLOR_LAB2BGR)[0][0]
+                if has_alpha:
+                    # Handle images with alpha channel
+                    color_center = np.array([
+                        center[2] / color_scale,  # L
+                        center[3] / color_scale,  # a
+                        center[4] / color_scale,  # b
+                        center[5] / color_scale   # alpha
+                    ])
 
-                # Apply the color to the segment
-                result[mask_2d] = bgr_color
+                    # Convert L*a*b* to BGR
+                    lab_color = np.uint8([[color_center[:3]]])
+                    bgr_color = cv2.cvtColor(lab_color, cv2.COLOR_LAB2BGR)[0][0]
+
+                    # Create BGRA color
+                    bgra_color = np.append(bgr_color, color_center[3])
+
+                    # Apply the BGRA color to the segment
+                    result[mask_2d] = bgra_color
+                else:
+                    # Convert back to original scale
+                    color_center = np.array([
+                        center[2] / color_scale,  # L
+                        center[3] / color_scale,  # a
+                        center[4] / color_scale   # b
+                    ])
+
+                    # Convert center color from LAB to BGR
+                    lab_color = np.uint8([[color_center]])
+                    bgr_color = cv2.cvtColor(lab_color, cv2.COLOR_LAB2BGR)[0][0]
+
+                    # Apply the color to the segment
+                    result[mask_2d] = bgr_color
 
         # End timing
         end_time = time.time()
