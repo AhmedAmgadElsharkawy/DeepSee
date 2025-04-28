@@ -15,17 +15,6 @@ class InteractiveImageViewer(ImageViewer):
         self.add_markers_connected = False
         self.just_removed_item = False
 
-        self.just_double_clicked = False
-        self.click_timer = None  # To hold the timer for detecting double-click
-
-    def mouseDoubleClickEvent(self, event):
-        # print("mouseDoubleClickEvent_start")
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
-        if file_path:
-            self.just_double_clicked = True
-            self.load_image(file_path)
-            # print("mouseDoubleClickEvent_end")
-
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -39,17 +28,20 @@ class InteractiveImageViewer(ImageViewer):
 
 
     def load_image(self, file_path):
-        # print("load start")
         self.reset()
         self.image_model.load_image(file_path=file_path)
         self.display_image_matrix(self.image_model.get_image_matrix())
-        # print("load end")
+
+    def mouseDoubleClickEvent(self,event):
+        QTimer.singleShot(100, self.delayed_double_click_action)
+
+    def delayed_double_click_action(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
+        if file_path:
+            self.load_image(file_path)
+
 
     def handle_mouse_click(self, event):
-        if self.just_double_clicked:
-            self.just_double_clicked = False
-            return
-
         if self.image_model.image_matrix is None:
             return
 
