@@ -41,10 +41,10 @@ class SegmentationWindow(BasicStackedWindow):
         self.mean_shift_inputs_container_layout.setContentsMargins(0,0,0,0)
         self.inputs_container_layout.addWidget(self.mean_shift_inputs_container)
         self.mean_shift_inputs_container.setVisible(False)
-        self.mean_shift_window_size_spin_box = CustomSpinBox(label="Spatial Radius",range_start=1,range_end=100,initial_value=15,step_value=1)
-        self.mean_shift_threshold_spin_box = CustomSpinBox(label="Color Radius",range_start=1,range_end=100,initial_value=20,step_value=1)
-        self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_window_size_spin_box)
-        self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_threshold_spin_box)
+        self.mean_shift_spatial_radius_spin_box = CustomSpinBox(label="Spatial Radius",range_start=1,range_end=100,initial_value=15,step_value=1)
+        self.mean_shift_color_radius_spin_box = CustomSpinBox(label="Color Radius",range_start=1,range_end=100,initial_value=20,step_value=1)
+        self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_spatial_radius_spin_box)
+        self.mean_shift_inputs_container_layout.addWidget(self.mean_shift_color_radius_spin_box)
         
 
 

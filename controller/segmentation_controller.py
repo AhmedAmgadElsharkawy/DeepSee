@@ -23,9 +23,11 @@ class SegmentationController():
         
         if self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "k-means":
             output_image = self.k_means_segmentation(image, k_value, max_iterations)
-        elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Mean Shift":    
+        elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Mean Shift":
+            spatial_radius=self.segmentation_window.mean_shift_spatial_radius_spin_box.value()
+            color_radius=self.segmentation_window.mean_shift_color_radius_spin_box.value()
             
-            output_image=self.mean_shift_segmentation(image,spatial_radius=15,color_radius=20)
+            output_image=self.mean_shift_segmentation(image,spatial_radius=spatial_radius,color_radius=color_radius)
         elif self.segmentation_window.segmentation_algorithm_custom_combo_box.current_text() == "Agglomerative Segmentation":
             cluster_numbers=self.segmentation_window.agglomerative_segmentation_clusters_number_spin_box.value()
             initial_ccluster_numbers= self.segmentation_window.agglomerative_segmentation_initial_clusters_number_spin_box.value()
