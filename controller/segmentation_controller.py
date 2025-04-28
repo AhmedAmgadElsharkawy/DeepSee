@@ -65,7 +65,7 @@ class SegmentationController():
             if np.all(centers == new_centers):
                 break
             
-            center = new_centers
+            centers = new_centers
         
         # map each pixel to its corresponding color
         segmented_image = centers[labels].reshape(image.shape).astype(np.uint8)
