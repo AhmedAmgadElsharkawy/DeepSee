@@ -89,10 +89,23 @@ def optimal_thresholding(image):
         image[height - 1, 0],
         image[height - 1, width - 1],
     ]
-    threshold = np.mean(corners)
+    mask = np.ones((height, width), dtype=bool)
+    mask[0, 0] = False
+    mask[0, width - 1] = False
+    mask[height - 1, 0] = False
+    mask[height - 1, width - 1] = False
+
+    non_corner_pixels = image[mask]
+    corners_threshold = np.mean(corners)
+    non_corners_threshold = np.mean(non_corner_pixels)
+    threshold = (corners_threshold + non_corners_threshold) / 2
     while True:
-        class1_mean = np.mean(image[image < threshold])
-        class2_mean = np.mean(image[image >= threshold])
+        class1 = image[image < threshold]
+        class2 = image[image >= threshold]
+        if class1.size == 0 or class2.size == 0:
+            break
+        class1_mean = np.mean(class1)
+        class2_mean = np.mean(class2)
         new_threshold = (class1_mean + class2_mean) / 2
         if np.abs(new_threshold - threshold) < 1e-6:
             break
