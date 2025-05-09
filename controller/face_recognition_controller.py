@@ -19,12 +19,20 @@ class FaceRecognitionController():
 
             L = X_centered.T @ X_centered
             eigvals, eigvecs = np.linalg.eigh(L)
-            idx = np.argsort(-eigvals)
+            idx = np.argsort(eigvals)[::-1]
+            eigvals = eigvals[idx]
             eigvecs = eigvecs[:, idx]
+
+            total_variance = np.sum(eigvals)
+            variance_ratio = eigvals / total_variance
+            cumulative_variance = np.cumsum(variance_ratio)
+
+            desired_confidence = 0.95  
+            k = np.searchsorted(cumulative_variance, desired_confidence) + 1
+
             eigenfaces = X_centered @ eigvecs
             eigenfaces = eigenfaces / np.linalg.norm(eigenfaces, axis=0)
 
-            k = 50
             eigenfaces = eigenfaces[:, :k]
 
             projections = eigenfaces.T @ X_centered
