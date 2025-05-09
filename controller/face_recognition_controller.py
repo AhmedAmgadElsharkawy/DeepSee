@@ -71,7 +71,7 @@ def handle_test_image(test_img,mean_face, target_size=(64, 64)):
 
 
 class FaceRecognitionWorker(QThread):
-    result_ready = pyqtSignal(np.ndarray)
+    result_ready = pyqtSignal(object)
 
     def __init__(self, params):
         super().__init__()
@@ -124,8 +124,13 @@ class FaceRecognitionController():
         self.Face_detection_and_recognition_window.output_image_viewer.hide_loading_effect()
         self.Face_detection_and_recognition_window.controls_container.setEnabled(True)
         self.Face_detection_and_recognition_window.image_viewers_container.setEnabled(True)
-        self.Face_detection_and_recognition_window.output_image_viewer.display_and_set_image_matrix(result_image)
-        self.Face_detection_and_recognition_window.show_toast("Face recognition is complete.")
+
+        if result_image is None:
+            self.Face_detection_and_recognition_window.output_image_viewer.reset()
+            self.Face_detection_and_recognition_window.show_toast(title = "Failed!", text = "No Confient Match Found.",type="ERROR")  
+        else:
+            self.Face_detection_and_recognition_window.output_image_viewer.display_and_set_image_matrix(result_image)
+            self.Face_detection_and_recognition_window.show_toast(title = "Success!", text = "Face is recognized successfully.")
 
         
 
