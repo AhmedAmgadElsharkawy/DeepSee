@@ -8,7 +8,7 @@ dataset_path = "data/eigen_faces_dataset/olivetti_faces.npy"
 
 def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue = None):
     faces = np.load(dataset_path)  
-    X = faces.reshape((400, -1)).T 
+    X = faces.reshape((faces.shape[0], -1)).T 
 
     mean_face = np.mean(X, axis=1, keepdims=True)
     X_centered = X - mean_face
