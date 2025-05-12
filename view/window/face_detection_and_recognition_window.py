@@ -23,7 +23,7 @@ class FaceDetectionAndRecognitionWindow(BasicStackedWindow):
         self.face_analysis_type_custom_combo_box = CustomComboBox(label= "Face Analysis Type",combo_box_items_list=["Face Detection","Face Recognition"])
         self.face_analysis_type_custom_combo_box.currentIndexChanged.connect(self.on_face_analysis_type_change)
         
-        self.lowe_ratio_spin_box = CustomSpinBox(label="Lowe's Ratio",range_start=0,range_end=1,initial_value=0.98,step_value=0.01,decimals=2,double_value=True)
+        self.lowe_ratio_spin_box = CustomSpinBox(label="Lowe's Ratio",range_start=0,range_end=1,initial_value=0.97,step_value=0.01,decimals=2,double_value=True)
         self.pca_confidence_level_spin_box =  CustomSpinBox(label="PCA Confidence Level",range_start=0,range_end=1,initial_value=0.95,step_value=0.01,decimals=2,double_value=True)
 
         self.inputs_container_layout.addWidget(self.face_analysis_type_custom_combo_box)
