@@ -46,17 +46,21 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
 
     distances = np.linalg.norm(projections - test_proj, axis=0)
 
-    sorted_indices = np.argsort(distances)
-    best_match = sorted_indices[0]
-    second_best_match = sorted_indices[1]
+    distance_with_indices = np.array([[dist, idx] for idx, dist in enumerate(distances)])
 
-    best_distance = distances[best_match]
-    second_best_distance = distances[second_best_match]
+    distance_with_indices = distance_with_indices[distance_with_indices[:, 0].argsort()]
 
+    best_distance, best_match = distance_with_indices[0]
+
+    best_image_class = best_match // 10
     matched_face = None
 
-    if best_distance < lowe_ratio * second_best_distance:
-        matched_face = X[:, best_match].reshape(64, 64)
+    for i in range(11):
+        current_class = distance_with_indices[i][1] // 10
+        if current_class != best_image_class:
+            if best_distance < lowe_ratio * distance_with_indices[i][0]:
+                matched_face = X[:, int(best_match)].reshape(64, 64)
+            break
 
     if queue:
         queue.put(matched_face)
