@@ -21,8 +21,10 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
     mean_face = np.mean(X, axis=1, keepdims=True)
     X_centered = X - mean_face
 
-    L = X_centered.T @ X_centered
-    eigvals, eigvecs = np.linalg.eigh(L)
+    covariance_matrix = X_centered @ X_centered.T
+
+    eigvals, eigvecs = np.linalg.eigh(covariance_matrix)
+
     idx = np.argsort(eigvals)[::-1]
     eigvals = eigvals[idx]
     eigvecs = eigvecs[:, idx]
@@ -33,8 +35,7 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
 
     k = np.searchsorted(cumulative_variance, pca_confidence_level) + 1
 
-    eigenfaces = X_centered @ eigvecs
-    eigenfaces = eigenfaces / np.linalg.norm(eigenfaces, axis=0)
+    eigvecs = eigvecs[:, :k]
 
     eigenfaces = eigenfaces[:, :k]
 
