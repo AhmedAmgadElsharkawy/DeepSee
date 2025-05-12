@@ -16,14 +16,23 @@ def load_training_data(path):
         if filename.lower().endswith('.png'):
             img_path = os.path.join(path, filename)
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, image_size)
+            # img = cv2.resize(img, image_size)
             img = img.astype(np.float32) / 255.0
             faces.append(img.flatten().reshape(-1, 1))
     return np.array(faces)
 
 # PCA setup and face recognition
-def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, training_faces):
-    X = training_faces.reshape((training_faces.shape[0], -1)).T
+def face_recognition_process(test_img, lowe_ratio, pca_confidence_level):
+    faces = []
+    for filename in os.listdir(dataset_path):
+        if filename.lower().endswith('.png'):
+            img_path = os.path.join(dataset_path, filename)
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+            img = img.astype(np.float32) / 255.0
+            faces.append(img.flatten().reshape(-1, 1))
+    
+    faces = np.array(faces)
+    X = faces.reshape((faces.shape[0], -1)).T
     mean_face = np.mean(X, axis=1, keepdims=True)
     X_centered = X - mean_face
 
@@ -34,7 +43,8 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, trainin
     eigvecs = eigvecs[:, idx]
 
     total_variance = np.sum(eigvals)
-    cumulative_variance = np.cumsum(eigvals / total_variance)
+    variance_ratio = eigvals / total_variance
+    cumulative_variance = np.cumsum(variance_ratio)
     k = np.searchsorted(cumulative_variance, pca_confidence_level) + 1
 
     eigenfaces = X_centered @ eigvecs
@@ -46,18 +56,32 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, trainin
     test_centered = handle_test_image(test_img, mean_face)
     test_proj = eigenfaces.T @ test_centered
     distances = np.linalg.norm(projections - test_proj, axis=0)
-    distance_with_indices = np.column_stack((distances, np.arange(len(distances))))
+    distance_with_indices = []
+
+    label = 0
+
+    for idx, dist in enumerate(distances):
+        while str(label).endswith('9'):
+            label += 1
+
+        distance_with_indices.append([dist, label])
+        label += 1
+
+    distance_with_indices = np.array(distance_with_indices)        
     distance_with_indices = distance_with_indices[distance_with_indices[:, 0].argsort()]
 
     best_distance, best_match = distance_with_indices[0]
-    best_image_class = int(best_match) // 10
 
-    matched = False
+    best_image_class = best_match // 10
+    matched = None
+    
     for i in range(1, 11):  # check first 10 nearest neighbors
-        other_class = int(distance_with_indices[i][1]) // 10
+        other_class = distance_with_indices[i][1] // 10
         if other_class != best_image_class:
             if best_distance < lowe_ratio * distance_with_indices[i][0]:
                 matched = True
+            else: 
+                best_image_class = other_class
             break
     return matched, best_image_class, best_distance
 
@@ -78,7 +102,6 @@ def load_test_images(test_path):
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
             img = cv2.resize(img, image_size)
             subject_id = int(filename.split('_')[1].split('.')[0])
-            print(subject_id)
             images.append(img)
             labels.append(subject_id)
     return images, labels
@@ -88,7 +111,7 @@ if __name__ == "__main__":
     training_faces = load_training_data(dataset_path)
     test_images, test_labels = load_test_images(test_path)
 
-    all_lowes = [0.8, 0.85, 0.9, 0.92, 0.94, 0.96, 1.0]
+    all_lowes = [0.4, 0.5, 0.6, 0.7]
     plt.figure(figsize=(10, 7))
 
     for lowe_ratio in all_lowes:
@@ -96,12 +119,11 @@ if __name__ == "__main__":
         y_true = []
 
         for img, true_label in zip(test_images, test_labels):
-            matched, predicted_class, best_distance = face_recognition_process(img, lowe_ratio, pca_confidence_level, training_faces)
-            print(f"matched: {matched}, predicted_class: {predicted_class}, true_label: {true_label}, best_distance: {best_distance}")
-            if matched:
-                y_scores.append(1 / (1 + best_distance))
-                # Store true label (1 if correct match)
-                y_true.append(1 if predicted_class == true_label // 10 else 0)
+            matched, predicted_class, best_distance = face_recognition_process(img, lowe_ratio, pca_confidence_level)
+            
+
+            y_scores.append(1 / (1 + best_distance))
+            y_true.append(1 if predicted_class == (true_label // 10) else 0)
 
         fpr, tpr, thresholds = roc_curve(y_true, y_scores)
         roc_auc = auc(fpr, tpr)

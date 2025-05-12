@@ -41,13 +41,9 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
     projections = eigenfaces.T @ X_centered
 
     test_centered = handle_test_image(test_img,mean_face)
-
     test_proj = eigenfaces.T @ test_centered
-
     distances = np.linalg.norm(projections - test_proj, axis=0)
-
     distance_with_indices = np.array([[dist, idx] for idx, dist in enumerate(distances)])
-
     distance_with_indices = distance_with_indices[distance_with_indices[:, 0].argsort()]
 
     best_distance, best_match = distance_with_indices[0]
@@ -55,7 +51,7 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
     best_image_class = best_match // 10
     matched_face = None
 
-    for i in range(11):
+    for i in range(1, 11):
         current_class = distance_with_indices[i][1] // 10
         if current_class != best_image_class:
             if best_distance < lowe_ratio * distance_with_indices[i][0]:
