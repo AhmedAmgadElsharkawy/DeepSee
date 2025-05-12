@@ -16,7 +16,7 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
             faces.append(img.flatten().reshape(-1, 1))
     
     faces = np.array(faces)
-    X = faces.reshape((faces.shape[0], -1)).T
+    X = faces.reshape((faces.shape[0], -1)).T 
 
     mean_face = np.mean(X, axis=1, keepdims=True)
     X_centered = X - mean_face
@@ -37,13 +37,14 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
 
     eigvecs = eigvecs[:, :k]
 
-    eigenfaces = eigenfaces[:, :k]
+    projections = eigvecs.T @ X_centered
+        
+    test_centered = handle_test_image(test_img, mean_face)
 
-    projections = eigenfaces.T @ X_centered
+    test_proj = eigvecs.T @ test_centered
 
-    test_centered = handle_test_image(test_img,mean_face)
-    test_proj = eigenfaces.T @ test_centered
     distances = np.linalg.norm(projections - test_proj, axis=0)
+
     distance_with_indices = np.array([[dist, idx] for idx, dist in enumerate(distances)])
     distance_with_indices = distance_with_indices[distance_with_indices[:, 0].argsort()]
 
