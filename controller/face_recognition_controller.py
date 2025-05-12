@@ -12,7 +12,8 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
         if filename.lower().endswith('.png'):
             img_path = os.path.join(dataset_path, filename)
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-            faces.append(img)
+            img = img.astype(np.float32) / 255.0
+            faces.append(img.flatten().reshape(-1, 1))
     
     faces = np.array(faces)
     X = faces.reshape((faces.shape[0], -1)).T
