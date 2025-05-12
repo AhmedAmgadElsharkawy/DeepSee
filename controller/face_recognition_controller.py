@@ -68,8 +68,6 @@ def handle_test_image(test_img,mean_face, target_size=(64, 64)):
     test_centered = flattened_test_img - mean_face
     return test_centered
 
-
-
 class FaceRecognitionWorker(QThread):
     result_ready = pyqtSignal(object)
 
