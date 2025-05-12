@@ -1,14 +1,21 @@
 import numpy as np
 import cv2
+import os
 import multiprocessing as mp
 from PyQt5.QtCore import QThread, pyqtSignal
 
-
-dataset_path = "data/eigen_faces_dataset/olivetti_faces.npy"
+dataset_path = "data/train_faces"
 
 def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue = None):
-    faces = np.load(dataset_path)  
-    X = faces.reshape((faces.shape[0], -1)).T 
+    faces = []
+    for filename in os.listdir(dataset_path):
+        if filename.lower().endswith('.png'):
+            img_path = os.path.join(dataset_path, filename)
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+            faces.append(img)
+    
+    faces = np.array(faces)
+    X = faces.reshape((faces.shape[0], -1)).T
 
     mean_face = np.mean(X, axis=1, keepdims=True)
     X_centered = X - mean_face
@@ -31,7 +38,6 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
     eigenfaces = eigenfaces[:, :k]
 
     projections = eigenfaces.T @ X_centered
-        
 
     test_centered = handle_test_image(test_img,mean_face)
 
@@ -55,7 +61,6 @@ def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue =
         queue.put(matched_face)
     else:
         return matched_face
-
 
 def handle_test_image(test_img,mean_face, target_size=(64, 64)):
     if test_img.dtype != np.float32 and test_img.max() > 1:
@@ -90,14 +95,11 @@ class FaceRecognitionWorker(QThread):
 
         process.join()
 
-
-
 class FaceRecognitionController():
     def __init__(self,Face_detection_and_recognition_window = None):
         self.Face_detection_and_recognition_window = Face_detection_and_recognition_window
         if self.Face_detection_and_recognition_window:
             self.Face_detection_and_recognition_window.apply_button.clicked.connect(self.apply_face_recognition)
-
 
     def apply_face_recognition(self):
         if self.Face_detection_and_recognition_window.face_analysis_type_custom_combo_box.current_text() == "Face Recognition":
@@ -117,7 +119,6 @@ class FaceRecognitionController():
             self.worker.result_ready.connect(self._on_result)
             self.worker.start()
 
-
     def _on_result(self,result_image):
         self.Face_detection_and_recognition_window.output_image_viewer.hide_loading_effect()
         self.Face_detection_and_recognition_window.controls_container.setEnabled(True)
@@ -128,11 +129,4 @@ class FaceRecognitionController():
             self.Face_detection_and_recognition_window.show_toast(title = "Failed!", text = "No Confient Match Found.",type="ERROR")  
         else:
             self.Face_detection_and_recognition_window.output_image_viewer.display_and_set_image_matrix(result_image)
-            self.Face_detection_and_recognition_window.show_toast(title = "Success!", text = "Face is recognized successfully.")
-
-        
-
-
-
-
-        
+            self.Face_detection_and_recognition_window.show_toast(title = "Success!", text = "Face is recognized successfully.")        
