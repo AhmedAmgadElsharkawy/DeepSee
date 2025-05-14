@@ -17,7 +17,6 @@ class TransformationsController():
         # Get input image from the UI
         input_image = self.transformations_window.input_image_viewer.image_model.get_image_matrix()
         if input_image is None:
-            print("No image loaded")
             return
 
         transformed_image = None

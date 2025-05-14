@@ -36,7 +36,6 @@ class ImageModel:
     
     def set_image_matrix(self,matrix):
         if matrix is None:
-            print("set None Image matrix")
             return
         self.image_matrix = matrix.copy()
         if self.image_matrix.ndim == 3:
@@ -47,7 +46,6 @@ class ImageModel:
 
     def set_gray_image_matrix(self, matrix):
         if matrix is None:
-            print("set None Image matrix")
             return
         self.gray_image_matrix = matrix.copy()
 

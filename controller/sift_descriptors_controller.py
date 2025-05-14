@@ -138,7 +138,6 @@ def find_scale_space_extrema(gaussian_images, dog_images, num_intervals=3, sigma
     for octave_index, dog_images_in_octave in enumerate(dog_images):
         for image_index, (first_image, second_image, third_image) in enumerate(zip(dog_images_in_octave, dog_images_in_octave[1:], dog_images_in_octave[2:])):
             # (i, j) is the center of the 3x3 array
-            print(first_image.shape, second_image.shape, third_image.shape)
             for i in range(image_border_width, first_image.shape[0] - image_border_width):
                 for j in range(image_border_width, first_image.shape[1] - image_border_width):
                     if is_pixel_an_extremum(first_image[i-1:i+2, j-1:j+2], second_image[i-1:i+2, j-1:j+2], third_image[i-1:i+2, j-1:j+2], threshold):

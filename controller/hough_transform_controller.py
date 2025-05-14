@@ -267,13 +267,8 @@ def detect_ellipses(input_image_matrix,ellipse_canny_sigma,ellipse_canny_low_thr
     edge_pixels = [p for p in pixels]
 
     if(len(edge_pixels) < 3):
-        print("Not Enough Edge Pixels")
         return None
 
-    # if len(edge_pixels):
-    #     print(len(edge_pixels))
-    #     edge_bgr = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert to 3-channel for display
-    #     return edge_bgr
 
     max_iter = max(5000,len(edge_pixels))
 
@@ -321,11 +316,6 @@ def detect_ellipses(input_image_matrix,ellipse_canny_sigma,ellipse_canny_low_thr
     if len(result_image.shape) == 2:
         result_image = cv2.cvtColor(result_image, cv2.COLOR_GRAY2BGR) 
 
-    # base_ellipse = top_ellipses[0]  
-    # base_center = (int(base_ellipse[0]), int(base_ellipse[1]))
-    # base_major = int(base_ellipse[2])
-    # base_minor = int(base_ellipse[3])
-    # base_angle = base_ellipse[4] * 180 / np.pi  
 
     for i, ellipse in enumerate(top_ellipses):
         p, q, a, b = map(int, np.around(ellipse[:4])) 
@@ -333,23 +323,6 @@ def detect_ellipses(input_image_matrix,ellipse_canny_sigma,ellipse_canny_low_thr
         score = ellipse[5] 
         cv2.ellipse(result_image, (p, q), (a, b), angle, 0, 360, choosen_color, thickness)
 
-        # print(f"Ellipse {i}:")
-        # print(f"  Center: ({p}, {q})")
-        # print(f"  Major Axis: {a}")
-        # print(f"  Minor Axis: {b}")
-        # print(f"  Angle (degrees): {angle:.2f}")
-        # print(f"  Score: {score:.2f}")  
-
-        # if i > 0: 
-        #     diff_center = np.sqrt((p - base_center[0])**2 + (q - base_center[1])**2)  
-        #     diff_major = a - base_major
-        #     diff_minor = b - base_minor
-        #     diff_angle = angle - base_angle
-
-            # print(f"  Center Difference: {diff_center:.2f}")
-            # print(f"  Major Axis Difference: {diff_major}")
-            # print(f"  Minor Axis Difference: {diff_minor}")
-            # print(f"  Angle Difference (degrees): {diff_angle:.2f}")
 
     if queue:
         queue.put(result_image)

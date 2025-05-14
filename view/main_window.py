@@ -812,7 +812,6 @@ class MainWindow(QMainWindow):
         event.accept()
 
     def _window_state_changed(self, state):
-        # This method will now handle window state changes
         if state == Qt.WindowState.WindowMaximized:
             self.title_bar.normal_button.setVisible(True)
             self.title_bar.max_button.setVisible(False)
@@ -903,12 +902,6 @@ class MainWindow(QMainWindow):
     def mouseMoveEvent(self, event):
         if self._resizing and self._resize_dir:
             self._resize_window(event.pos())  
-
-        # direction = self._get_resize_direction(event.pos())
-        # if direction:
-        #     self.setCursor(self._get_cursor_shape(direction)) 
-        # else:
-        #     self.setCursor(Qt.CursorShape.ArrowCursor)
 
         super().mouseMoveEvent(event)
         event.accept()

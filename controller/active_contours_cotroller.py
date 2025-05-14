@@ -144,7 +144,6 @@ def process_contour(image, output_image, snake_points):
         perimeter += math.hypot(dx, dy)
         direction_code = get_chain_code_direction(dx,dy)
         chain_code.append(direction_code)
-        print(direction_code)
 
         j = i  # Update j for next iteration
 

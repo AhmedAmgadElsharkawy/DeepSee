@@ -4,7 +4,7 @@ import os
 import multiprocessing as mp
 from PyQt5.QtCore import QThread, pyqtSignal
 
-dataset_path = "data/train_faces"
+dataset_path = "data/eigen_faces_dataset/train_faces"
 
 def face_recognition_process(test_img, lowe_ratio, pca_confidence_level, queue = None):
     faces = []
